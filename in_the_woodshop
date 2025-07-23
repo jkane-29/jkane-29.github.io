@@ -14,9 +14,10 @@
       color: #000;
       background-color: #fff;
     }
+
     h1 {
-        text-align: center;
-        margin-bottom: 1rem;
+      text-align: center;
+      margin-bottom: 1rem;
     }
 
     nav {
@@ -29,6 +30,30 @@
       text-decoration: none;
       font-weight: bold;
       color: #00f;
+    }
+
+    .project {
+      position: relative;
+      width: 100%;
+      max-width: 400px;
+      margin-bottom: 30px;
+    }
+
+    .project img {
+      width: 100%;
+      display: block;
+    }
+
+    .description {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      color: white;
+      background-color: rgba(0, 0, 0, 0.6);
+      padding: 10px;
+      box-sizing: border-box;
+      font-size: 16px;
     }
   </style>
 </head>
@@ -44,29 +69,15 @@
     <a href="resume.html">Resume</a>
   </nav>
 
+  <div class="project">
+    <img src="image1.jpg" alt="Project 1">
+    <div class="description">Project 1: Interactive Mapping Tool</div>
+  </div>
+
+  <div class="project">
+    <img src="image2.jpg" alt="Project 2">
+    <div class="description">Project 2: Fast Food Price Tracker</div>
+  </div>
 
 </body>
 </html>
-
-  <section>
-    <h2>In the Woodshop</h2>
-
-    <div style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: space-between;">
-      
-      <div style="width: 100%; max-width: 300px;">
-        <img src="images/coffee-table.jpg" alt="Coffee Table" style="width: 100%;">
-        <p><strong>Coffee Table</strong><br><em>Walnut, Brass Inlay</em></p>
-      </div>
-
-      <div style="width: 100%; max-width: 300px;">
-        <img src="images/bookshelf.jpg" alt="Bookshelf" style="width: 100%;">
-        <p><strong>Bookshelf</strong><br><em>Oak, Danish Oil Finish</em></p>
-      </div>
-
-      <div style="width: 100%; max-width: 300px;">
-        <img src="images/jewelry-box.jpg" alt="Jewelry Box" style="width: 100%;">
-        <p><strong>Jewelry Box</strong><br><em>Maple, Padauk Lining</em></p>
-      </div>
-
-    </div>
-  </section>

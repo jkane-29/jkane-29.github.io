@@ -33,27 +33,19 @@
     }
 
     .project {
-      position: relative;
-      width: 100%;
-      max-width: 400px;
+      display: flex;
+      align-items: flex-end; /* aligns text with bottom of image */
       margin-bottom: 30px;
     }
 
     .project img {
-      width: 100%;
-      display: block;
+      width: 200px; /* adjust as needed */
+      height: auto;
+      margin-right: 20px;
     }
 
     .description {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      color: white;
-      background-color: rgba(0, 0, 0, 0.6);
-      padding: 10px;
-      box-sizing: border-box;
-      font-size: 16px;
+      font-style: italic;
     }
   </style>
 </head>
@@ -70,12 +62,12 @@
   </nav>
 
   <div class="project">
-    <img src="IMG_0133.heic" alt="Project 1">
+    <img src="image1.jpeg" alt="Project 1">
     <div class="description">Project 1: Interactive Mapping Tool</div>
   </div>
 
   <div class="project">
-    <img src="IMG_1307.heic" alt="Project 2">
+    <img src="image2.jpeg" alt="Project 2">
     <div class="description">Project 2: Fast Food Price Tracker</div>
   </div>
 

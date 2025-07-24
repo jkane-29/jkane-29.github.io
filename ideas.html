@@ -1,44 +1,354 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Books I've Read</title>
-  <style>
-    body {
-      font-family: Georgia, serif;
-      font-size: 16px;
-      line-height: 1.4;
-      max-width: 700px;
-      margin: 45px auto;
-      padding: 0 15px;
-      color: #000;
-      background-color: #fff;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ideas - John Kane</title>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    nav {
-      text-align: center;
-      margin-bottom: 2rem;
-    }
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.4;
+            color: #374151;
+            background-color: #fefefe;
+        }
 
-    nav a {
-      margin: 0 12px;
-      text-decoration: none;
-      font-weight: bold;
-      color: #00f;
-    }
-  </style>
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 60px;
+            padding: 60px 20px;
+        }
+
+        .sidebar {
+            position: sticky;
+            top: 60px;
+            height: fit-content;
+        }
+
+        .name {
+            font-family: 'Source Serif Pro', serif;
+            font-size: 2.2rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #111827;
+            line-height: 1.1;
+        }
+
+        .title {
+            color: #059669;
+            font-weight: 500;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+            line-height: 1.2;
+        }
+
+        .nav-links {
+            list-style: none;
+            margin-bottom: 30px;
+        }
+
+        .nav-links li {
+            margin-bottom: 8px;
+        }
+
+        .nav-links a {
+            color: #6b7280;
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.2s ease;
+            line-height: 1.3;
+        }
+
+        .nav-links a:hover {
+            color: #059669;
+        }
+
+        .nav-links a.current {
+            color: #059669;
+            font-weight: 500;
+        }
+
+        .contact-info {
+            font-size: 0.9rem;
+            color: #6b7280;
+            line-height: 1.4;
+        }
+
+        .contact-info a {
+            color: #059669;
+            text-decoration: none;
+        }
+
+        .main-content {
+            padding-top: 20px;
+        }
+
+        .intro {
+            margin-bottom: 40px;
+        }
+
+        .intro h1 {
+            font-family: 'Source Serif Pro', serif;
+            font-size: 1.8rem;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #111827;
+            line-height: 1.2;
+        }
+
+        .intro p {
+            font-size: 1.05rem;
+            line-height: 1.5;
+            margin-bottom: 12px;
+        }
+
+        .section {
+            margin-bottom: 35px;
+        }
+
+        .section h2 {
+            font-family: 'Source Serif Pro', serif;
+            font-size: 1.5rem;
+            font-weight: 500;
+            margin-bottom: 20px;
+            color: #111827;
+            border-bottom: 2px solid #d1fae5;
+            padding-bottom: 6px;
+            line-height: 1.2;
+        }
+
+        .idea {
+            margin-bottom: 16px;
+            position: relative;
+            padding-left: 20px;
+        }
+
+        .idea::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 6px;
+            width: 6px;
+            height: 6px;
+            background-color: #059669;
+            border-radius: 50%;
+        }
+
+        .idea-text {
+            color: #4b5563;
+            line-height: 1.5;
+        }
+
+        .highlight {
+            background-color: #ecfdf5;
+            color: #047857;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                gap: 30px;
+                padding: 30px 20px;
+            }
+            
+            .sidebar {
+                position: static;
+                border-bottom: 1px solid #e5e7eb;
+                padding-bottom: 20px;
+            }
+            
+            .name {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
 </head>
 <body>
+    <div class="container">
+        <aside class="sidebar">
+            <h1 class="name">John Kane</h1>
+            
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/about">About</a></li>
+                    <li><a href="/projects">Research</a></li>
+                    <li><a href="/ideas" class="current">Teaching</a></li>
+                    <li><a href="/reading">Ventures</a></li>
+                    <li><a href="/writing">Publications</a></li>
+                    <li><a href="/woodshop">Woodshop</a></li>
+                    <li><a href="/architecture">Parallel Architecture</a></li>
+                    <li><a href="/games">Games</a></li>                  
+                    <li><a href="/cv.pdf">CV</a></li>
+                </ul>
+            </nav>
+            
+            <div class="contact-info">
+                <p><a href="mailto:jkane29@icloud.com">jkane29@icloud.com</a></p>
+                <p>Office: N/A</p>
+            </div>
+        </aside>
 
-  <nav>
-    <a href="index.html">Home</a>
-    <a href="books.html">Books I've Read</a>
-    <a href="woodshop.html">In the Woodshop</a>
-    <a href="resume.html">Resume</a>
-  </nav>
+        <main class="main-content">
+            <section class="intro">
+                <h1>Ideas</h1>
+                <p>
+                    Random thoughts and half-baked theories across different fields. Some might be worth pursuing, 
+                    others are probably <span class="highlight">better left as ideas</span>.
+                </p>
+            </section>
 
-  <h1>Ideas/Questions I'd Like to Answer</h1>
+            <section class="section">
+                <h2>Urban Planning & Transit</h2>
+                
+                <div class="idea">
+                    <p class="idea-text">
+                        Transit-oriented development could paradoxically increase affordability by creating 
+                        density that supports local businesses, reducing the need for car ownership and 
+                        freeing up household budgets for housing.
+                    </p>
+                </div>
 
-    
+                <div class="idea">
+                    <p class="idea-text">
+                        Parking minimums in zoning codes are subsidizing car ownership at the expense of 
+                        walkable neighborhoods—what if we flipped this and had parking maximums instead?
+                    </p>
+                </div>
+
+                <div class="idea">
+                    <p class="idea-text">
+                        15-minute neighborhoods work best when they're designed around elementary school 
+                        walking zones—the infrastructure for kids naturally creates accessible spaces for everyone.
+                    </p>
+                </div>
+
+                <div class="idea">
+                    <p class="idea-text">
+                        Urban heat islands could be mitigated through "shadow networks"—strategic placement 
+                        of trees and structures to create continuous shaded walking paths.
+                    </p>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2>Technology & Society</h2>
+                
+                <div class="idea">
+                    <p class="idea-text">
+                        AI explainability shouldn't just be about technical transparency—it should help people 
+                        understand the broader systems and incentives that shape algorithmic decisions.
+                    </p>
+                </div>
+
+                <div class="idea">
+                    <p class="idea-text">
+                        The most successful human-AI collaboration tools will be those that make the human 
+                        smarter, not the AI more human-like.
+                    </p>
+                </div>
+
+                <div class="idea">
+                    <p class="idea-text">
+                        Social media algorithms optimized for engagement have created echo chambers—what if 
+                        they were optimized for curiosity instead?
+                    </p>
+                </div>
+
+                <div class="idea">
+                    <p class="idea-text">
+                        Version control for legislation: what if policy changes were tracked, discussed, 
+                        and merged like code, with clear attribution and reasoning for each modification?
+                    </p>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2>Education & Learning</h2>
+                
+                <div class="idea">
+                    <p class="idea-text">
+                        The best way to teach programming might be through collaborative debugging sessions 
+                        rather than individual coding exercises.
+                    </p>
+                </div>
+
+                <div class="idea">
+                    <p class="idea-text">
+                        Academic conferences would be more valuable if they included "failure sessions" 
+                        where researchers shared what didn't work and why.
+                    </p>
+                </div>
+
+                <div class="idea">
+                    <p class="idea-text">
+                        Learning retention improves when students have to teach the material to others—what 
+                        if peer teaching was built into every curriculum from elementary school onwards?
+                    </p>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2>Design & Craft</h2>
+                
+                <div class="idea">
+                    <p class="idea-text">
+                        The Japanese concept of wabi-sabi (beauty in imperfection) could revolutionize 
+                        software design by embracing rather than hiding system limitations.
+                    </p>
+                </div>
+
+                <div class="idea">
+                    <p class="idea-text">
+                        Traditional woodworking joints reveal their construction method—what if digital 
+                        interfaces showed their underlying logic in similarly elegant ways?
+                    </p>
+                </div>
+
+                <div class="idea">
+                    <p class="idea-text">
+                        The best designs solve problems you didn't know you had, rather than obvious 
+                        problems everyone complains about.
+                    </p>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2>Random Musings</h2>
+                
+                <div class="idea">
+                    <p class="idea-text">
+                        Libraries are proof that information wants to be free, but they're also proof that 
+                        curation and context are what make information valuable.
+                    </p>
+                </div>
+
+                <div class="idea">
+                    <p class="idea-text">
+                        The proliferation of "life hacks" suggests we're optimizing for the wrong things—maybe 
+                        the goal should be systems that don't need to be hacked.
+                    </p>
+                </div>
+
+                <div class="idea">
+                    <p class="idea-text">
+                        Photography is becoming less about capturing moments and more about creating them—what 
+                        does this mean for memory and authenticity?
+                    </p>
+                </div>
+            </section>
+        </main>
+    </div>
 </body>
 </html>

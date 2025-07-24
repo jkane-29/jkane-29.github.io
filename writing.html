@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Writing - John Kane</title>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.4;
+            color: #374151;
+            background-color: #fefefe;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 60px;
+            padding: 60px 20px;
+        }
+
+        .sidebar {
+            position: sticky;
+            top: 60px;
+            height: fit-content;
+        }
+
+        .name {
+            font-family: 'Source Serif Pro', serif;
+            font-size: 2.2rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #111827;
+            line-height: 1.1;
+        }
+
+        .title {
+            color: #059669;
+            font-weight: 500;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+            line-height: 1.2;
+        }
+
+        .nav-links {
+            list-style: none;
+            margin-bottom: 30px;
+        }
+
+        .nav-links li {
+            margin-bottom: 8px;
+        }
+
+        .nav-links a {
+            color: #6b7280;
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.2s ease;
+            line-height: 1.3;
+        }
+
+        .nav-links a:hover {
+            color: #059669;
+        }
+
+        .nav-links a.current {
+            color: #059669;
+            font-weight: 500;
+        }
+
+        .contact-info {
+            font-size: 0.9rem;
+            color: #6b7280;
+            line-height: 1.4;
+        }
+
+        .contact-info a {
+            color: #059669;
+            text-decoration: none;
+        }
+
+        .main-content {
+            padding-top: 20px;
+        }
+
+        .intro {
+            margin-bottom: 40px;
+        }
+
+        .intro h1 {
+            font-family: 'Source Serif Pro', serif;
+            font-size: 1.8rem;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #111827;
+            line-height: 1.2;
+        }
+
+        .intro p {
+            font-size: 1.05rem;
+            line-height: 1.5;
+            margin-bottom: 12px;
+        }
+
+        .year-section {
+            margin-bottom: 40px;
+        }
+
+        .year-section h2 {
+            font-family: 'Source Serif Pro', serif;
+            font-size: 1.5rem;
+            font-weight: 500;
+            margin-bottom: 20px;
+            color: #111827;
+            border-bottom: 2px solid #d1fae5;
+            padding-bottom: 6px;
+            line-height: 1.2;
+        }
+
+        .writing-item {
+            margin-bottom: 24px;
+            position: relative;
+            padding-left: 20px;
+        }
+
+        .writing-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 6px;
+            width: 6px;
+            height: 6px;
+            background-color: #059669;
+            border-radius: 50%;
+        }
+
+        .writing-title {
+            font-weight: 500;
+            font-size: 1.1rem;
+            margin-bottom: 4px;
+            color: #111827;
+            line-height: 1.3;
+        }
+
+        .writing-title a {
+            color: #111827;
+            text-decoration: none;
+        }
+
+        .writing-title a:hover {
+            color: #059669;
+        }
+
+        .writing-meta {
+            font-size: 0.9rem;
+            color: #059669;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .writing-description {
+            color: #4b5563;
+            line-height: 1.4;
+        }
+
+        .highlight {
+            background-color: #ecfdf5;
+            color: #047857;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                gap: 30px;
+                padding: 30px 20px;
+            }
+            
+            .sidebar {
+                position: static;
+                border-bottom: 1px solid #e5e7eb;
+                padding-bottom: 20px;
+            }
+            
+            .name {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <h1 class="name">John Kane</h1>
+            
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/about">About</a></li>
+                    <li><a href="/projects">Research</a></li>
+                    <li><a href="/ideas">Teaching</a></li>
+                    <li><a href="/reading">Ventures</a></li>
+                    <li><a href="/writing" class="current">Publications</a></li>
+                    <li><a href="/woodshop">Woodshop</a></li>
+                    <li><a href="/architecture">Parallel Architecture</a></li>
+                    <li><a href="/games">Games</a></li>                  
+                    <li><a href="/cv.pdf">CV</a></li>
+                </ul>
+            </nav>
+            
+            <div class="contact-info">
+                <p><a href="mailto:jkane29@icloud.com">jkane29@icloud.com</a></p>
+                <p>Office: N/A</p>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <section class="intro">
+                <h1>Writing</h1>
+                <p>
+                    Essays, notes, and <span class="highlight">fragments of thought</span> on technology, 
+                    design, and the spaces where they intersect with human experience.
+                </p>
+            </section>
+
+            <section class="year-section">
+                <h2>2024</h2>
+                
+                <div class="writing-item">
+                    <h3 class="writing-title">
+                        <a href="#">The Illusion of Algorithmic Objectivity</a>
+                    </h3>
+                    <p class="writing-meta">March 15, 2024</p>
+                    <p class="writing-description">
+                        On why the most "objective" algorithms often embed the deepest biases, and what this 
+                        means for building fair AI systems in an unfair world.
+                    </p>
+                </div>
+
+                <div class="writing-item">
+                    <h3 class="writing-title">
+                        <a href="#">Notes on Computational Creativity</a>
+                    </h3>
+                    <p class="writing-meta">January 8, 2024</p>
+                    <p class="writing-description">
+                        Exploring the tension between algorithmic generation and human authorship through 
+                        the lens of my experiments with AI-assisted design tools.
+                    </p>
+                </div>
+            </section>
+
+            <section class="year-section">
+                <h2>2023</h2>
+                
+                <div class="writing-item">
+                    <h3 class="writing-title">
+                        <a href="#">The Craft of Code</a>
+                    </h3>
+                    <p class="writing-meta">November 22, 2023</p>
+                    <p class="writing-description">
+                        What woodworking taught me about programming: the importance of understanding your 
+                        materials, working with rather than against their grain, and the beauty of simple, 
+                        well-executed solutions.
+                    </p>
+                </div>
+
+                <div class="writing-item">
+                    <h3 class="writing-title">
+                        <a href="#">Interpretable by Whom?</a>
+                    </h3>
+                    <p class="writing-meta">September 5, 2023</p>
+                    <p class="writing-description">
+                        A critical look at the explainable AI movement and its assumptions about who needs 
+                        explanations, what kinds of explanations are valuable, and when interpretability 
+                        might actually be harmful.
+                    </p>
+                </div>
+
+                <div class="writing-item">
+                    <h3 class="writing-title">
+                        <a href="#">Architecture as Interface</a>
+                    </h3>
+                    <p class="writing-meta">June 12, 2023</p>
+                    <p class="writing-description">
+                        Observations from photographing urban geometry: how the built environment functions 
+                        as a user interface for city life, complete with affordances, constraints, and 
+                        hidden interactions.
+                    </p>
+                </div>
+
+                <div class="writing-item">
+                    <h3 class="writing-title">
+                        <a href="#">The Productivity Trap</a>
+                    </h3>
+                    <p class="writing-meta">February 18, 2023</p>
+                    <p class="writing-description">
+                        Why optimizing for productivity might be optimizing for the wrong thing, and what 
+                        we might focus on instead: creativity, resilience, and the capacity for surprise.
+                    </p>
+                </div>
+            </section>
+
+            <section class="year-section">
+                <h2>2022</h2>
+                
+                <div class="writing-item">
+                    <h3 class="writing-title">
+                        <a href="#">Learning to See Like a Machine</a>
+                    </h3>
+                    <p class="writing-meta">October 30, 2022</p>
+                    <p class="writing-description">
+                        Reflections on training computer vision models and what they reveal about the 
+                        assumptions we make about perception, attention, and what it means to "see."
+                    </p>
+                </div>
+
+                <div class="writing-item">
+                    <h3 class="writing-title">
+                        <a href="#">Designing for Uncertainty</a>
+                    </h3>
+                    <p class="writing-meta">July 4, 2022</p>
+                    <p class="writing-description">
+                        How can we build systems that degrade gracefully when faced with the unexpected? 
+                        Lessons from resilient design in both software and traditional crafts.
+                    </p>
+                </div>
+
+                <div class="writing-item">
+                    <h3 class="writing-title">
+                        <a href="#">The Weight of Data</a>
+                    </h3>
+                    <p class="writing-meta">March 14, 2022</p>
+                    <p class="writing-description">
+                        On the environmental and social costs of our data-hungry AI systems, and why 
+                        efficiency isn't just a technical concern—it's an ethical one.
+                    </p>
+                </div>
+            </section>
+
+            <section class="year-section">
+                <h2>Earlier</h2>
+                
+                <div class="writing-item">
+                    <h3 class="writing-title">
+                        <a href="#">Pattern Recognition</a>
+                    </h3>
+                    <p class="writing-meta">2021</p>
+                    <p class="writing-description">
+                        A collection of short observations about the patterns that emerge when humans and 
+                        machines try to understand each other.
+                    </p>
+                </div>
+
+                <div class="writing-item">
+                    <h3 class="writing-title">
+                        <a href="#">Tools for Thinking</a>
+                    </h3>
+                    <p class="writing-meta">2020</p>
+                    <p class="writing-description">
+                        How the tools we use to think with—from pencils to programming languages—shape 
+                        not just what we can express, but what we can imagine.
+                    </p>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+</html>

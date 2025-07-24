@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Woodshop - John Kane</title>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.4;
+            color: #374151;
+            background-color: #fefefe;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 60px;
+            padding: 60px 20px;
+        }
+
+        .sidebar {
+            position: sticky;
+            top: 60px;
+            height: fit-content;
+        }
+
+        .name {
+            font-family: 'Source Serif Pro', serif;
+            font-size: 2.2rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #111827;
+            line-height: 1.1;
+        }
+
+        .title {
+            color: #059669;
+            font-weight: 500;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+            line-height: 1.2;
+        }
+
+        .nav-links {
+            list-style: none;
+            margin-bottom: 30px;
+        }
+
+        .nav-links li {
+            margin-bottom: 8px;
+        }
+
+        .nav-links a {
+            color: #6b7280;
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.2s ease;
+            line-height: 1.3;
+        }
+
+        .nav-links a:hover {
+            color: #059669;
+        }
+
+        .nav-links a.current {
+            color: #059669;
+            font-weight: 500;
+        }
+
+        .contact-info {
+            font-size: 0.9rem;
+            color: #6b7280;
+            line-height: 1.4;
+        }
+
+        .contact-info a {
+            color: #059669;
+            text-decoration: none;
+        }
+
+        .main-content {
+            padding-top: 20px;
+        }
+
+        .intro {
+            margin-bottom: 40px;
+        }
+
+        .intro h1 {
+            font-family: 'Source Serif Pro', serif;
+            font-size: 1.8rem;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #111827;
+            line-height: 1.2;
+        }
+
+        .intro p {
+            font-size: 1.05rem;
+            line-height: 1.5;
+            margin-bottom: 12px;
+        }
+
+        .project {
+            margin-bottom: 50px;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 40px;
+        }
+
+        .project:last-child {
+            border-bottom: none;
+        }
+
+        .project-image {
+            width: 100%;
+            height: 300px;
+            background-color: #f3f4f6;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #9ca3af;
+            font-style: italic;
+            border: 2px dashed #d1d5db;
+        }
+
+        .project-title {
+            font-family: 'Source Serif Pro', serif;
+            font-size: 1.4rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #111827;
+            line-height: 1.3;
+        }
+
+        .project-meta {
+            font-size: 0.9rem;
+            color: #059669;
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+
+        .project-description {
+            color: #4b5563;
+            line-height: 1.5;
+            margin-bottom: 12px;
+        }
+
+        .project-details {
+            font-size: 0.9rem;
+            color: #6b7280;
+            font-style: italic;
+        }
+
+        .highlight {
+            background-color: #ecfdf5;
+            color: #047857;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                gap: 30px;
+                padding: 30px 20px;
+            }
+            
+            .sidebar {
+                position: static;
+                border-bottom: 1px solid #e5e7eb;
+                padding-bottom: 20px;
+            }
+            
+            .name {
+                font-size: 1.8rem;
+            }
+
+            .project-image {
+                height: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <h1 class="name">John Kane</h1>
+            
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/about">About</a></li>
+                    <li><a href="/projects">Research</a></li>
+                    <li><a href="/ideas">Teaching</a></li>
+                    <li><a href="/reading">Ventures</a></li>
+                    <li><a href="/writing">Publications</a></li>
+                    <li><a href="/woodshop" class="current">Woodshop</a></li>
+                    <li><a href="/architecture">Parallel Architecture</a></li>
+                    <li><a href="/games">Games</a></li>                  
+                    <li><a href="/cv.pdf">CV</a></li>
+                </ul>
+            </nav>
+            
+            <div class="contact-info">
+                <p><a href="mailto:jkane29@icloud.com">jkane29@icloud.com</a></p>
+                <p>Office: N/A</p>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <section class="intro">
+                <h1>Woodshop</h1>
+                <p>
+                    Working with wood teaches <span class="highlight">patience and precision</span> in ways 
+                    that complement the rapid iteration of software development. Each project is a study 
+                    in constraint, material properties, and the unexpected beauty that emerges from 
+                    embracing rather than fighting limitations.
+                </p>
+            </section>
+
+            <div class="project">
+                <div class="project-image">
+                    [Photo: Walnut desk with dovetail joints]
+                </div>
+                <h3 class="project-title">Standing Desk</h3>
+                <p class="project-meta">Black Walnut • 2024</p>
+                <p class="project-description">
+                    A height-adjustable desk designed around the constraints of a small home office. 
+                    The mechanism is hidden within the apron, and the surface adjusts from 29" to 42" 
+                    using a counterweight system inspired by old drafting tables. The walnut came from 
+                    a tree that fell in my neighborhood during a storm—there's something satisfying 
+                    about giving it a second life as furniture.
+                </p>
+                <p class="project-details">
+                    Hand-cut dovetails, traditional mortise and tenon joinery, finished with Danish oil
+                </p>
+            </div>
+
+            <div class="project">
+                <div class="project-image">
+                    [Photo: Cherry bookshelf with through-tenons]
+                </div>
+                <h3 class="project-title">Modular Bookshelf System</h3>
+                <p class="project-meta">Cherry • 2023</p>
+                <p class="project-description">
+                    A series of interlocking boxes that can be arranged and rearranged as needed. 
+                    Each unit is identical but can function as a shelf, side table, or room divider 
+                    depending on configuration. The through-tenons are both structural and decorative—
+                    they reveal the construction method while creating visual rhythm across the modules.
+                </p>
+                <p class="project-details">
+                    Through-tenon construction, hand-planed surfaces, beeswax finish
+                </p>
+            </div>
+
+            <div class="project">
+                <div class="project-image">
+                    [Photo: Oak cutting board with geometric pattern]
+                </div>
+                <h3 class="project-title">End-Grain Cutting Boards</h3>
+                <p class="project-meta">White Oak, Maple • 2023</p>
+                <p class="project-description">
+                    A series of cutting boards exploring geometric patterns that emerge from the 
+                    systematic arrangement of end-grain pieces. Each board starts with a different 
+                    mathematical constraint—hexagonal tiling, Fibonacci sequences, or golden ratio 
+                    proportions—but the final pattern is always influenced by the natural variation 
+                    in the wood grain.
+                </p>
+                <p class="project-details">
+                    End-grain construction, food-safe mineral oil finish, brass hanging hardware
+                </p>
+            </div>
+
+            <div class="project">
+                <div class="project-image">
+                    [Photo: Bent lamination chair back detail]
+                </div>
+                <h3 class="project-title">Bent Lamination Chair</h3>
+                <p class="project-meta">Ash, Leather • 2022</p>
+                <p class="project-description">
+                    An experiment in steam bending and lamination techniques. The backrest is formed 
+                    from thin strips of ash bent around a custom jig, creating a curve that's both 
+                    structurally sound and comfortable. The seat is hand-stitched leather suspended 
+                    in a wooden frame—a detail borrowed from traditional Danish furniture but adapted 
+                    for easier repair and replacement.
+                </p>
+                <p class="project-details">
+                    Steam-bent laminations, hand-stitched leather seat, shellac finish
+                </p>
+            </div>
+
+            <div class="project">
+                <div class="project-image">
+                    [Photo: Japanese-style wooden plane]
+                </div>
+                <h3 class="project-title">Tool Making</h3>
+                <p class="project-meta">Beech, Steel • Ongoing</p>
+                <p class="project-description">
+                    Making the tools to make the furniture. Started with a simple wooden plane 
+                    following traditional Japanese techniques, then moved on to chisels, marking 
+                    gauges, and specialty jigs. There's something deeply satisfying about using 
+                    tools you've made yourself—it creates an unbroken chain from raw material 
+                    to finished piece.
+                </p>
+                <p class="project-details">
+                    Traditional joinery, hand-forged steel, fitted to my specific grip and usage patterns
+                </p>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

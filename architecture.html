@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parallel Architecture - John Kane</title>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.4;
+            color: #374151;
+            background-color: #fefefe;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 60px;
+            padding: 60px 20px;
+        }
+
+        .sidebar {
+            position: sticky;
+            top: 60px;
+            height: fit-content;
+        }
+
+        .name {
+            font-family: 'Source Serif Pro', serif;
+            font-size: 2.2rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #111827;
+            line-height: 1.1;
+        }
+
+        .title {
+            color: #059669;
+            font-weight: 500;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+            line-height: 1.2;
+        }
+
+        .nav-links {
+            list-style: none;
+            margin-bottom: 30px;
+        }
+
+        .nav-links li {
+            margin-bottom: 8px;
+        }
+
+        .nav-links a {
+            color: #6b7280;
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.2s ease;
+            line-height: 1.3;
+        }
+
+        .nav-links a:hover {
+            color: #059669;
+        }
+
+        .nav-links a.current {
+            color: #059669;
+            font-weight: 500;
+        }
+
+        .contact-info {
+            font-size: 0.9rem;
+            color: #6b7280;
+            line-height: 1.4;
+        }
+
+        .contact-info a {
+            color: #059669;
+            text-decoration: none;
+        }
+
+        .main-content {
+            padding-top: 20px;
+        }
+
+        .intro {
+            margin-bottom: 40px;
+        }
+
+        .intro h1 {
+            font-family: 'Source Serif Pro', serif;
+            font-size: 1.8rem;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #111827;
+            line-height: 1.2;
+        }
+
+        .intro p {
+            font-size: 1.05rem;
+            line-height: 1.5;
+            margin-bottom: 12px;
+        }
+
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .photo-item {
+            margin-bottom: 20px;
+        }
+
+        .photo-placeholder {
+            width: 100%;
+            height: 400px;
+            background-color: #f3f4f6;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #9ca3af;
+            font-style: italic;
+            border: 2px dashed #d1d5db;
+            aspect-ratio: 3/4;
+        }
+
+        .photo-title {
+            font-weight: 500;
+            font-size: 1rem;
+            margin-bottom: 4px;
+            color: #111827;
+            line-height: 1.3;
+        }
+
+        .photo-location {
+            font-size: 0.85rem;
+            color: #059669;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .photo-description {
+            color: #4b5563;
+            line-height: 1.4;
+            font-size: 0.95rem;
+        }
+
+        .highlight {
+            background-color: #ecfdf5;
+            color: #047857;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                gap: 30px;
+                padding: 30px 20px;
+            }
+            
+            .sidebar {
+                position: static;
+                border-bottom: 1px solid #e5e7eb;
+                padding-bottom: 20px;
+            }
+            
+            .name {
+                font-size: 1.8rem;
+            }
+
+            .photo-grid {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 20px;
+            }
+
+            .photo-placeholder {
+                height: 350px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <h1 class="name">John Kane</h1>
+            
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/about">About</a></li>
+                    <li><a href="/projects">Research</a></li>
+                    <li><a href="/ideas">Teaching</a></li>
+                    <li><a href="/reading">Ventures</a></li>
+                    <li><a href="/writing">Publications</a></li>
+                    <li><a href="/woodshop">Woodshop</a></li>
+                    <li><a href="/architecture" class="current">Parallel Architecture</a></li>
+                    <li><a href="/games">Games</a></li>                  
+                    <li><a href="/cv.pdf">CV</a></li>
+                </ul>
+            </nav>
+            
+            <div class="contact-info">
+                <p><a href="mailto:jkane29@icloud.com">jkane29@icloud.com</a></p>
+                <p>Office: N/A</p>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <section class="intro">
+                <h1>Parallel Architecture</h1>
+                <p>
+                    Walking through Chicago, I'm drawn to <span class="highlight">geometric alignments</span> 
+                    and unexpected symmetries in the built environment. These photographs capture moments 
+                    where architectural elements create visual patterns—sometimes intentional, often accidental, 
+                    always revealing something about how we organize space and movement in the city.
+                </p>
+            </section>
+
+            <div class="photo-grid">
+                <div class="photo-item">
+                    <div class="photo-placeholder">
+                        [Photo: Parallel lines of Trump Tower and Wrigley Building]
+                    </div>
+                    <h3 class="photo-title">Vertical Parallels</h3>
+                    <p class="photo-location">Michigan Avenue Bridge</p>
+                    <p class="photo-description">
+                        The Trump Tower and Wrigley Building create parallel vertical lines when viewed 
+                        from the right angle on the bridge. Two different eras of Chicago architecture 
+                        accidentally aligned in a single frame.
+                    </p>
+                </div>
+
+                <div class="photo-item">
+                    <div class="photo-placeholder">
+                        [Photo: L train tracks creating geometric grid]
+                    </div>
+                    <h3 class="photo-title">Grid System</h3>
+                    <p class="photo-location">Loop District</p>
+                    <p class="photo-description">
+                        The L tracks above create a geometric grid that mirrors the street pattern below. 
+                        Infrastructure as accidentally beautiful urban geometry—function creating form.
+                    </p>
+                </div>
+
+                <div class="photo-item">
+                    <div class="photo-placeholder">
+                        [Photo: Shadows creating triangular patterns]
+                    </div>
+                    <h3 class="photo-title">Shadow Triangles</h3>
+                    <p class="photo-location">Millennium Park</p>
+                    <p class="photo-description">
+                        Late afternoon shadows from the surrounding buildings create precise triangular 
+                        patterns on the park's lawn. Temporary geometry that changes with the seasons 
+                        and time of day.
+                    </p>
+                </div>
+
+                <div class="photo-item">
+                    <div class="photo-placeholder">
+                        [Photo: Repeating window patterns across buildings]
+                    </div>
+                    <h3 class="photo-title">Window Rhythms</h3>
+                    <p class="photo-location">LaSalle Street Canyon</p>
+                    <p class="photo-description">
+                        The repetition of windows across multiple buildings creates a visual rhythm 
+                        that's almost musical. Each building contributes to a larger pattern that 
+                        emerges only when seen from street level.
+                    </p>
+                </div>
+
+                <div class="photo-item">
+                    <div class="photo-placeholder">
+                        [Photo: Curved building reflections in glass]
+                    </div>
+                    <h3 class="photo-title">Curved Reflections</h3>
+                    <p class="photo-location">River North</p>
+                    <p class="photo-description">
+                        A curved building's reflection in the glass facade of its neighbor creates 
+                        distorted but perfectly geometric patterns. Architecture photographing itself.
+                    </p>
+                </div>
+
+                <div class="photo-item">
+                    <div class="photo-placeholder">
+                        [Photo: Staircase creating parallel diagonal lines]
+                    </div>
+                    <h3 class="photo-title">Diagonal Parallels</h3>
+                    <p class="photo-location">Cultural Center</p>
+                    <p class="photo-description">
+                        The grand staircase creates multiple parallel diagonal lines that seem to 
+                        extend infinitely upward. Classical architecture's approach to creating 
+                        visual movement through repetition.
+                    </p>
+                </div>
+
+                <div class="photo-item">
+                    <div class="photo-placeholder">
+                        [Photo: Street intersection creating perfect cross]
+                    </div>
+                    <h3 class="photo-title">Urban Cross</h3>
+                    <p class="photo-location">State and Madison</p>
+                    <p class="photo-description">
+                        The intersection of State and Madison, viewed from above, creates a perfect 
+                        cross with the surrounding buildings framing each arm. The city's grid system 
+                        as geometric art.
+                    </p>
+                </div>
+
+                <div class="photo-item">
+                    <div class="photo-placeholder">
+                        [Photo: Bridge supports creating rhythmic arches]
+                    </div>
+                    <h3 class="photo-title">Rhythmic Arches</h3>
+                    <p class="photo-location">Lower Wacker Drive</p>
+                    <p class="photo-description">
+                        The support columns under Lower Wacker create a series of arches that recede 
+                        into the distance. Infrastructure as accidental cathedral—purely functional 
+                        elements that happen to be beautiful.
+                    </p>
+                </div>
+
+                <div class="photo-item">
+                    <div class="photo-placeholder">
+                        [Photo: Escalator creating parallel moving lines]
+                    </div>
+                    <h3 class="photo-title">Moving Parallels</h3>
+                    <p class="photo-location">Union Station</p>
+                    <p class="photo-description">
+                        Escalators create parallel lines that are always in motion, but maintain 
+                        their geometric relationship. Movement and stasis coexisting in the same frame.
+                    </p>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

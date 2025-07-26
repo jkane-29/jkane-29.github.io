@@ -1,80 +1,246 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Books I've Read</title>
-  <style>
-    body {
-      font-family: Georgia, serif;
-      font-size: 18px;
-      line-height: 1.6;
-      max-width: 700px;
-      margin: 60px auto;
-      padding: 0 20px;
-      color: #000;
-      background-color: #fff;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - John Kane</title>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    nav {
-      text-align: center;
-      margin-bottom: 2rem;
-    }
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.4;
+            color: #374151;
+            background-color: #fefefe;
+        }
 
-    nav a {
-      margin: 0 12px;
-      text-decoration: none;
-      font-weight: bold;
-      color: #00f;
-    }
-  </style>
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 60px;
+            padding: 60px 20px;
+        }
+
+        .sidebar {
+            position: sticky;
+            top: 60px;
+            height: fit-content;
+        }
+
+        .name {
+            font-family: 'Source Serif Pro', serif;
+            font-size: 2.2rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #111827;
+            line-height: 1.1;
+        }
+
+        .title {
+            color: #059669;
+            font-weight: 500;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+            line-height: 1.2;
+        }
+
+        .nav-links {
+            list-style: none;
+            margin-bottom: 30px;
+        }
+
+        .nav-links li {
+            margin-bottom: 8px;
+        }
+
+        .nav-links a {
+            color: #6b7280;
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.2s ease;
+            line-height: 1.3;
+        }
+
+        .nav-links a:hover {
+            color: #059669;
+        }
+
+        .nav-links a.current {
+            color: #059669;
+            font-weight: 500;
+        }
+
+        .contact-info {
+            font-size: 0.9rem;
+            color: #6b7280;
+            line-height: 1.4;
+        }
+
+        .contact-info a {
+            color: #059669;
+            text-decoration: none;
+        }
+
+        .main-content {
+            padding-top: 20px;
+        }
+
+        .intro {
+            margin-bottom: 40px;
+        }
+
+        .intro h1 {
+            font-family: 'Source Serif Pro', serif;
+            font-size: 1.8rem;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #111827;
+            line-height: 1.2;
+        }
+
+        .intro p {
+            font-size: 1.05rem;
+            line-height: 1.5;
+            margin-bottom: 12px;
+        }
+
+        .bio-section {
+            margin-bottom: 35px;
+        }
+
+        .bio-section h2 {
+            font-family: 'Source Serif Pro', serif;
+            font-size: 1.5rem;
+            font-weight: 500;
+            margin-bottom: 20px;
+            color: #111827;
+            border-bottom: 2px solid #d1fae5;
+            padding-bottom: 6px;
+            line-height: 1.2;
+        }
+
+        .bio-section p {
+            font-size: 1.05rem;
+            line-height: 1.6;
+            margin-bottom: 16px;
+            color: #4b5563;
+        }
+
+        .highlight {
+            background-color: #ecfdf5;
+            color: #047857;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                gap: 30px;
+                padding: 30px 20px;
+            }
+            
+            .sidebar {
+                position: static;
+                border-bottom: 1px solid #e5e7eb;
+                padding-bottom: 20px;
+            }
+            
+            .name {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
 </head>
 <body>
+    <div class="container">
+        <aside class="sidebar">
+            <h1 class="name">John Kane</h1>
+            
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="projects.html">Projects</a></li>
+                    <li><a href="ideas.html">Ideas</a></li>
+                    <li><a href="reading.html">Books</a></li>
+                    <li><a href="writing.html">Writing</a></li>
+                    <li><a href="woodshop.html">Woodshop</a></li>
+                    <li><a href="architecture.html">Parallel Architecture</a></li>
+                    <li><a href="excel_casino.html">Excel Casino</a></li>                  
+                    <li><a href="/cv.pdf">CV</a></li>
+                </ul>
+            </nav>
+            
+            <div class="contact-info">
+                <p><a href="mailto:jkane29@icloud.com">jkane29@icloud.com</a></p>
+                <p>Office: N/A</p>
+            </div>
+        </aside>
 
-  <nav>
-    <a href="index.html">Home</a>
-    <a href="books.html">Books I've Read</a>
-    <a href="in_the_woodshop.html">In the Woodshop</a>
-    <a href="resume.html">Resume</a>
-  </nav>
+        <main class="main-content">
+            <section class="intro">
+                <h1>Reading</h1>
+                <p>
+                    I spend a lot of time readng. Below are books I've read/blogs I frequently read.
+                </p>
+            </section>
 
-  <h1>Books I've Read</h1>
-  <h2>Books I've Read Since High School (No Order):</h2>
-  <ul class="book list">
-    <li><strong>Vineland</strong> – Thomas Pynchon</li>
-    <li><strong>Jutice</strong> – Michael Sandel</li>
-    <li><strong>Down and Out in Paris and London</strong> – George Orwell</li>
-    <li><strong>Against Everything</strong> – Mark Grief</li>
-    <li><strong>Manias Panic and Crashes</strong> – Charles Kindleberger</li>
-    <li><strong>Liar's Poker</strong> – Michael Lewis</li>
-    <li><strong>Irrational Exuberance</strong> – Robert Schiller</li>
-    <li><strong>Zen Mind, Beginner's Mind</strong> – Shunryu Suzuki</li>
-    <li><strong>The Ascent of Money</strong> – Niall Ferguson</li>
-    <li><strong>Manias Panic and Crashes</strong> – Charles Kindleberger</li>
-    <li><strong>The Essential Keynes</strong> – Keynes/Skidelsky</li>
-    <li><strong>Thinking Fast and Slow</strong> – Daniel Kahneman</li>
-    <li><strong>The Power Broker</strong> – Robert Caro</li>
-    <li><strong>Stubborn Attachments</strong> – Tyler Cowen</li>
-    <li><strong>Walden and Other Writings</strong> – Henry David Thoreau</li>
-    <li><strong>Poor Charlie's Almanack</strong> – Charlie Munger</li>
-    <li><strong>An Economist Gets Lunch</strong> – Tyler Cowen</li>
-    <li><strong>Misbehaving</strong> – Richard Thaler</li>
-    <li><strong>Am I Being Too Subtle</strong> – Sam Zell</li>
-    <li><strong>Barbarians at the Gate</strong> – Bryan Burrough and John Helyar</li>
-    <li><strong>Boomerang</strong> – Michael Lewis</li>
-    <li><strong>Going Infinite</strong> – Michael Lewis</li>
-    <li><strong>Keynes Hayek</strong> – Nicholas Wapshott</li>
-    <li><strong>Burmese Days</strong> – George Orwell</li>
-    <li><strong>Working</strong> – Robert Caro</li>
-    <li><strong>What I Talk About When I Talk About Running</strong> – Haruki Murakami</li>
-    <li><strong>Against the Gods</strong> – Peter Bernstein</li>
-    <li><strong>Fear and Loathin on the Campaign Trail</strong> – Hunter S Thompson</li>
-    <li><strong>Zen and the Art of Motorcycle Maintenance</strong> – Robert Pirsig</li>
-    <li><strong>A Peace to End All Peace</strong> – David Fromkin</li>
-    <li><strong>Do Andrews Dream of Electric Sheep</strong> – Phillip K Dick</li>
-    <li><strong>Cherry</strong> – Nico Walker</li>
-    <li><strong>Silence</strong> – Shusaku Endo</li>
-    <li><strong>Homage to Catalonia</strong> – George Orwell</li>
-    
-    
+            <section class="bio-section">
+                <h2>Books</h2>
+                <p>
+                  <li><strong>Vineland</strong> – Thomas Pynchon</li>
+                  <li><strong>Jutice</strong> – Michael Sandel</li>
+                  <li><strong>Down and Out in Paris and London</strong> – George Orwell</li>
+                  <li><strong>Against Everything</strong> – Mark Grief</li>
+                  <li><strong>Manias Panic and Crashes</strong> – Charles Kindleberger</li>
+                  <li><strong>Liar's Poker</strong> – Michael Lewis</li>
+                  <li><strong>Irrational Exuberance</strong> – Robert Schiller</li>
+                  <li><strong>Zen Mind, Beginner's Mind</strong> – Shunryu Suzuki</li>
+                  <li><strong>The Ascent of Money</strong> – Niall Ferguson</li>
+                  <li><strong>Manias Panic and Crashes</strong> – Charles Kindleberger</li>
+                  <li><strong>The Essential Keynes</strong> – Keynes/Skidelsky</li>
+                  <li><strong>Thinking Fast and Slow</strong> – Daniel Kahneman</li>
+                  <li><strong>The Power Broker</strong> – Robert Caro</li>
+                  <li><strong>Stubborn Attachments</strong> – Tyler Cowen</li>
+                  <li><strong>Walden and Other Writings</strong> – Henry David Thoreau</li>
+                  <li><strong>Poor Charlie's Almanack</strong> – Charlie Munger</li>
+                  <li><strong>An Economist Gets Lunch</strong> – Tyler Cowen</li>
+                  <li><strong>Misbehaving</strong> – Richard Thaler</li>
+                  <li><strong>Am I Being Too Subtle</strong> – Sam Zell</li>
+                  <li><strong>Barbarians at the Gate</strong> – Bryan Burrough and John Helyar</li>
+                  <li><strong>Boomerang</strong> – Michael Lewis</li>
+                  <li><strong>Going Infinite</strong> – Michael Lewis</li>
+                  <li><strong>Keynes Hayek</strong> – Nicholas Wapshott</li>
+                  <li><strong>Burmese Days</strong> – George Orwell</li>
+                  <li><strong>Working</strong> – Robert Caro</li>
+                  <li><strong>What I Talk About When I Talk About Running</strong> – Haruki Murakami</li>
+                  <li><strong>Against the Gods</strong> – Peter Bernstein</li>
+                  <li><strong>Fear and Loathin on the Campaign Trail</strong> – Hunter S Thompson</li>
+                  <li><strong>Zen and the Art of Motorcycle Maintenance</strong> – Robert Pirsig</li>
+                  <li><strong>A Peace to End All Peace</strong> – David Fromkin</li>
+                  <li><strong>Do Andrews Dream of Electric Sheep</strong> – Phillip K Dick</li>
+                  <li><strong>Cherry</strong> – Nico Walker</li>
+                  <li><strong>Silence</strong> – Shusaku Endo</li>
+                  <li><strong>Homage to Catalonia</strong> – George Orwell</li>
+                </p>
+            </section>
+
+            <section class="bio-section">
+                <h2>Blogs</h2>
+                <p>
+                    Insert here
+                </p>
+            </section>
+        </main>
+    </div>
+</body>
+</html>
 </body>
 </html>

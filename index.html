@@ -34,14 +34,20 @@
             height: fit-content;
         }
 
-        .name {
+      .name {
             font-family: 'Source Serif Pro', serif;
             font-size: 2.2rem;
             font-weight: 500;
             margin-bottom: 8px;
             color: #111827;
             line-height: 1.1;
-        }
+            text-decoration: none;
+            display: block;
+            }
+
+            .name:hover {
+            color: #059669;
+            }
 
         .title {
             color: #059669;
@@ -197,7 +203,7 @@
 <body>
     <div class="container">
         <aside class="sidebar">
-            <h1 class="name">John Kane</h1>
+            <a href="index.html" class="name">John Kane</a>
             
             <nav>
                 <ul class="nav-links">

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Writing - John Kane</title>
+    <title>Year in Review 2024 - John Kane</title>
     <link href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
     <style>
         * {
@@ -98,84 +98,61 @@
             padding-top: 20px;
         }
 
-        .intro {
+        .article-header {
             margin-bottom: 40px;
         }
 
-        .intro h1 {
+        .article-title {
             font-family: 'Source Serif Pro', serif;
-            font-size: 1.8rem;
+            font-size: 2.2rem;
             font-weight: 500;
             margin-bottom: 16px;
             color: #111827;
             line-height: 1.2;
         }
 
-        .intro p {
+        .article-meta {
+            font-size: 0.95rem;
+            color: #6b7280;
+            margin-bottom: 30px;
+        }
+
+        .article-content {
             font-size: 1.05rem;
-            line-height: 1.5;
-            margin-bottom: 12px;
+            line-height: 1.6;
         }
 
-        .year-section {
-            margin-bottom: 40px;
-        }
-
-        .year-section h2 {
+        .article-content h2 {
             font-family: 'Source Serif Pro', serif;
             font-size: 1.5rem;
             font-weight: 500;
-            margin-bottom: 20px;
+            margin: 40px 0 20px 0;
             color: #111827;
             border-bottom: 2px solid #d1fae5;
             padding-bottom: 6px;
             line-height: 1.2;
         }
 
-        .writing-item {
-            margin-bottom: 24px;
-            position: relative;
+        .article-content h3 {
+            font-family: 'Source Serif Pro', serif;
+            font-size: 1.3rem;
+            font-weight: 500;
+            margin: 30px 0 15px 0;
+            color: #111827;
+            line-height: 1.2;
+        }
+
+        .article-content p {
+            margin-bottom: 20px;
+        }
+
+        .article-content ul, .article-content ol {
+            margin-bottom: 20px;
             padding-left: 20px;
         }
 
-        .writing-item::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 6px;
-            width: 6px;
-            height: 6px;
-            background-color: #059669;
-            border-radius: 50%;
-        }
-
-        .writing-title {
-            font-weight: 500;
-            font-size: 1.1rem;
-            margin-bottom: 4px;
-            color: #111827;
-            line-height: 1.3;
-        }
-
-        .writing-title a {
-            color: #111827;
-            text-decoration: none;
-        }
-
-        .writing-title a:hover {
-            color: #059669;
-        }
-
-        .writing-meta {
-            font-size: 0.9rem;
-            color: #059669;
-            margin-bottom: 6px;
-            font-weight: 500;
-        }
-
-        .writing-description {
-            color: #4b5563;
-            line-height: 1.4;
+        .article-content li {
+            margin-bottom: 8px;
         }
 
         .highlight {
@@ -183,6 +160,26 @@
             color: #047857;
             padding: 2px 6px;
             border-radius: 4px;
+        }
+
+        .quote {
+            border-left: 4px solid #059669;
+            padding-left: 20px;
+            margin: 30px 0;
+            font-style: italic;
+            color: #4b5563;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 30px;
+            color: #059669;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
         }
 
         @media (max-width: 768px) {
@@ -201,13 +198,17 @@
             .name {
                 font-size: 1.8rem;
             }
+            
+            .article-title {
+                font-size: 1.8rem;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <aside class="sidebar">
-            <a href="index.html" class="name">John Kane</a>
+            <a href="../index.html" class="name">John Kane</a>
             
             <nav>
                 <ul class="nav-links">
@@ -228,40 +229,47 @@
         </aside>
 
         <main class="main-content">
-            <section class="intro">
-                <h1>Writing</h1>
+            <a href="../writing.html" class="back-link">← Back to Writing</a>
+            
+            <article class="article-header">
+                <h1 class="article-title">Year in Review: 2024</h1>
+                <div class="article-meta">December 31, 2024</div>
+            </article>
+
+            <div class="article-content">
                 <p>
-                    Essays, notes, and <span class="highlight">fragments of thought</span> on technology, 
-                    design, and the spaces where they intersect with human experience.
+                    A chronological list of events, experiences, and moments from 2024.
                 </p>
-            </section>
 
-            <section class="year-section">
-                <h2>2024</h2>
-                
-                <div class="writing-item">
-                    <h3 class="writing-title">
-                        <a href="writing/year-in-review-2024.html">Year in Review</a>
-                    </h3>
-                    <p class="writing-meta">December 31, 2024</p>
-                    <p class="writing-description">
-                        Reflections on a year of building, learning, and questioning. What worked, what 
-                        didn't, and what I'm carrying forward into the next chapter.
-                    </p>
-                </div>
-
-                <div class="writing-item">
-                    <h3 class="writing-title">
-                        <a href="#">Notes on Computational Creativity</a>
-                    </h3>
-                    <p class="writing-meta">January 8, 2024</p>
-                    <p class="writing-description">
-                        Exploring the tension between algorithmic generation and human authorship through 
-                        the lens of my experiments with AI-assisted design tools.
-                    </p>
-                </div>
-            </section>
+                <ul>
+                    <li>- Started year in London where I was walking around looking at buildings</li>
+                    <li>- Moved to a new apartment in the spring</li>
+                    <li>- Started learning woodworking and built my first piece of furniture</li>
+                    <li>- Took a trip to the coast and spent time by the ocean</li>
+                    <li>- Read 23 books this year, more than I had in years</li>
+                    <li>- Started writing regularly again after a long break</li>
+                    <li>- Built this website as a way to share my work</li>
+                    <li>- Made new friends through shared interests in design and technology</li>
+                    <li>- Spent more time outdoors and rediscovered hiking</li>
+                    <li>- Started experimenting with AI tools for creative projects</li>
+                    <li>- Visited several museums and galleries throughout the year</li>
+                    <li>- Learned to cook more complex dishes</li>
+                    <li>- Started a daily meditation practice</li>
+                    <li>- Took a photography class and improved my skills</li>
+                    <li>- Attended my first conference in years</li>
+                    <li>- Started learning a new programming language</li>
+                    <li>- Made time for more reading and reflection</li>
+                    <li>- Connected with old friends I hadn't seen in years</li>
+                    <li>- Started a garden on my balcony</li>
+                    <li>- Traveled to three new cities I'd never visited before</li>
+                    <li>- Started playing guitar again after a long hiatus</li>
+                    <li>- Built several small projects that I'm proud of</li>
+                    <li>- Spent more time with family</li>
+                    <li>- Started journaling regularly</li>
+                    <li>- Learned to be more patient with myself and my process</li>
+                </ul>
+            </div>
         </main>
     </div>
 </body>
-</html>
+</html> 

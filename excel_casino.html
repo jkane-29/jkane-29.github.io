@@ -41,6 +41,12 @@
             margin-bottom: 8px;
             color: #111827;
             line-height: 1.1;
+            text-decoration: none;
+            display: block;
+        }
+
+        .name:hover {
+            color: #059669;
         }
 
         .title {
@@ -255,19 +261,16 @@
 <body>
     <div class="container">
         <aside class="sidebar">
-            <h1 class="name">John Kane</h1>
+            <a href="index.html" class="name">John Kane</a>
             
             <nav>
                 <ul class="nav-links">
-                    <li><a href="/">Home</a></li>
-                    <li><a href="/about">About</a></li>
-                    <li><a href="/projects">Research</a></li>
-                    <li><a href="/ideas">Teaching</a></li>
-                    <li><a href="/reading">Ventures</a></li>
-                    <li><a href="/writing">Publications</a></li>
+                    <li><a href="/projects">Projects</a></li>
+                    <li><a href="/ideas">Ideas</a></li>
+                    <li><a href="/reading">Reading</a></li>
+                    <li><a href="/writing">Writing</a></li>
                     <li><a href="/woodshop">Woodshop</a></li>
                     <li><a href="/architecture">Parallel Architecture</a></li>
-                    <li><a href="/games">Games</a></li>
                     <li><a href="/excel-casino" class="current">Excel Casino</a></li>                  
                     <li><a href="/cv.pdf">CV</a></li>
                 </ul>
@@ -283,10 +286,7 @@
             <section class="intro">
                 <h1>Excel Casino</h1>
                 <p>
-                    A collection of <span class="highlight">casino game simulations</span> built entirely 
-                    in Excel. Each model explores the mathematical foundations of gambling, probability 
-                    theory, and risk management through interactive spreadsheets that you can download 
-                    and experiment with.
+                    A collection of <span class="highlight">wonky simulations</span> I've built in excel. IMO excel is extremely underrated for pure power of usability/functionality.
                 </p>
             </section>
 
@@ -380,97 +380,7 @@
                     </div>
                     <a href="/downloads/yahtzee-optimizer.xlsx" class="download-button">Download Model</a>
                 </div>
-            </section>
-
-            <section class="section">
-                <h2>Roulette & Slots</h2>
-                
-                <div class="game-model">
-                    <h3 class="game-title">Roulette System Tester</h3>
-                    <p class="game-meta">Excel Model • Version 2.0</p>
-                    <p class="game-description">
-                        Test popular roulette betting systems (Martingale, Fibonacci, D'Alembert) 
-                        against mathematical reality. Includes bankroll simulations and ruin probability 
-                        calculations.
-                    </p>
-                    <div class="game-features">
-                        <ul class="features-list">
-                            <li>Multiple betting system implementations</li>
-                            <li>Risk of ruin calculations</li>
-                            <li>Expected loss analysis over time</li>
-                            <li>Visualization of betting progression patterns</li>
-                        </ul>
-                    </div>
-                    <a href="/downloads/roulette-systems.xlsx" class="download-button">Download Model</a>
-                </div>
-
-                <div class="game-model">
-                    <h3 class="game-title">Slot Machine Mathematics</h3>
-                    <p class="game-meta">Excel Model • Version 1.2</p>
-                    <p class="game-description">
-                        Deconstruct slot machine payouts and RTP (Return to Player) percentages. 
-                        Build your own virtual slot machine and understand how the house edge is 
-                        engineered into every spin.
-                    </p>
-                    <div class="game-features">
-                        <ul class="features-list">
-                            <li>Customizable reel configurations</li>
-                            <li>RTP and volatility calculations</li>
-                            <li>Jackpot probability analysis</li>
-                            <li>Player session simulation tools</li>
-                        </ul>
-                    </div>
-                    <a href="/downloads/slot-machine-math.xlsx" class="download-button">Download Model</a>
-                </div>
-            </section>
-
-            <section class="section">
-                <h2>Sports Betting</h2>
-                
-                <div class="game-model">
-                    <h3 class="game-title">Sports Betting Calculator</h3>
-                    <p class="game-meta">Excel Model • Version 1.5</p>
-                    <p class="game-description">
-                        Convert between different odds formats, calculate implied probabilities, 
-                        and find value bets. Includes Kelly Criterion bet sizing and arbitrage 
-                        opportunity detection.
-                    </p>
-                    <div class="game-features">
-                        <ul class="features-list">
-                            <li>Odds conversion (American, Decimal, Fractional)</li>
-                            <li>Implied probability calculations</li>
-                            <li>Value betting identification</li>
-                            <li>Arbitrage opportunity scanner</li>
-                            <li>Kelly Criterion position sizing</li>
-                        </ul>
-                    </div>
-                    <a href="/downloads/sports-betting-calc.xlsx" class="download-button">Download Model</a>
-                </div>
-            </section>
-
-            <section class="section">
-                <h2>Risk Management</h2>
-                
-                <div class="game-model">
-                    <h3 class="game-title">Bankroll Management Suite</h3>
-                    <p class="game-meta">Excel Model • Version 1.7</p>
-                    <p class="game-description">
-                        Comprehensive bankroll management tools for any gambling activity. Calculates 
-                        optimal bet sizing, risk of ruin, and long-term growth strategies using 
-                        mathematical optimization.
-                    </p>
-                    <div class="game-features">
-                        <ul class="features-list">
-                            <li>Kelly Criterion optimization</li>
-                            <li>Risk of ruin calculations</li>
-                            <li>Drawdown analysis and recovery time</li>
-                            <li>Goal-based bankroll planning</li>
-                            <li>Monte Carlo simulation engine</li>
-                        </ul>
-                    </div>
-                    <a href="/downloads/bankroll-management.xlsx" class="download-button">Download Model</a>
-                </div>
-            </section>
+            </section>    
         </main>
     </div>
 </body>

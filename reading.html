@@ -133,6 +133,53 @@
             color: #4b5563;
         }
 
+        .bio-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .bio-section li {
+            font-size: 1.05rem;
+            line-height: 1.6;
+            margin-bottom: 8px;
+            color: #4b5563;
+        }
+
+        .blog-item, .book-item {
+            margin-bottom: 20px;
+        }
+
+        .blog-link {
+            color: #059669;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 1.05rem;
+            line-height: 1.4;
+        }
+
+        .book-title {
+            font-size: 1.05rem;
+            line-height: 1.4;
+            color: #374151;
+        }
+
+        .book-title-name {
+            color: #059669;
+            font-weight: 500;
+        }
+
+        .blog-link:hover {
+            text-decoration: underline;
+        }
+
+        .item-comment {
+            font-style: italic;
+            color: #6b7280;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            margin-top: 4px;
+        }
+
         .highlight {
             background-color: #ecfdf5;
             color: #047857;
@@ -155,6 +202,10 @@
             
             .name {
                 font-size: 1.8rem;
+            }
+
+            .blog-links {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -188,59 +239,182 @@
             <section class="intro">
                 <h1>Reading</h1>
                 <p>
-                    I spend a lot of time readng. Below are books I've read/blogs I frequently read.
+                    I spend a lot of time reading. Below are some of my favorite articles and books I've read.
                 </p>
+            </section>
+
+            <section class="bio-section">
+                <h2>Favorite Articles</h2>
+                <div class="blog-item">
+                    <a href="https://example.com/article-1" class="blog-link" target="_blank">Article Title 1</a>
+                    <div class="item-comment">Brief description of what makes this article interesting</div>
+                </div>
+                
+                <div class="blog-item">
+                    <a href="https://example.com/article-2" class="blog-link" target="_blank">Article Title 2</a>
+                    <div class="item-comment">Why this piece stood out to you</div>
+                </div>
+                
+                <div class="blog-item">
+                    <a href="https://example.com/article-3" class="blog-link" target="_blank">Article Title 3</a>
+                    <div class="item-comment">Your thoughts on this article</div>
+                </div>
+                
+                <div class="blog-item">
+                    <a href="https://example.com/article-4" class="blog-link" target="_blank">Article Title 4</a>
+                    <div class="item-comment">What you learned or found compelling</div>
+                </div>
+                
+                <div class="blog-item">
+                    <a href="https://example.com/article-5" class="blog-link" target="_blank">Article Title 5</a>
+                    <div class="item-comment">Add as many articles as you'd like</div>
+                </div>
             </section>
 
             <section class="bio-section">
                 <h2>Books</h2>
-                <p>
-                  <li></li>Vineland</strong> – Thomas Pynchon</li>
-                  <li>Jutice</strong> – Michael Sandel</li>
-                  <li>Down and Out in Paris and London</strong> – George Orwell</li>
-                  <li>Against Everything</strong> – Mark Grief</li>
-                  <li>Manias Panic and Crashes</strong> – Charles Kindleberger</li>
-                  <li>Liar's Poker</strong> – Michael Lewis</li>
-                  <li>Irrational Exuberance</strong> – Robert Schiller</li>
-                  <li>Zen Mind, Beginner's Mind</strong> – Shunryu Suzuki</li>
-                  <li>The Ascent of Money</strong> – Niall Ferguson</li>
-                  <li>Manias Panic and Crashes</strong> – Charles Kindleberger</li>
-                  <li>The Essential Keynes</strong> – Keynes/Skidelsky</li>
-                  <li>Thinking Fast and Slow</strong> – Daniel Kahneman</li>
-                  <li>The Power Broker</strong> – Robert Caro</li>
-                  <li>Stubborn Attachments</strong> – Tyler Cowen</li>
-                  <li>Walden and Other Writings</strong> – Henry David Thoreau</li>
-                  <li>Poor Charlie's Almanack</strong> – Charlie Munger</li>
-                  <li>An Economist Gets Lunch</strong> – Tyler Cowen</li>
-                  <li>Misbehaving</strong> – Richard Thaler</li>
-                  <li>Am I Being Too Subtle</strong> – Sam Zell</li>
-                  <li>Barbarians at the Gate</strong> – Bryan Burrough and John Helyar</li>
-                  <li>Boomerang</strong> – Michael Lewis</li>
-                  <li>Going Infinite</strong> – Michael Lewis</li>
-                  <li>Keynes Hayek</strong> – Nicholas Wapshott</li>
-                  <li>Burmese Days</strong> – George Orwell</li>
-                  <li>Working</strong> – Robert Caro</li>
-                  <li>What I Talk About When I Talk About Running</strong> – Haruki Murakami</li>
-                  <li>Against the Gods</strong> – Peter Bernstein</li>
-                  <li>Fear and Loathin on the Campaign Trail</strong> – Hunter S Thompson</li>
-                  <li>Zen and the Art of Motorcycle Maintenance</strong> – Robert Pirsig</li>
-                  <li>A Peace to End All Peace</strong> – David Fromkin</li>
-                  <li>Do Andrews Dream of Electric Sheep</strong> – Phillip K Dick</li>
-                  <li>Cherry</strong> – Nico Walker</li>
-                  <li>Silence</strong> – Shusaku Endo</li>
-                  <li>Homage to Catalonia</strong> – George Orwell</li>
-                </p>
-            </section>
-
-            <section class="bio-section">
-                <h2>Blogs</h2>
-                <p>
-                    Insert here
-                </p>
+                <div class="book-item">
+                    <div class="book-title"><strong><span class="book-title-name">Vineland</span></strong> – Thomas Pynchon</div>
+                    <div class="item-comment">A sprawling novel about 1960s counterculture and its aftermath</div>
+                </div>
+                
+                <div class="book-item">
+                    <div class="book-title"><strong><span class="book-title-name">Justice</span></strong> – Michael Sandel</div>
+                    <div class="item-comment">Exploring what's the right thing to do through moral philosophy</div>
+                </div>
+                
+                <div class="book-item">
+                    <div class="book-title"><strong><span class="book-title-name">Down and Out in Paris and London</span></strong> – George Orwell</div>
+                    <div class="item-comment">Orwell's firsthand account of poverty in two great cities</div>
+                </div>
+                
+                <div class="book-item">
+                    <div class="book-title"><strong><span class="book-title-name">Against Everything</span></strong> – Mark Greif</div>
+                </div>
+                
+                <div class="book-item">
+                    <div class="book-title"><strong><span class="book-title-name">Manias, Panics and Crashes</span></strong> – Charles Kindleberger</div>
+                    <div class="item-comment">Classic analysis of financial bubbles throughout history</div>
+                </div>
+                
+                <div class="book-item">
+                    <div class="book-title"><strong><span class="book-title-name">Liar's Poker</span></strong> – Michael Lewis</div>
+                    <div class="item-comment">Inside look at Wall Street culture in the 1980s</div>
+                </div>
+                
+                <div class="book-item">
+                    <div class="book-title"><strong><span class="book-title-name">Irrational Exuberance</span></strong> – Robert Shiller</div>
+                </div>
+                
+                <div class="book-item">
+                    <div class="book-title"><strong><span class="book-title-name">Zen Mind, Beginner's Mind</span></strong> – Shunryu Suzuki</div>
+                </div>
+                
+                <div class="book-item">
+                    <div class="book-title"><strong><span class="book-title-name">The Ascent of Money</span></strong> – Niall Ferguson</div>
+                </div>
+                
+                <div class="book-item">
+                    <div class="book-title"><strong><span class="book-title-name">The Essential Keynes</span></strong> – Keynes/Skidelsky</div>
+                </div>
+                
+                <div class="book-item">
+                    <div class="book-title"><strong><span class="book-title-name">Thinking, Fast and Slow</span></strong> – Daniel Kahneman</div>
+                    <div class="item-comment">Groundbreaking insights into how we make decisions</div>
+                </div>
+                
+                <div class="book-item">
+                    <div class="book-title"><strong><span class="book-title-name">The Power Broker</span></strong> – Robert Caro</div>
+                    <div class="item-comment">Masterful biography of Robert Moses and power in America</div>
+                </div>
+                
+                <div class="book-item">
+                    <div class="book-title"><strong><span class="book-title-name">Stubborn Attachments</span></strong> – Tyler Cowen</div>
+                </div>
+                
+                <div class="book-item">
+                    <div class="book-title"><strong><span class="book-title-name">Walden and Other Writings</span></strong> – Henry David Thoreau</div>
+                </div>
+                
+                <div class="book-item">
+                    <div class="book-title"><strong><span class="book-title-name">Poor Charlie's Almanack</span></strong> – Charlie Munger</div>
+                </div>
+                
+                <div class="book-item">
+                    <div class="book-title"><strong><span class="book-title-name">An Economist Gets Lunch</span></strong> – Tyler Cowen</div>
+                </div>
+                
+                <div class="book-item">
+                    <div class="book-title"><strong><span class="book-title-name">Misbehaving</span></strong> – Richard Thaler</div>
+                </div>
+                
+                <div class="book-item">
+                    <div class="book-title"><strong><span class="book-title-name">Am I Being Too Subtle?</span></strong> – Sam Zell</div>
+                </div>
+                
+                <div class="book-item">
+                    <div class="book-title"><strong><span class="book-title-name">Barbarians at the Gate</span></strong> – Bryan Burrough and John Helyar</div>
+                    <div class="item-comment">The epic story of the RJR Nabisco buyout</div>
+                </div>
+                
+                <div class="book-item">
+                    <div class="book-title"><strong><span class="book-title-name">Boomerang</span></strong> – Michael Lewis</div>
+                </div>
+                
+                <div class="book-item">
+                    <div class="book-title"><strong><span class="book-title-name">Going Infinite</span></strong> – Michael Lewis</div>
+                    <div class="item-comment">The rise and fall of Sam Bankman-Fried</div>
+                </div>
+                
+                <div class="book-item">
+                    <div class="book-title"><strong><span class="book-title-name">Keynes Hayek</span></strong> – Nicholas Wapshott</div>
+                </div>
+                
+                <div class="book-item">
+                    <div class="book-title"><strong><span class="book-title-name">Burmese Days</span></strong> – George Orwell</div>
+                </div>
+                
+                <div class="book-item">
+                    <div class="book-title"><strong><span class="book-title-name">Working</span></strong> – Robert Caro</div>
+                </div>
+                
+                <div class="book-item">
+                    <div class="book-title"><strong><span class="book-title-name">What I Talk About When I Talk About Running</span></strong> – Haruki Murakami</div>
+                </div>
+                
+                <div class="book-item">
+                    <div class="book-title"><strong><span class="book-title-name">Against the Gods</span></strong> – Peter Bernstein</div>
+                </div>
+                
+                <div class="book-item">
+                    <div class="book-title"><strong><span class="book-title-name">Fear and Loathing on the Campaign Trail</span></strong> – Hunter S. Thompson</div>
+                </div>
+                
+                <div class="book-item">
+                    <div class="book-title"><strong><span class="book-title-name">Zen and the Art of Motorcycle Maintenance</span></strong> – Robert Pirsig</div>
+                </div>
+                
+                <div class="book-item">
+                    <div class="book-title"><strong><span class="book-title-name">A Peace to End All Peace</span></strong> – David Fromkin</div>
+                </div>
+                
+                <div class="book-item">
+                    <div class="book-title"><strong><span class="book-title-name">Do Androids Dream of Electric Sheep?</span></strong> – Philip K. Dick</div>
+                </div>
+                
+                <div class="book-item">
+                    <div class="book-title"><strong><span class="book-title-name">Cherry</span></strong> – Nico Walker</div>
+                </div>
+                
+                <div class="book-item">
+                    <div class="book-title"><strong><span class="book-title-name">Silence</span></strong> – Shusaku Endo</div>
+                </div>
+                
+                <div class="book-item">
+                    <div class="book-title"><strong><span class="book-title-name">Homage to Catalonia</span></strong> – George Orwell</div>
+                </div>
             </section>
         </main>
     </div>
-</body>
-</html>
 </body>
 </html>

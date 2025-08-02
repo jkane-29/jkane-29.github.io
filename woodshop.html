@@ -130,9 +130,14 @@
         .project-image {
             width: 100%;
             height: 300px;
-            background-color: #f3f4f6;
+            object-fit: cover;
             border-radius: 8px;
             margin-bottom: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .project-image.placeholder {
+            background-color: #f3f4f6;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -206,12 +211,11 @@
             
             <nav>
                 <ul class="nav-links">
-                    <ul class="nav-links">
                     <li><a href="projects.html">Projects</a></li>
                     <li><a href="ideas.html">Ideas</a></li>
                     <li><a href="reading.html">Reading</a></li>
                     <li><a href="writing.html">Writing</a></li>
-                    <li><a href="woodshop.html">Woodshop</a></li>
+                    <li><a href="woodshop.html" class="current">Woodshop</a></li>
                     <li><a href="architecture.html">Parallel Architecture</a></li>
                     <li><a href="excel_casino.html">Excel Casino</a></li>                  
                     <li><a href="/cv.pdf">CV</a></li>
@@ -228,18 +232,17 @@
             <section class="intro">
                 <h1>Woodshop</h1>
                 <p>
-                    Woodworkng teaches <span class="highlight">patience and precision</span> in ways 
-                    that complement systems thinking of ecnomomics and software. 
+                    Woodworking teaches <span class="highlight">patience and precision</span> in ways 
+                    that complement systems thinking of economics and software. 
                 </p>
             </section>
 
             <div class="project">
-                <div class="image2.jpg">
-                </div>
+                <img src="image2.jpg" alt="Plywood chair made from skateboard veneers" class="project-image">
                 <h3 class="project-title">Plywood Chair</h3>
                 <p class="project-meta">Skateboard Veneers/Plywood • 2023</p>
                 <p class="project-description">
-                    My first woodworking project! A simple frame chair using around 5 skatebaords for seat and back. Boards were sanded, glued together with epoxy, and sliced on a band saw.
+                    My first woodworking project! A simple frame chair using around 5 skateboards for seat and back. Boards were sanded, glued together with epoxy, and sliced on a band saw.
                     Patterns were created by slicing lengthwise. Unfortunately, over finished this so not happy with the final product. Created as part of a class at the University of Michigan.
                 </p>
                 <p class="project-details">
@@ -248,9 +251,7 @@
             </div>
 
             <div class="project">
-                <div class="project-image">
-                    [Photo: Cherry bookshelf with through-tenons]
-                </div>
+                <img src="image1.jpg" alt="Cherry bookshelf with through-tenons" class="project-image">
                 <h3 class="project-title">Modular Bookshelf System</h3>
                 <p class="project-meta">Cherry • 2023</p>
                 <p class="project-description">
@@ -265,7 +266,7 @@
             </div>
 
             <div class="project">
-                <div class="project-image">
+                <div class="project-image placeholder">
                     [Photo: Oak cutting board with geometric pattern]
                 </div>
                 <h3 class="project-title">End-Grain Cutting Boards</h3>
@@ -283,7 +284,7 @@
             </div>
 
             <div class="project">
-                <div class="project-image">
+                <div class="project-image placeholder">
                     [Photo: Bent lamination chair back detail]
                 </div>
                 <h3 class="project-title">Bent Lamination Chair</h3>
@@ -301,7 +302,7 @@
             </div>
 
             <div class="project">
-                <div class="project-image">
+                <div class="project-image placeholder">
                     [Photo: Japanese-style wooden plane]
                 </div>
                 <h3 class="project-title">Tool Making</h3>

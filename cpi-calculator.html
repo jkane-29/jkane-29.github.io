@@ -368,6 +368,14 @@
 
             <div class="calculator-grid">
                 <div class="section">
+                    <h2>Store Selection</h2>
+                    <select class="search-box" id="storeSelect">
+                        <option value="701">Chicago South Loop (701)</option>
+                        <option value="31">Los Angeles (31)</option>
+                        <option value="546">NYC East Village (546)</option>
+                        <option value="452">Austin Seaholm (452)</option>
+                    </select>
+                    
                     <h2>Product Search</h2>
                     <input type="text" class="search-box" placeholder="Search Trader Joe's products..." id="searchInput">
                     <div class="product-list" id="productList">
@@ -432,7 +440,7 @@
                 <p>
                     Data sourced from <a href="https://traderjoesprices.com" target="_blank">Trader Joe's Price Tracker</a> 
                     by <a href="https://github.com/cmoog/traderjoes" target="_blank">cmoog</a>. 
-                    Updated daily from Chicago South Loop location.
+                    Updated daily from multiple locations: Chicago South Loop, Los Angeles, NYC East Village, and Austin Seaholm.
                 </p>
             </div>
         </main>
@@ -440,12 +448,32 @@
 
     <script>
         // Sample data structure (in real app, this would come from API)
-        const products = [
-            { id: 'swimmers', name: 'Scandinavian Swimmers', price: 3.49, sku: '055691' },
-            { id: 'pancakes', name: 'Cauliflower Pancakes', price: 3.99, sku: '063192' },
-            { id: 'bbq-sauce', name: 'Organic Kansas City Style BBQ Sauce', price: 2.99, sku: '063486' },
-            { id: 'crackers', name: 'Red Chili Scalloped Crackers', price: 1.49, sku: '063277' }
-        ];
+        const products = {
+            '701': [ // Chicago South Loop
+                { id: 'swimmers', name: 'Scandinavian Swimmers', price: 3.49, sku: '055691' },
+                { id: 'pancakes', name: 'Cauliflower Pancakes', price: 3.99, sku: '063192' },
+                { id: 'bbq-sauce', name: 'Organic Kansas City Style BBQ Sauce', price: 2.99, sku: '063486' },
+                { id: 'crackers', name: 'Red Chili Scalloped Crackers', price: 1.49, sku: '063277' }
+            ],
+            '31': [ // Los Angeles
+                { id: 'swimmers', name: 'Scandinavian Swimmers', price: 3.79, sku: '055691' },
+                { id: 'pancakes', name: 'Cauliflower Pancakes', price: 4.29, sku: '063192' },
+                { id: 'bbq-sauce', name: 'Organic Kansas City Style BBQ Sauce', price: 3.19, sku: '063486' },
+                { id: 'crackers', name: 'Red Chili Scalloped Crackers', price: 1.69, sku: '063277' }
+            ],
+            '546': [ // NYC East Village
+                { id: 'swimmers', name: 'Scandinavian Swimmers', price: 3.99, sku: '055691' },
+                { id: 'pancakes', name: 'Cauliflower Pancakes', price: 4.49, sku: '063192' },
+                { id: 'bbq-sauce', name: 'Organic Kansas City Style BBQ Sauce', price: 3.29, sku: '063486' },
+                { id: 'crackers', name: 'Red Chili Scalloped Crackers', price: 1.79, sku: '063277' }
+            ],
+            '452': [ // Austin Seaholm
+                { id: 'swimmers', name: 'Scandinavian Swimmers', price: 3.49, sku: '055691' },
+                { id: 'pancakes', name: 'Cauliflower Pancakes', price: 3.99, sku: '063192' },
+                { id: 'bbq-sauce', name: 'Organic Kansas City Style BBQ Sauce', price: 2.99, sku: '063486' },
+                { id: 'crackers', name: 'Red Chili Scalloped Crackers', price: 1.49, sku: '063277' }
+            ]
+        };
 
         let basket = {
             'swimmers': { quantity: 1, price: 3.49 }
@@ -473,20 +501,23 @@
 
             Object.keys(basket).forEach(productId => {
                 const item = basket[productId];
-                const product = products.find(p => p.id === productId);
+                const storeProducts = products[currentStore] || [];
+                const product = storeProducts.find(p => p.id === productId);
                 
-                const itemElement = document.createElement('div');
-                itemElement.className = 'basket-item';
-                itemElement.innerHTML = `
-                    <span>${product.name}</span>
-                    <div class="quantity-controls">
-                        <button class="quantity-btn" onclick="changeQuantity('${productId}', -1)">-</button>
-                        <span>${item.quantity}</span>
-                        <button class="quantity-btn" onclick="changeQuantity('${productId}', 1)">+</button>
-                        <button class="remove-btn" onclick="removeItem('${productId}')">Remove</button>
-                    </div>
-                `;
-                basketElement.appendChild(itemElement);
+                if (product) {
+                    const itemElement = document.createElement('div');
+                    itemElement.className = 'basket-item';
+                    itemElement.innerHTML = `
+                        <span>${product.name}</span>
+                        <div class="quantity-controls">
+                            <button class="quantity-btn" onclick="changeQuantity('${productId}', -1)">-</button>
+                            <span>${item.quantity}</span>
+                            <button class="quantity-btn" onclick="changeQuantity('${productId}', 1)">+</button>
+                            <button class="remove-btn" onclick="removeItem('${productId}')">Remove</button>
+                        </div>
+                    `;
+                    basketElement.appendChild(itemElement);
+                }
             });
         }
 
@@ -507,6 +538,43 @@
             document.getElementById('cpiResults').style.display = 'block';
         }
 
+        let currentStore = '701'; // Default to Chicago South Loop
+
+        // Store selection functionality
+        document.getElementById('storeSelect').addEventListener('change', function(e) {
+            currentStore = e.target.value;
+            updateProductList();
+            // Clear basket when changing stores
+            basket = {};
+            updateBasketDisplay();
+        });
+
+        function updateProductList() {
+            const productList = document.getElementById('productList');
+            const storeProducts = products[currentStore] || [];
+            
+            productList.innerHTML = '';
+            storeProducts.forEach(product => {
+                const itemElement = document.createElement('div');
+                itemElement.className = 'product-item';
+                itemElement.innerHTML = `
+                    <div class="product-name">${product.name}</div>
+                    <div class="product-price">$${product.price.toFixed(2)}</div>
+                `;
+                
+                itemElement.addEventListener('click', function() {
+                    if (basket[product.id]) {
+                        basket[product.id].quantity += 1;
+                    } else {
+                        basket[product.id] = { quantity: 1, price: product.price };
+                    }
+                    updateBasketDisplay();
+                });
+                
+                productList.appendChild(itemElement);
+            });
+        }
+
         // Search functionality
         document.getElementById('searchInput').addEventListener('input', function(e) {
             const searchTerm = e.target.value.toLowerCase();
@@ -522,24 +590,8 @@
             });
         });
 
-        // Add click handlers to product items
-        document.querySelectorAll('.product-item').forEach(item => {
-            item.addEventListener('click', function() {
-                const productName = this.querySelector('.product-name').textContent;
-                const productPrice = parseFloat(this.querySelector('.product-price').textContent.replace('$', ''));
-                
-                // Find product in our data
-                const product = products.find(p => p.name === productName);
-                if (product) {
-                    if (basket[product.id]) {
-                        basket[product.id].quantity += 1;
-                    } else {
-                        basket[product.id] = { quantity: 1, price: productPrice };
-                    }
-                    updateBasketDisplay();
-                }
-            });
-        });
+        // Initialize product list
+        updateProductList();
     </script>
 </body>
 </html> 

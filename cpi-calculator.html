@@ -434,6 +434,7 @@
                     Data sourced from <a href="https://traderjoesprices.com" target="_blank">Trader Joe's Price Tracker</a> 
                     by <a href="https://github.com/cmoog/traderjoes" target="_blank">cmoog</a>. 
                     Updated daily from multiple locations across the US.
+                    <br><small id="dataStatus">Loading real-time data...</small>
                 </p>
             </div>
         </main>
@@ -458,7 +459,19 @@
         // Fetch data from cmoog's CSV endpoint
         async function fetchProductData() {
             try {
-                const response = await fetch('https://data.traderjoesprices.com/dump.csv');
+                // Try to fetch from the CSV endpoint
+                const response = await fetch('https://data.traderjoesprices.com/dump.csv', {
+                    method: 'GET',
+                    mode: 'cors',
+                    headers: {
+                        'Accept': 'text/csv'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
                 const csvText = await response.text();
                 const lines = csvText.split('\n');
                 
@@ -495,10 +508,49 @@
                 
                 updateProductList();
                 document.getElementById('productList').innerHTML = '<div class="loading">Select a store to view products</div>';
+                document.getElementById('dataStatus').textContent = 'Real-time data loaded successfully';
                 
             } catch (error) {
                 console.error('Error fetching data:', error);
-                document.getElementById('productList').innerHTML = '<div class="error">Error loading data. Please try again later.</div>';
+                
+                // Fallback to sample data if CORS or network issues
+                console.log('Using fallback sample data due to CORS restrictions');
+                allProducts = {
+                    '701': [
+                        { sku: '055691', name: 'Scandinavian Swimmers', price: 3.49, available: true, date: '2025-06-03' },
+                        { sku: '063192', name: 'Cauliflower Pancakes', price: 3.99, available: true, date: '2025-06-03' },
+                        { sku: '063486', name: 'Organic Kansas City Style BBQ Sauce', price: 2.99, available: true, date: '2025-06-03' },
+                        { sku: '063277', name: 'Red Chili Scalloped Crackers', price: 1.49, available: true, date: '2025-06-03' }
+                    ],
+                    '31': [
+                        { sku: '055691', name: 'Scandinavian Swimmers', price: 3.79, available: true, date: '2025-06-03' },
+                        { sku: '063192', name: 'Cauliflower Pancakes', price: 4.29, available: true, date: '2025-06-03' },
+                        { sku: '063486', name: 'Organic Kansas City Style BBQ Sauce', price: 3.19, available: true, date: '2025-06-03' },
+                        { sku: '063277', name: 'Red Chili Scalloped Crackers', price: 1.69, available: true, date: '2025-06-03' }
+                    ],
+                    '546': [
+                        { sku: '055691', name: 'Scandinavian Swimmers', price: 3.99, available: true, date: '2025-06-03' },
+                        { sku: '063192', name: 'Cauliflower Pancakes', price: 4.49, available: true, date: '2025-06-03' },
+                        { sku: '063486', name: 'Organic Kansas City Style BBQ Sauce', price: 3.29, available: true, date: '2025-06-03' },
+                        { sku: '063277', name: 'Red Chili Scalloped Crackers', price: 1.79, available: true, date: '2025-06-03' }
+                    ],
+                    '452': [
+                        { sku: '055691', name: 'Scandinavian Swimmers', price: 3.49, available: true, date: '2025-06-03' },
+                        { sku: '063192', name: 'Cauliflower Pancakes', price: 3.99, available: true, date: '2025-06-03' },
+                        { sku: '063486', name: 'Organic Kansas City Style BBQ Sauce', price: 2.99, available: true, date: '2025-06-03' },
+                        { sku: '063277', name: 'Red Chili Scalloped Crackers', price: 1.49, available: true, date: '2025-06-03' }
+                    ],
+                    '706': [
+                        { sku: '055691', name: 'Scandinavian Swimmers', price: 3.49, available: true, date: '2025-06-03' },
+                        { sku: '063192', name: 'Cauliflower Pancakes', price: 3.99, available: true, date: '2025-06-03' },
+                        { sku: '063486', name: 'Organic Kansas City Style BBQ Sauce', price: 2.99, available: true, date: '2025-06-03' },
+                        { sku: '063277', name: 'Red Chili Scalloped Crackers', price: 1.49, available: true, date: '2025-06-03' }
+                    ]
+                };
+                
+                updateProductList();
+                document.getElementById('productList').innerHTML = '<div class="loading">Select a store to view products (using sample data)</div>';
+                document.getElementById('dataStatus').textContent = 'Using sample data (CORS restrictions prevent real-time data)';
             }
         }
 
@@ -646,5 +698,4 @@
         fetchProductData();
     </script>
 </body>
-</html> 
 </html> 

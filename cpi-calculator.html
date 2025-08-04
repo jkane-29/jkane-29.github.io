@@ -456,13 +456,12 @@
             '706': 'Chicago Hyde Park'
         };
 
-        // Fetch data from cmoog's CSV endpoint
+        // Fetch data from cmoog's CSV endpoint via local proxy
         async function fetchProductData() {
             try {
-                // Try to fetch from the CSV endpoint
-                const response = await fetch('https://data.traderjoesprices.com/dump.csv', {
+                // Try to fetch from the local proxy server first
+                const response = await fetch('http://localhost:3001/api/traderjoes-data', {
                     method: 'GET',
-                    mode: 'cors',
                     headers: {
                         'Accept': 'text/csv'
                     }

@@ -309,6 +309,21 @@
             text-decoration: none;
         }
 
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #6b7280;
+        }
+
+        .error {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            padding: 16px;
+            color: #dc2626;
+            margin-bottom: 16px;
+        }
+
         @media (max-width: 768px) {
             .container {
                 grid-template-columns: 1fr;
@@ -361,7 +376,7 @@
             <section class="intro">
                 <h1>CPI Calculator</h1>
                 <p>
-                    Calculate your personal Consumer Price Index using Trader Joe's data. 
+                    Calculate your personal Consumer Price Index using real Trader Joe's data. 
                     Build your basket of goods and track how your personal inflation rate compares to official measures.
                 </p>
             </section>
@@ -374,45 +389,23 @@
                         <option value="31">Los Angeles (31)</option>
                         <option value="546">NYC East Village (546)</option>
                         <option value="452">Austin Seaholm (452)</option>
+                        <option value="706">Chicago Hyde Park (706)</option>
                     </select>
                     
                     <h2>Product Search</h2>
                     <input type="text" class="search-box" placeholder="Search Trader Joe's products..." id="searchInput">
                     <div class="product-list" id="productList">
-                        <div class="product-item">
-                            <div class="product-name">Scandinavian Swimmers</div>
-                            <div class="product-price">$3.49</div>
-                        </div>
-                        <div class="product-item">
-                            <div class="product-name">Cauliflower Pancakes</div>
-                            <div class="product-price">$3.99</div>
-                        </div>
-                        <div class="product-item">
-                            <div class="product-name">Organic Kansas City Style BBQ Sauce</div>
-                            <div class="product-price">$2.99</div>
-                        </div>
-                        <div class="product-item">
-                            <div class="product-name">Red Chili Scalloped Crackers</div>
-                            <div class="product-price">$1.49</div>
-                        </div>
+                        <div class="loading">Loading products...</div>
                     </div>
                 </div>
 
                 <div class="section">
                     <h2>Your Basket</h2>
                     <div class="basket" id="basket">
-                        <div class="basket-item">
-                            <span>Scandinavian Swimmers</span>
-                            <div class="quantity-controls">
-                                <button class="quantity-btn" onclick="changeQuantity('swimmers', -1)">-</button>
-                                <span id="swimmers-qty">1</span>
-                                <button class="quantity-btn" onclick="changeQuantity('swimmers', 1)">+</button>
-                                <button class="remove-btn" onclick="removeItem('swimmers')">Remove</button>
-                            </div>
-                        </div>
+                        <div class="loading">Add products to your basket</div>
                     </div>
                     
-                    <button class="btn" onclick="calculateCPI()">Calculate CPI</button>
+                    <button class="btn" onclick="calculateCPI()" id="calculateBtn" disabled>Calculate CPI</button>
                     
                     <div class="cpi-results" id="cpiResults" style="display: none;">
                         <h3>Your Personal CPI Results</h3>
@@ -440,44 +433,121 @@
                 <p>
                     Data sourced from <a href="https://traderjoesprices.com" target="_blank">Trader Joe's Price Tracker</a> 
                     by <a href="https://github.com/cmoog/traderjoes" target="_blank">cmoog</a>. 
-                    Updated daily from multiple locations: Chicago South Loop, Los Angeles, NYC East Village, and Austin Seaholm.
+                    Updated daily from multiple locations across the US.
                 </p>
             </div>
         </main>
     </div>
 
     <script>
-        // Sample data structure (in real app, this would come from API)
-        const products = {
-            '701': [ // Chicago South Loop
-                { id: 'swimmers', name: 'Scandinavian Swimmers', price: 3.49, sku: '055691' },
-                { id: 'pancakes', name: 'Cauliflower Pancakes', price: 3.99, sku: '063192' },
-                { id: 'bbq-sauce', name: 'Organic Kansas City Style BBQ Sauce', price: 2.99, sku: '063486' },
-                { id: 'crackers', name: 'Red Chili Scalloped Crackers', price: 1.49, sku: '063277' }
-            ],
-            '31': [ // Los Angeles
-                { id: 'swimmers', name: 'Scandinavian Swimmers', price: 3.79, sku: '055691' },
-                { id: 'pancakes', name: 'Cauliflower Pancakes', price: 4.29, sku: '063192' },
-                { id: 'bbq-sauce', name: 'Organic Kansas City Style BBQ Sauce', price: 3.19, sku: '063486' },
-                { id: 'crackers', name: 'Red Chili Scalloped Crackers', price: 1.69, sku: '063277' }
-            ],
-            '546': [ // NYC East Village
-                { id: 'swimmers', name: 'Scandinavian Swimmers', price: 3.99, sku: '055691' },
-                { id: 'pancakes', name: 'Cauliflower Pancakes', price: 4.49, sku: '063192' },
-                { id: 'bbq-sauce', name: 'Organic Kansas City Style BBQ Sauce', price: 3.29, sku: '063486' },
-                { id: 'crackers', name: 'Red Chili Scalloped Crackers', price: 1.79, sku: '063277' }
-            ],
-            '452': [ // Austin Seaholm
-                { id: 'swimmers', name: 'Scandinavian Swimmers', price: 3.49, sku: '055691' },
-                { id: 'pancakes', name: 'Cauliflower Pancakes', price: 3.99, sku: '063192' },
-                { id: 'bbq-sauce', name: 'Organic Kansas City Style BBQ Sauce', price: 2.99, sku: '063486' },
-                { id: 'crackers', name: 'Red Chili Scalloped Crackers', price: 1.49, sku: '063277' }
-            ]
+        // Global variables
+        let allProducts = {};
+        let currentStore = '701';
+        let basket = {};
+        let historicalData = {};
+
+        // Store information
+        const stores = {
+            '701': 'Chicago South Loop',
+            '31': 'Los Angeles', 
+            '546': 'NYC East Village',
+            '452': 'Austin Seaholm',
+            '706': 'Chicago Hyde Park'
         };
 
-        let basket = {
-            'swimmers': { quantity: 1, price: 3.49 }
-        };
+        // Fetch data from cmoog's CSV endpoint
+        async function fetchProductData() {
+            try {
+                const response = await fetch('https://data.traderjoesprices.com/dump.csv');
+                const csvText = await response.text();
+                const lines = csvText.split('\n');
+                
+                // Skip header line
+                const dataLines = lines.slice(1);
+                
+                // Parse CSV data
+                allProducts = {};
+                dataLines.forEach(line => {
+                    if (line.trim()) {
+                        const [sku, retail_price, item_title, inserted_at, store_code, availability] = line.split(',');
+                        
+                        if (sku && retail_price && item_title && store_code) {
+                            const price = parseFloat(retail_price);
+                            const isAvailable = availability === '1';
+                            
+                            if (!allProducts[store_code]) {
+                                allProducts[store_code] = [];
+                            }
+                            
+                            // Clean up item title (remove quotes)
+                            const cleanTitle = item_title.replace(/^"|"$/g, '');
+                            
+                            allProducts[store_code].push({
+                                sku: sku,
+                                name: cleanTitle,
+                                price: price,
+                                available: isAvailable,
+                                date: inserted_at
+                            });
+                        }
+                    }
+                });
+                
+                updateProductList();
+                document.getElementById('productList').innerHTML = '<div class="loading">Select a store to view products</div>';
+                
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                document.getElementById('productList').innerHTML = '<div class="error">Error loading data. Please try again later.</div>';
+            }
+        }
+
+        function updateProductList() {
+            const productList = document.getElementById('productList');
+            const storeProducts = allProducts[currentStore] || [];
+            
+            if (storeProducts.length === 0) {
+                productList.innerHTML = '<div class="loading">No products available for this store</div>';
+                return;
+            }
+            
+            // Filter available products only
+            const availableProducts = storeProducts.filter(p => p.available);
+            
+            productList.innerHTML = '';
+            availableProducts.forEach(product => {
+                const itemElement = document.createElement('div');
+                itemElement.className = 'product-item';
+                itemElement.innerHTML = `
+                    <div class="product-name">${product.name}</div>
+                    <div class="product-price">$${product.price.toFixed(2)}</div>
+                `;
+                
+                itemElement.addEventListener('click', function() {
+                    addToBasket(product);
+                });
+                
+                productList.appendChild(itemElement);
+            });
+        }
+
+        function addToBasket(product) {
+            const productId = product.sku;
+            
+            if (basket[productId]) {
+                basket[productId].quantity += 1;
+            } else {
+                basket[productId] = {
+                    quantity: 1,
+                    price: product.price,
+                    name: product.name,
+                    sku: product.sku
+                };
+            }
+            
+            updateBasketDisplay();
+            updateCalculateButton();
+        }
 
         function changeQuantity(productId, delta) {
             if (basket[productId]) {
@@ -487,44 +557,52 @@
                 } else {
                     updateBasketDisplay();
                 }
+                updateCalculateButton();
             }
         }
 
         function removeItem(productId) {
             delete basket[productId];
             updateBasketDisplay();
+            updateCalculateButton();
         }
 
         function updateBasketDisplay() {
             const basketElement = document.getElementById('basket');
+            
+            if (Object.keys(basket).length === 0) {
+                basketElement.innerHTML = '<div class="loading">Add products to your basket</div>';
+                return;
+            }
+            
             basketElement.innerHTML = '';
-
             Object.keys(basket).forEach(productId => {
                 const item = basket[productId];
-                const storeProducts = products[currentStore] || [];
-                const product = storeProducts.find(p => p.id === productId);
-                
-                if (product) {
-                    const itemElement = document.createElement('div');
-                    itemElement.className = 'basket-item';
-                    itemElement.innerHTML = `
-                        <span>${product.name}</span>
-                        <div class="quantity-controls">
-                            <button class="quantity-btn" onclick="changeQuantity('${productId}', -1)">-</button>
-                            <span>${item.quantity}</span>
-                            <button class="quantity-btn" onclick="changeQuantity('${productId}', 1)">+</button>
-                            <button class="remove-btn" onclick="removeItem('${productId}')">Remove</button>
-                        </div>
-                    `;
-                    basketElement.appendChild(itemElement);
-                }
+                const itemElement = document.createElement('div');
+                itemElement.className = 'basket-item';
+                itemElement.innerHTML = `
+                    <span>${item.name}</span>
+                    <div class="quantity-controls">
+                        <button class="quantity-btn" onclick="changeQuantity('${productId}', -1)">-</button>
+                        <span>${item.quantity}</span>
+                        <button class="quantity-btn" onclick="changeQuantity('${productId}', 1)">+</button>
+                        <button class="remove-btn" onclick="removeItem('${productId}')">Remove</button>
+                    </div>
+                `;
+                basketElement.appendChild(itemElement);
             });
         }
 
-        function calculateCPI() {
+        function updateCalculateButton() {
+            const calculateBtn = document.getElementById('calculateBtn');
+            calculateBtn.disabled = Object.keys(basket).length === 0;
+        }
+
+        async function calculateCPI() {
             const total = Object.values(basket).reduce((sum, item) => sum + (item.price * item.quantity), 0);
             
-            // Simulate CPI calculation (in real app, this would use historical data)
+            // For now, simulate CPI calculation since we don't have historical data
+            // In a real implementation, you would fetch historical prices and calculate actual inflation
             const monthlyChange = (Math.random() * 2 - 1).toFixed(1); // -1% to +1%
             const annualInflation = (Math.random() * 8 - 2).toFixed(1); // -2% to +6%
             const officialCPI = 3.2; // Example official CPI rate
@@ -538,8 +616,6 @@
             document.getElementById('cpiResults').style.display = 'block';
         }
 
-        let currentStore = '701'; // Default to Chicago South Loop
-
         // Store selection functionality
         document.getElementById('storeSelect').addEventListener('change', function(e) {
             currentStore = e.target.value;
@@ -547,33 +623,9 @@
             // Clear basket when changing stores
             basket = {};
             updateBasketDisplay();
+            updateCalculateButton();
+            document.getElementById('cpiResults').style.display = 'none';
         });
-
-        function updateProductList() {
-            const productList = document.getElementById('productList');
-            const storeProducts = products[currentStore] || [];
-            
-            productList.innerHTML = '';
-            storeProducts.forEach(product => {
-                const itemElement = document.createElement('div');
-                itemElement.className = 'product-item';
-                itemElement.innerHTML = `
-                    <div class="product-name">${product.name}</div>
-                    <div class="product-price">$${product.price.toFixed(2)}</div>
-                `;
-                
-                itemElement.addEventListener('click', function() {
-                    if (basket[product.id]) {
-                        basket[product.id].quantity += 1;
-                    } else {
-                        basket[product.id] = { quantity: 1, price: product.price };
-                    }
-                    updateBasketDisplay();
-                });
-                
-                productList.appendChild(itemElement);
-            });
-        }
 
         // Search functionality
         document.getElementById('searchInput').addEventListener('input', function(e) {
@@ -590,8 +642,9 @@
             });
         });
 
-        // Initialize product list
-        updateProductList();
+        // Initialize the application
+        fetchProductData();
     </script>
 </body>
+</html> 
 </html> 

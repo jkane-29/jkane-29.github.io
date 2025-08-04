@@ -446,6 +446,7 @@
         let currentStore = '701';
         let basket = {};
         let historicalData = {};
+        let searchIndex = {}; // Pre-processed search index for faster searching
 
         // Store information
         const stores = {
@@ -479,6 +480,7 @@
                 
                 // Parse CSV data
                 allProducts = {};
+                searchIndex = {};
                 dataLines.forEach(line => {
                     if (line.trim()) {
                         const [sku, retail_price, item_title, inserted_at, store_code, availability] = line.split(',');
@@ -494,13 +496,31 @@
                             // Clean up item title (remove quotes)
                             const cleanTitle = item_title.replace(/^"|"$/g, '');
                             
-                            allProducts[store_code].push({
+                            const product = {
                                 sku: sku,
                                 name: cleanTitle,
                                 price: price,
                                 available: isAvailable,
                                 date: inserted_at
-                            });
+                            };
+                            
+                            allProducts[store_code].push(product);
+                            
+                            // Build search index for faster searching
+                            if (isAvailable) {
+                                const searchTerms = cleanTitle.toLowerCase().split(' ');
+                                searchTerms.forEach(term => {
+                                    if (term.length > 2) { // Only index terms longer than 2 characters
+                                        if (!searchIndex[store_code]) {
+                                            searchIndex[store_code] = {};
+                                        }
+                                        if (!searchIndex[store_code][term]) {
+                                            searchIndex[store_code][term] = [];
+                                        }
+                                        searchIndex[store_code][term].push(product);
+                                    }
+                                });
+                            }
                         }
                     }
                 });
@@ -565,10 +585,15 @@
             // Filter available products only
             const availableProducts = storeProducts.filter(p => p.available);
             
+            // Limit initial display to first 50 products for better performance
+            const initialDisplayCount = 50;
+            const productsToShow = availableProducts.slice(0, initialDisplayCount);
+            
             productList.innerHTML = '';
-            availableProducts.forEach(product => {
+            productsToShow.forEach(product => {
                 const itemElement = document.createElement('div');
                 itemElement.className = 'product-item';
+                itemElement.dataset.sku = product.sku;
                 itemElement.innerHTML = `
                     <div class="product-name">${product.name}</div>
                     <div class="product-price">$${product.price.toFixed(2)}</div>
@@ -580,6 +605,42 @@
                 
                 productList.appendChild(itemElement);
             });
+            
+            // Add "show more" button if there are more products
+            if (availableProducts.length > initialDisplayCount) {
+                const showMoreBtn = document.createElement('div');
+                showMoreBtn.className = 'product-item';
+                showMoreBtn.style.textAlign = 'center';
+                showMoreBtn.style.cursor = 'pointer';
+                showMoreBtn.style.color = '#059669';
+                showMoreBtn.style.fontWeight = '500';
+                showMoreBtn.textContent = `Show ${availableProducts.length - initialDisplayCount} more products`;
+                
+                showMoreBtn.addEventListener('click', function() {
+                    // Show all remaining products
+                    const remainingProducts = availableProducts.slice(initialDisplayCount);
+                    remainingProducts.forEach(product => {
+                        const itemElement = document.createElement('div');
+                        itemElement.className = 'product-item';
+                        itemElement.dataset.sku = product.sku;
+                        itemElement.innerHTML = `
+                            <div class="product-name">${product.name}</div>
+                            <div class="product-price">$${product.price.toFixed(2)}</div>
+                        `;
+                        
+                        itemElement.addEventListener('click', function() {
+                            addToBasket(product);
+                        });
+                        
+                        productList.appendChild(itemElement);
+                    });
+                    
+                    // Remove the "show more" button
+                    showMoreBtn.remove();
+                });
+                
+                productList.appendChild(showMoreBtn);
+            }
         }
 
         function addToBasket(product) {
@@ -678,19 +739,66 @@
             document.getElementById('cpiResults').style.display = 'none';
         });
 
-        // Search functionality
+        // Optimized search functionality with debouncing
+        let searchTimeout;
         document.getElementById('searchInput').addEventListener('input', function(e) {
             const searchTerm = e.target.value.toLowerCase();
-            const productItems = document.querySelectorAll('.product-item');
             
-            productItems.forEach(item => {
-                const productName = item.querySelector('.product-name').textContent.toLowerCase();
-                if (productName.includes(searchTerm)) {
-                    item.style.display = 'block';
+            // Clear previous timeout
+            clearTimeout(searchTimeout);
+            
+            // Debounce the search to avoid excessive filtering
+            searchTimeout = setTimeout(() => {
+                const productItems = document.querySelectorAll('.product-item');
+                let visibleCount = 0;
+                
+                if (searchTerm.length < 3) {
+                    // Show all items for short search terms
+                    productItems.forEach(item => {
+                        item.style.display = 'block';
+                        visibleCount++;
+                    });
                 } else {
-                    item.style.display = 'none';
+                    // Use search index for faster filtering
+                    const searchTerms = searchTerm.toLowerCase().split(' ');
+                    const matchingProducts = new Set();
+                    
+                    // Find products that match any search term
+                    searchTerms.forEach(term => {
+                        if (searchIndex[currentStore] && searchIndex[currentStore][term]) {
+                            searchIndex[currentStore][term].forEach(product => {
+                                matchingProducts.add(product.sku);
+                            });
+                        }
+                    });
+                    
+                    // Show/hide products based on search results
+                    productItems.forEach(item => {
+                        const productName = item.querySelector('.product-name').textContent;
+                        const productSku = item.dataset.sku;
+                        const isVisible = matchingProducts.has(productSku) || productName.toLowerCase().includes(searchTerm);
+                        item.style.display = isVisible ? 'block' : 'none';
+                        if (isVisible) visibleCount++;
+                    });
                 }
-            });
+                
+                // Show message if no results
+                const productList = document.getElementById('productList');
+                const noResultsMsg = productList.querySelector('.no-results');
+                if (visibleCount === 0 && searchTerm.length > 0) {
+                    if (!noResultsMsg) {
+                        const msg = document.createElement('div');
+                        msg.className = 'no-results';
+                        msg.style.padding = '20px';
+                        msg.style.textAlign = 'center';
+                        msg.style.color = '#6b7280';
+                        msg.textContent = `No products found for "${e.target.value}"`;
+                        productList.appendChild(msg);
+                    }
+                } else if (noResultsMsg) {
+                    noResultsMsg.remove();
+                }
+            }, 150); // 150ms debounce delay
         });
 
         // Initialize the application

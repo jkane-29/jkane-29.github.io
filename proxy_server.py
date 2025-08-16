@@ -9,7 +9,7 @@ from flask import Flask, Response, jsonify
 from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins=["*"], supports_credentials=False)
 
 # Global variables for caching
 cached_data = []

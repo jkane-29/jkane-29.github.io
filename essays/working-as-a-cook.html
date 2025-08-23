@@ -14,61 +14,177 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            line-height: 1.6;
+            line-height: 1.4;
             color: #374151;
             background-color: #fefefe;
-            max-width: 800px;
+        }
+
+        .container {
+            max-width: 1000px;
             margin: 0 auto;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 60px;
             padding: 60px 20px;
         }
 
-        h1 {
+        .sidebar {
+            position: sticky;
+            top: 60px;
+            height: fit-content;
+        }
+
+        .name {
             font-family: 'Source Serif Pro', serif;
-            font-size: 2.5rem;
+            font-size: 2.2rem;
             font-weight: 500;
+            margin-bottom: 8px;
+            color: #111827;
+            line-height: 1.1;
+            text-decoration: none;
+            display: block;
+        }
+
+        .name:hover {
+            color: #059669;
+        }
+
+        .title {
+            color: #059669;
+            font-weight: 500;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+            line-height: 1.2;
+        }
+
+        .nav-links {
+            list-style: none;
             margin-bottom: 30px;
+        }
+
+        .nav-links li {
+            margin-bottom: 8px;
+        }
+
+        .nav-links a {
+            color: #6b7280;
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.2s ease;
+            line-height: 1.3;
+        }
+
+        .nav-links a:hover {
+            color: #059669;
+        }
+
+        .nav-links a.current {
+            color: #059669;
+            font-weight: 500;
+        }
+
+        .contact-info {
+            font-size: 0.9rem;
+            color: #6b7280;
+            line-height: 1.4;
+        }
+
+        .contact-info a {
+            color: #059669;
+            text-decoration: none;
+        }
+
+        .main-content {
+            padding-top: 20px;
+        }
+
+        .intro {
+            margin-bottom: 40px;
+        }
+
+        .intro h1 {
+            font-family: 'Source Serif Pro', serif;
+            font-size: 1.8rem;
+            font-weight: 500;
+            margin-bottom: 16px;
             color: #111827;
             line-height: 1.2;
         }
 
-        p {
-            font-size: 1.1rem;
-            margin-bottom: 20px;
+        .intro p {
+            font-size: 1.05rem;
+            line-height: 1.5;
+            margin-bottom: 12px;
+        }
+
+        .essay-content {
+            font-size: 1.05rem;
+            line-height: 1.6;
             color: #4b5563;
         }
 
-        .back-link {
-            margin-bottom: 40px;
+        .essay-content p {
+            margin-bottom: 20px;
         }
 
-        .back-link a {
-            color: #059669;
-            text-decoration: none;
-            font-size: 0.95rem;
-        }
-
-        .back-link a:hover {
-            text-decoration: underline;
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                gap: 30px;
+                padding: 30px 20px;
+            }
+            
+            .sidebar {
+                position: static;
+                border-bottom: 1px solid #e5e7eb;
+                padding-bottom: 20px;
+            }
+            
+            .name {
+                font-size: 1.8rem;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="back-link">
-        <a href="../writing.html">← Back to Writing</a>
+    <div class="container">
+        <aside class="sidebar">
+            <a href="../index.html" class="name">John Kane</a>
+            
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="../ideas.html">Ideas</a></li>
+                    <li><a href="../reading.html">Reading</a></li>
+                    <li><a href="../writing.html" class="current">Writing</a></li>
+                    <li><a href="../woodshop.html">Woodshop</a></li>
+                    
+                </ul>
+            </nav>
+            
+            <div class="contact-info">
+                <p><a href="mailto:jkane29@icloud.com">jkane29@icloud.com</a></p>
+                <p><a href="https://twitter.com/desperad0V" target="_blank">@desperad0V</a></p>
+                <p>Office: N/A</p>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <section class="intro">
+                <h1>Working as a Cook</h1>
+            </section>
+
+            <div class="essay-content">
+                <p>Cooking and working in kitchens taught me many surprising things, not necessarily in the Bourdain style of oh my god my bread is dirty!, but rather that cooking can require very different skillsets. Baking is a game of calculations, where a small variance leads to huge differences. A good baker is as much of a nightcrawler as they are an alchemist of yeast. For all the attention to detail there's a separate artistry required. Shaping dough/bread is the opposite of technical, more like learning the footwork to an intricate dance that takes many repetitions to feel natural.</p>
+
+                <p>I also learned how fun it is to work in a flow state and optimize with constraints. Given 30 tasks as a prep cook, how can I optimize over my 6 burners, industrial mixing bowl, and 5 oven racks. It was an incredibly fun game of chess with people shouting, 500 degree ovens, tight spaces, and hard deadlines. Getting finished with my prep list 4 hours into my shift on my last day is an enduring moment of pride.</p>
+                
+                <p>Cooks are often extremely industrious. The prep cook I worked under named Mario had all these ingenious tricks for making our 5am starting shift habitable. He'd order the line cooks to make us chilaquiles or french toast, methodically plan out tasks, and cut plastic bags so that you could tie them shut with a twist.</p>
+                
+                <p>Oddly, restaurant jobs also gave me a love for utilitarian hardware. My ideal kitchen is pretty much cambros, striped rags, and steel mixing bowls. It always seemed like when things got really busy that level of simplicity was necessary. Even since I stopped working in restaurants, I've been looking for the simplest versions of things and I think that's where that started from.</p>
+                
+                <p>Maybe a final and possibly sad observation is that people don't really think about who made their food. Even now, I forget to recognize the very real human element of a restaurant meal, I think it's a crucial part of what makes a great meal and is something people should try to focus on.</p>
+            </div>
+        </main>
     </div>
-
-    <h1>Working as a Cook</h1>
-
-    <p>Cooking and working in kitchens taught me many surprising things, not necessarily in the Bourdain style of oh my god my bread is dirty!, but rather that cooking can require very different skillsets. Baking is a game of calculations, where a small variance leads to huge differences. A good baker is as much of a nightcrawler as they are an alchemist of yeast. For all the attention to detail there’s a separate artistry required. Shaping dough/bread is the opposite of technical, more like learning the footwork to an intricate dance that takes many repetitions to feel natural. 
-
-        I also learned how fun it is to work in a flow state and optimize with constraints. Given 30 tasks as a prep cook, how can I optimize over my 6 burners, industrial mixing bowl, and 5 oven racks. It was an incredibly fun game of chess with people shouting, 500 degree ovens, tight spaces, and hard deadlines. Getting finished with my prep list 4 hours into my shift on my last day is an enduring moment of pride.
-        
-        Cooks are often extremely industrious. The prep cook I worked under named Mario had all these ingenious tricks for making our 5am starting shift habitable. He’d order the line cooks to make us chilaquiles or french toast, methodically plan out tasks, and cut plastic bags so that you could tie them shut with a twist. 
-        
-        Oddly, restaurant jobs also gave me a love for utilitarian hardware. My ideal kitchen is pretty much cambros, striped rags, and steel mixing bowls. It always seemed like when things got really busy that level of simplicity was necessary. Even since I stopped working in restaurants, I’ve been looking for the simplest versions of things and I think that’s where that started from.
-        
-        Maybe a final and possibly sad observation is that people don’t really think about who made their food. Even now, I forget to recognize the very real human element of a restaurant meal, I think it’s a crucial part of what makes a great meal and is something people should try to focus on. 
-        </p>
-
 </body>
 </html> 

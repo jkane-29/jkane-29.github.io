@@ -117,64 +117,62 @@
             margin-bottom: 12px;
         }
 
-        .year-section {
-            margin-bottom: 40px;
+        .bio-section {
+            margin-bottom: 35px;
         }
 
-        .year-section h2 {
+        .bio-section h2 {
             font-family: 'Source Serif Pro', serif;
             font-size: 1.5rem;
             font-weight: 500;
             margin-bottom: 20px;
             color: #111827;
+            border-bottom: 2px solid #d1fae5;
             padding-bottom: 6px;
             line-height: 1.2;
         }
 
-        .writing-item {
-            margin-bottom: 24px;
-            position: relative;
-            padding-left: 20px;
-        }
-
-        .writing-item::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 6px;
-            width: 6px;
-            height: 6px;
-            background-color: #059669;
-            border-radius: 50%;
-        }
-
-        .writing-title {
-            font-weight: 500;
-            font-size: 1.1rem;
-            margin-bottom: 4px;
-            color: #111827;
-            line-height: 1.3;
-        }
-
-        .writing-title a {
-            color: #111827;
-            text-decoration: none;
-        }
-
-        .writing-title a:hover {
-            color: #059669;
-        }
-
-        .writing-meta {
-            font-size: 0.9rem;
-            color: #059669;
-            margin-bottom: 6px;
-            font-weight: 500;
-        }
-
-        .writing-description {
+        .bio-section p {
+            font-size: 1.05rem;
+            line-height: 1.6;
+            margin-bottom: 16px;
             color: #4b5563;
+        }
+
+        .bio-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .bio-section li {
+            font-size: 1.05rem;
+            line-height: 1.6;
+            margin-bottom: 8px;
+            color: #4b5563;
+        }
+
+        .blog-item {
+            margin-bottom: 20px;
+        }
+
+        .blog-link {
+            color: #059669;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 1.05rem;
             line-height: 1.4;
+        }
+
+        .blog-link:hover {
+            text-decoration: underline;
+        }
+
+        .item-comment {
+            font-style: italic;
+            color: #6b7280;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            margin-top: 4px;
         }
 
         .highlight {
@@ -233,83 +231,53 @@
                 </p>
             </section>
 
-            <section class="year-section">
+            <section class="bio-section">
                 <h2>2025</h2>
                 
-                <div class="writing-item">
-                    <h3 class="writing-title">
-                        <a href="essays/things-ive-avoided.html">Things I've Avoided</a>
-                    </h3>
-                    <p class="writing-meta">2025</p>
-                    <p class="writing-description">
-                        The opposite of love is not hate.
-                    </p>
+                <div class="blog-item">
+                    <a href="essays/things-ive-avoided.html" class="blog-link">Things I've Avoided</a>
+                    <div class="item-comment">The opposite of love is not hate.</div>
                 </div>
 
-                <div class="writing-item">
-                    <h3 class="writing-title">
-                        <a href="essays/accelerating-growth.html">Accelerating Growth</a>
-                    </h3>
-                    <p class="writing-meta">2025</p>
-                    <p class="writing-description">
-                        What relationships scale?
-                    </p>
+                <div class="blog-item">
+                    <a href="essays/accelerating-growth.html" class="blog-link">Accelerating Growth</a>
+                    <div class="item-comment">What relationships scale?</div>
                 </div>
             </section>
 
-            <section class="year-section">
+            <section class="bio-section">
                 <h2>2024</h2>
 
-                <div class="writing-item">
-                    <h3 class="writing-title">
-                        <a href="essays/notes-on-computational-creativity.html">A View from the Gallery</a>
-                    </h3>
-                    <p class="writing-meta">January 8, 2024</p>
-                    <p class="writing-description">
-                        Inhabiting others perspectives.
-                    </p>
+                <div class="blog-item">
+                    <a href="essays/notes-on-computational-creativity.html" class="blog-link">A View from the Gallery</a>
+                    <div class="item-comment">Inhabiting others perspectives.</div>
                 </div>
             </section>
 
-            <section class="year-section">
+            <section class="bio-section">
                 <h2>2023</h2>
                 
-                <div class="writing-item">
-                    <h3 class="writing-title">
-                        <a href="essays/working-as-a-cook.html">Working as a Cook</a>
-                    </h3>
-                    <p class="writing-meta">2023</p>
-                    <p class="writing-description">
-                        Subtle things I learned from 3 restaurant jobs.
-                    </p>
+                <div class="blog-item">
+                    <a href="essays/working-as-a-cook.html" class="blog-link">Working as a Cook</a>
+                    <div class="item-comment">Subtle things I learned from 3 restaurant jobs.</div>
                 </div>
             </section>
 
-            <section class="year-section">
+            <section class="bio-section">
                 <h2>2022</h2>
                 
-                <div class="writing-item">
-                    <h3 class="writing-title">
-                        <a href="essays/working-as-a-caddie.html">Working as a Caddie</a>
-                    </h3>
-                    <p class="writing-meta">2022</p>
-                    <p class="writing-description">
-                        Carrying a bag and reading greens.
-                    </p>
+                <div class="blog-item">
+                    <a href="essays/working-as-a-caddie.html" class="blog-link">Working as a Caddie</a>
+                    <div class="item-comment">Carrying a bag and reading greens.</div>
                 </div>
             </section>
 
-            <section class="year-section">
+            <section class="bio-section">
                 <h2>2020</h2>
                 
-                <div class="writing-item">
-                    <h3 class="writing-title">
-                        <a href="essays/working-as-a-delivery-driver.html">Working as a Delivery Driver</a>
-                    </h3>
-                    <p class="writing-meta">2020</p>
-                    <p class="writing-description">
-                        Some weird experiences while delivering wine. 
-                    </p>
+                <div class="blog-item">
+                    <a href="essays/working-as-a-delivery-driver.html" class="blog-link">Working as a Delivery Driver</a>
+                    <div class="item-comment">Some weird experiences while delivering wine.</div>
                 </div>
             </section>
         </main>

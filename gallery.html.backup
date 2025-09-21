@@ -140,9 +140,6 @@
         }
 
         .gallery-progress {
-            display: none;
-        }
-
         .gallery-info {
             position: absolute;
             bottom: 20px;
@@ -150,8 +147,8 @@
             right: 20px;
             background: rgba(0, 0, 0, 0.8);
             color: white;
-            padding: 12px 16px;
-            border-radius: 6px;
+            padding: 16px 20px;
+            border-radius: 8px;
             opacity: 0;
             transform: translateY(10px);
             transition: all 0.3s ease;
@@ -163,12 +160,25 @@
             transform: translateY(0);
         }
 
-        .gallery-info-text {
+        .gallery-info-title {
             font-family: "Source Serif Pro", serif;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             font-weight: 500;
+            margin-bottom: 4px;
             color: white;
-            line-height: 1.2;
+        }
+
+        .gallery-info-artist {
+            font-size: 0.95rem;
+            color: #d1d5db;
+            margin-bottom: 2px;
+        }
+
+        .gallery-info-description {
+            font-size: 0.9rem;
+            color: #9ca3af;
+            line-height: 1.4;
+        }            display: none;
         }
 
         @media (max-width: 768px) {
@@ -192,8 +202,46 @@
                 height: 70vh;
             }
 
-            .gallery-info {
-                left: 0;
+            .gallery-progress {
+        .gallery-info {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 16px 20px;
+            border-radius: 8px;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+
+        .gallery-container:hover .gallery-info {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .gallery-info-title {
+            font-family: "Source Serif Pro", serif;
+            font-size: 1.2rem;
+            font-weight: 500;
+            margin-bottom: 4px;
+            color: white;
+        }
+
+        .gallery-info-artist {
+            font-size: 0.95rem;
+            color: #d1d5db;
+            margin-bottom: 2px;
+        }
+
+        .gallery-info-description {
+            font-size: 0.9rem;
+            color: #9ca3af;
+            line-height: 1.4;
+        }                left: 0;
             }
         }
     </style>
@@ -222,8 +270,13 @@
 
         <main class="main-content">
             <div class="gallery-container">
-                <div class="gallery-progress"></div>
+                <div class="gallery-progress" style="display: none;"></div>
                 <div class="gallery-frame">
+                <div class="gallery-info" id="gallery-info">
+                    <div class="gallery-info-title" id="info-title">Gallery Image 1</div>
+                    <div class="gallery-info-artist" id="info-artist">Sample • 2024</div>
+                    <div class="gallery-info-description" id="info-description">First sample placeholder image</div>
+                </div>
                 </div>
                 <div class="gallery-controls" id="gallery-controls" style="display: none;"></div>
             </div>
@@ -240,9 +293,12 @@
                 this.cycleTime = 30000; // 30 seconds
                 
                 this.frame = document.querySelector('.gallery-frame');
-                this.infoText = document.getElementById('info-text');
+                this.titleElement = document.getElementById('image-title');
+                this.metaElement = document.getElementById('image-meta');
+                this.descriptionElement = document.getElementById('image-description');
                 this.controlsContainer = document.getElementById('gallery-controls');
                 this.progressBar = document.querySelector('.gallery-progress');
+                this.placeholderMessage = document.getElementById('placeholder-message');
                 
                 this.init();
             }
@@ -256,68 +312,49 @@
             }
 
             async loadImages() {
-                // Art images from essays/Gallery/ directory with proper URL encoding
+                // Common image extensions to look for
+                const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
+                const imagePaths = [
+                    // Gallery images directory
+                    "images/gallery/",
+                    // Add your image paths here - examples:
+                    'images/artwork1.jpg',
+                    'images/chart_visualization.png',
+                    'images/woodworking_project.jpg',
+                    'images/data_analysis.png',
+                    'images/bike_repair.jpg'
+                ];
+
+                // In a real implementation, you would scan a directory
+                // For now, we'll use a predefined list with reliable image sources
                 const imageData = [
                     {
-                        src: 'essays/Gallery/Adelita,%20Alfredo%20Arreguin.jpeg',
-                        title: 'Adelita',
-                        artist: 'Alfredo Arreguin'
+                        src: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgdmlld0JveD0iMCAwIDgwMCA2MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI4MDAiIGhlaWdodD0iNjAwIiBmaWxsPSIjZjNmNGY2Ii8+CjxyZWN0IHg9IjIwMCIgeT0iMTUwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgcng9IjgiIGZpbGw9IiNlNWU3ZWIiLz4KPGJ0ZXh0IHg9IjQwMCIgeT0iMzIwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNmI3MjgwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiPkdhbGxlcnkgSW1hZ2UgMTwvdGV4dD4KPC9zdmc+',
+                        title: 'Gallery Image 1',
+                        meta: 'Sample • 2024',
+                        description: 'First sample placeholder image'
                     },
                     {
-                        src: 'essays/Gallery/Black%20Cross%20New%20Mexico,%20Georgia%20O\'Keeffe.jpg',
-                        title: 'Black Cross New Mexico',
-                        artist: 'Georgia O\'Keeffe'
+                        src: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgdmlld0JveD0iMCAwIDgwMCA2MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI4MDAiIGhlaWdodD0iNjAwIiBmaWxsPSIjZWNmZGY1Ii8+CjxyZWN0IHg9IjE1MCIgeT0iMTAwIiB3aWR0aD0iNTAwIiBoZWlnaHQ9IjQwMCIgcng9IjEyIiBmaWxsPSIjZDFmYWU1Ii8+Cjx0ZXh0IHg9IjQwMCIgeT0iMzIwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjMDU5NjY5IiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiPkdhbGxlcnkgSW1hZ2UgMjwvdGV4dD4KPC9zdmc+',
+                        title: 'Gallery Image 2',
+                        meta: 'Sample • 2024',
+                        description: 'Second sample placeholder image'
                     },
                     {
-                        src: 'essays/Gallery/Cosmic%20Cities,%20Arthur%20Wesley%20Dow.jpg',
-                        title: 'Cosmic Cities',
-                        artist: 'Arthur Wesley Dow'
-                    },
-                    {
-                        src: 'essays/Gallery/Landscape%20No.%203%20Marsden%20Hartley.jpg',
-                        title: 'Landscape No. 3',
-                        artist: 'Marsden Hartley'
-                    },
-                    {
-                        src: 'essays/Gallery/Landscape%20with%20Threee%20Trees,%20Richard%20Diebenkorn.jpeg',
-                        title: 'Landscape with Three Trees',
-                        artist: 'Richard Diebenkorn'
-                    },
-                    {
-                        src: 'essays/Gallery/Salish%20Sea,%20Alfredo%20Arreguin.jpg',
-                        title: 'Salish Sea',
-                        artist: 'Alfredo Arreguin'
-                    },
-                    {
-                        src: 'essays/Gallery/Signs,%20Lee%20Friedlander.jpg',
-                        title: 'Signs',
-                        artist: 'Lee Friedlander'
-                    },
-                    {
-                        src: 'essays/Gallery/Summer%20in%20the%20Catskills,%20George%20Inness.jpg',
-                        title: 'Summer in the Catskills',
-                        artist: 'George Inness'
-                    },
-                    {
-                        src: 'essays/Gallery/The%20Executive%20Apartment,%20Lynne%20Cohen.jpg',
-                        title: 'The Executive Apartment',
-                        artist: 'Lynne Cohen'
-                    },
-                    {
-                        src: 'essays/Gallery/The%20Monk,%20George%20Inness.jpg',
-                        title: 'The Monk',
-                        artist: 'George Inness'
+                        src: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgdmlld0JveD0iMCAwIDgwMCA2MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI4MDAiIGhlaWdodD0iNjAwIiBmaWxsPSIjZmVmM2M3Ii8+CjxjaXJjbGUgY3g9IjQwMCIgY3k9IjMwMCIgcj0iMTUwIiBmaWxsPSIjZmJiZjI0Ii8+Cjx0ZXh0IHg9IjQwMCIgeT0iMzEwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNzkyYzExIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiPkdhbGxlcnkgSW1hZ2UgMzwvdGV4dD4KPC9zdmc+',
+                        title: 'Gallery Image 3',
+                        meta: 'Sample • 2024',
+                        description: 'Third sample placeholder image'
                     }
                 ];
 
-                // Load images that exist
+                // Filter and load images that actually exist
                 for (const data of imageData) {
                     try {
                         await this.checkImageExists(data.src);
                         this.images.push(data);
-                        console.log(`Loaded: ${data.title}`);
                     } catch (error) {
-                        console.log(`Failed to load: ${data.src}`);
+                        console.log(`Image not found: ${data.src}`);
                     }
                 }
             }
@@ -329,6 +366,7 @@
                     img.onerror = () => reject(src);
                     img.src = src;
                 });
+                this.updateInfoBox();
             }
 
             setupGallery() {
@@ -341,19 +379,6 @@
                     if (index === 0) img.classList.add('active');
                     this.frame.appendChild(img);
                 });
-
-                // Create info box
-                const infoBox = document.createElement('div');
-                infoBox.className = 'gallery-info';
-                infoBox.id = 'gallery-info';
-                infoBox.innerHTML = `
-                    <div class="gallery-info-text" id="info-text">${this.images[0]?.title || 'Gallery'} • ${this.images[0]?.artist || 'Artist'}</div>
-                `;
-                this.frame.appendChild(infoBox);
-
-                // Update references
-                this.infoText = document.getElementById('info-text');
-
                 this.updateInfoBox();
             }
 
@@ -362,6 +387,7 @@
                 document.querySelectorAll('.gallery-image').forEach((img, i) => {
                     img.classList.toggle('active', i === index);
                 });
+                this.updateInfoBox();
                 
                 this.currentIndex = index;
                 this.updateInfoBox();
@@ -419,10 +445,11 @@
             updateInfoBox() {
                 if (this.images.length > 0 && this.currentIndex < this.images.length) {
                     const currentImage = this.images[this.currentIndex];
-                    this.infoText.textContent = `${currentImage.title || "Untitled"} • ${currentImage.artist || "Unknown Artist"}`;
+                    this.infoTitle.textContent = currentImage.title || "Untitled";
+                    this.infoArtist.textContent = currentImage.meta || "";
+                    this.infoDescription.textContent = currentImage.description || "";
                 }
             }
-
             resumeSlideshow() {
                 this.startSlideshow();
             }
@@ -437,11 +464,14 @@
             galleryContainer.addEventListener('mouseenter', () => {
                 gallery.pauseSlideshow();
             });
+                this.updateInfoBox();
             
             galleryContainer.addEventListener('mouseleave', () => {
                 gallery.resumeSlideshow();
             });
+                this.updateInfoBox();
         });
+                this.updateInfoBox();
     </script>
 </body>
 </html>

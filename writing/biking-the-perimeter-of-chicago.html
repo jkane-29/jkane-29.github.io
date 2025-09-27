@@ -98,61 +98,88 @@
             padding-top: 20px;
         }
 
-        .intro {
+        .article-header {
             margin-bottom: 40px;
         }
 
-        .intro h1 {
+        .article-title {
             font-family: 'Source Serif Pro', serif;
-            font-size: 1.8rem;
+            font-size: 2.2rem;
             font-weight: 500;
             margin-bottom: 16px;
             color: #111827;
             line-height: 1.2;
         }
 
-        .intro p {
-            font-size: 1.05rem;
-            line-height: 1.5;
-            margin-bottom: 12px;
-        }
-
-        .essay-content {
-            font-size: 1.05rem;
-            line-height: 1.6;
-            color: #4b5563;
-        }
-
-        .essay-content p {
-            margin-bottom: 20px;
-        }
-
-        .gallery-image {
-            width: 100%;
-            max-width: 600px;
-            height: auto;
-            margin: 30px 0;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        .image-caption {
-            font-size: 0.9rem;
+        .article-meta {
+            font-size: 0.95rem;
             color: #6b7280;
-            font-style: italic;
-            text-align: center;
-            margin-top: 8px;
             margin-bottom: 30px;
         }
 
+        .article-content {
+            font-size: 1.05rem;
+            line-height: 1.6;
+        }
+
+        .article-content h2 {
+            font-family: 'Source Serif Pro', serif;
+            font-size: 1.5rem;
+            font-weight: 500;
+            margin: 40px 0 20px 0;
+            color: #111827;
+            border-bottom: 2px solid #d1fae5;
+            padding-bottom: 6px;
+            line-height: 1.2;
+        }
+
+        .article-content h3 {
+            font-family: 'Source Serif Pro', serif;
+            font-size: 1.3rem;
+            font-weight: 500;
+            margin: 30px 0 15px 0;
+            color: #111827;
+            line-height: 1.2;
+        }
+
+        .article-content p {
+            margin-bottom: 20px;
+        }
+
+        .article-content ul, .article-content ol {
+            margin-bottom: 20px;
+            padding-left: 20px;
+        }
+
+        .article-content li {
+            margin-bottom: 8px;
+        }
+
+        .highlight {
+            background-color: #ecfdf5;
+            color: #047857;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
         .quote {
+            border-left: 4px solid #059669;
+            padding-left: 20px;
+            margin: 30px 0;
             font-style: italic;
             color: #4b5563;
-            border-left: 3px solid #059669;
-            padding-left: 20px;
-            margin: 25px 0;
-            font-size: 1.1rem;
-            line-height: 1.5;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 30px;
+            color: #059669;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
         }
 
         @media (max-width: 768px) {
@@ -171,6 +198,10 @@
             .name {
                 font-size: 1.8rem;
             }
+            
+            .article-title {
+                font-size: 1.8rem;
+            }
         }
     </style>
 </head>
@@ -181,34 +212,36 @@
             
             <nav>
                 <ul class="nav-links">
-                    <li><a href="../ideas.html">Ideas</a></li>
-                    <li><a href="../reading.html">Reading</a></li>
-                    <li><a href="../writing.html" class="current">Writing</a></li>
-                    <li><a href="../woodshop.html">Woodshop</a></li>
-                    <li><a href="../gallery.html">Gallery</a></li>
+                    <li><a href="/projects">Projects</a></li>
+                    <li><a href="/ideas">Ideas</a></li>
+                    <li><a href="/reading">Reading</a></li>
+                    <li><a href="/writing" class="current">Writing</a></li>
+                    <li><a href="/woodshop">Woodshop</a></li>
+                    <li><a href="/gallery">Gallery</a></li>
+
                 </ul>
             </nav>
             
             <div class="contact-info">
                 <p><a href="mailto:jkane29@icloud.com">jkane29@icloud.com</a></p>
-                <p><a href="https://twitter.com/desperad0V" target="_blank">@desperad0V</a></p>
                 <p>Office: N/A</p>
             </div>
         </aside>
 
         <main class="main-content">
-            <section class="intro">
-                <h1>Biking the Perimeter of Chicago</h1>
-            </section>
+            
+            <article class="article-header">
+                <h1 class="article-title">Biking the Perimeter of Chicago</h1>
+            </article>
 
-            <div class="essay-content">
-                <p>It can be easy to live somewhere and never really understand its scale. I had always felt that way about Chicago. Living on the north side of the city there was a 3-5 mile radius where I spent 95% of my time. That other 5% might have been in obscure corners of the map, but they were all trips made by train. Even if I was 10 miles south and within the city limits, it never felt like I had travelled that far.</p>
-
-                <p>One of the only sensible ways to understand the city from this perspective seemed to be to bike it. In my head this felt feasible, I had heard of people who had done the same with New York, which is much less linear, full of creased inlets and bays and so broad stretching across 5 boroughs. Chicago in comparison is straight lines, nearly perpendicular to the lake with a rectangle formed by connecting the south, west, and north sides.</p>
-
-                <p>After some route estimating on Ride with GPS (which is excellent by the way), I realized that an abridged version of the city route that was optimized for bike routes was entirely possible. So plans were made and a date was set.</p>
-
-                <img src="../mapchi.png" alt="Chicago perimeter bike route map" class="gallery-image">
+            <div class="article-content">
+                <p>
+                    It can be easy to live somewhere and never really understand its scale. I had always felt that way about Chicago. Living on the north side of the city there was a 3-5 mile radius where I spent 95% of my time. That other 5% might have been in obscure corners of the map, but they were all trips made by train. Even if I was 10 miles south and within the city limits, it never felt like I had travelled that far.
+                </p>
+                    One of the only sensible ways to understand the city from this perspective seemed to be to bike it. In my head this felt feasible, I had heard of people who had done the same with New York, which is much less linear, full of creased inlets and bays and so broad stretching across 5 boroughs. Chicago in comparison is straight lines, nearly perpendicular to the lake with a rectangle formed by connecting the south, west, and north sides. 
+                </p>
+                After some route estimating on Ride with GPS (which is excellent by the way), I realized that an abridged version of the city route that was optimized for bike routes was entirely possible. So plans were made and a date was set.
+                <p>
             </div>
         </main>
     </div>

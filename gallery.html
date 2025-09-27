@@ -237,17 +237,19 @@
                 this.currentIndex = 0;
                 this.intervalId = null;
                 this.progressId = null;
-                this.cycleTime = 5000; // 5 seconds for testing
+                this.cycleTime = 3000; // 3 seconds for testing
                 
                 this.frame = document.querySelector('.gallery-frame');
                 this.infoText = document.getElementById('info-text');
                 this.controlsContainer = document.getElementById('gallery-controls');
                 this.progressBar = document.querySelector('.gallery-progress');
                 
+                console.log('Gallery constructor called');
                 this.init();
             }
 
             init() {
+                console.log('Gallery init called');
                 this.loadImages();
                 this.setupGallery();
                 this.startSlideshow();
@@ -360,19 +362,25 @@
 
             nextSlide() {
                 const nextIndex = (this.currentIndex + 1) % this.images.length;
-                console.log(`Next slide: ${nextIndex}`);
+                console.log(`Next slide: ${nextIndex} (current: ${this.currentIndex})`);
                 this.goToSlide(nextIndex);
             }
 
             startSlideshow() {
-                if (this.images.length <= 1) return;
+                console.log(`Starting slideshow with ${this.images.length} images`);
+                if (this.images.length <= 1) {
+                    console.log('Not enough images for slideshow');
+                    return;
+                }
                 
                 console.log('Starting slideshow...');
                 this.intervalId = setInterval(() => {
+                    console.log('Interval triggered - calling nextSlide');
                     this.nextSlide();
                 }, this.cycleTime);
 
                 this.startProgress();
+                console.log(`Slideshow started with ${this.cycleTime}ms interval`);
             }
 
             startProgress() {
@@ -398,6 +406,7 @@
             }
 
             pauseSlideshow() {
+                console.log('Pausing slideshow');
                 if (this.intervalId) {
                     clearInterval(this.intervalId);
                     this.intervalId = null;
@@ -416,6 +425,7 @@
             }
 
             resumeSlideshow() {
+                console.log('Resuming slideshow');
                 this.startSlideshow();
             }
         }

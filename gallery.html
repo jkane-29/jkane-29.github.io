@@ -95,17 +95,11 @@
         }
 
         .main-content {
-            padding-top: 20px;
+            padding-top: 0;
         }
 
         .gallery-container {
             position: relative;
-            
-            
-            
-            
-            
-            
             margin: 0;
             background: none;
             border-radius: 0;
@@ -116,39 +110,23 @@
 
         .gallery-frame {
             position: relative;
-            
-            
-            
             height: 80vh;
             background: none;
             display: block;
-            
-            
             padding: 0;
         }
 
         .gallery-image {
             position: absolute;
-            
-            
-            
-            
-            
             height: auto;
             object-fit: contain;
-            
-            
-            
-            
             left: 50%;
-            
-            
             width: auto;
             min-width: 200px;
             max-width: 90%;
             top: 50%;
             transform: translate(-50%, -50%);
-            border-radius: 8px;
+            border-radius: 0;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
             opacity: 0;
             transition: opacity 0.8s ease-in-out, transform 0.8s ease-in-out;
@@ -166,40 +144,6 @@
 
         .gallery-progress {
             display: none;
-        }
-
-        .gallery-info {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            
-            
-            width: auto;
-            min-width: 200px;
-            max-width: 90%;
-            
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 12px 16px;
-            border-radius: 6px;
-            opacity: 0;
-            transform: translate(-50%, 10px);
-            transition: all 0.3s ease;
-            pointer-events: none;
-        }
-
-        .gallery-container:hover .gallery-info {
-            opacity: 1;
-            z-index: 2;
-            transform: translate(-50%, 0);
-        }
-
-        .gallery-info-text {
-            font-family: "Source Serif Pro", serif;
-            font-size: 1.1rem;
-            font-weight: 500;
-            color: white;
-            line-height: 1.2;
         }
 
         @media (max-width: 768px) {
@@ -221,10 +165,6 @@
 
             .gallery-frame {
                 height: 70vh;
-            }
-
-            .gallery-info {
-                
             }
         }
     </style>
@@ -271,7 +211,6 @@
                 this.cycleTime = 3000; // 3 seconds for testing
                 
                 this.frame = document.querySelector('.gallery-frame');
-                this.infoText = document.getElementById('info-text');
                 this.controlsContainer = document.getElementById('gallery-controls');
                 this.progressBar = document.querySelector('.gallery-progress');
                 
@@ -290,54 +229,34 @@
                 // Art images from essays/Gallery/ directory with proper URL encoding
                 this.images = [
                     {
-                        src: 'essays/Gallery/Adelita,%20Alfredo%20Arreguin.jpeg',
-                        title: 'Adelita',
-                        artist: 'Alfredo Arreguin'
+                        src: 'essays/Gallery/Adelita,%20Alfredo%20Arreguin.jpeg'
                     },
                     {
-                        src: 'essays/Gallery/Black%20Cross%20New%20Mexico,%20Georgia%20O%27Keeffe.jpg',
-                        title: 'Black Cross New Mexico',
-                        artist: 'Georgia O\'Keeffe'
+                        src: 'essays/Gallery/Black%20Cross%20New%20Mexico,%20Georgia%20O%27Keeffe.jpg'
                     },
                     {
-                        src: 'essays/Gallery/Cosmic%20Cities,%20Arthur%20Wesley%20Dow.jpg',
-                        title: 'Cosmic Cities',
-                        artist: 'Arthur Wesley Dow'
+                        src: 'essays/Gallery/Cosmic%20Cities,%20Arthur%20Wesley%20Dow.jpg'
                     },
                     {
-                        src: 'essays/Gallery/Landscape%20No.%203%20Marsden%20Hartley.jpg',
-                        title: 'Landscape No. 3',
-                        artist: 'Marsden Hartley'
+                        src: 'essays/Gallery/Landscape%20No.%203%20Marsden%20Hartley.jpg'
                     },
                     {
-                        src: 'essays/Gallery/Landscape%20with%20Threee%20Trees,%20Richard%20Diebenkorn.jpeg',
-                        title: 'Landscape with Three Trees',
-                        artist: 'Richard Diebenkorn'
+                        src: 'essays/Gallery/Landscape%20with%20Threee%20Trees,%20Richard%20Diebenkorn.jpeg'
                     },
                     {
-                        src: 'essays/Gallery/Salish%20Sea,%20Alfredo%20Arreguin.jpg',
-                        title: 'Salish Sea',
-                        artist: 'Alfredo Arreguin'
+                        src: 'essays/Gallery/Salish%20Sea,%20Alfredo%20Arreguin.jpg'
                     },
                     {
-                        src: 'essays/Gallery/Signs,%20Lee%20Friedlander.jpg',
-                        title: 'Signs',
-                        artist: 'Lee Friedlander'
+                        src: 'essays/Gallery/Signs,%20Lee%20Friedlander.jpg'
                     },
                     {
-                        src: 'essays/Gallery/Summer%20in%20the%20Catskills,%20George%20Inness.jpg',
-                        title: 'Summer in the Catskills',
-                        artist: 'George Inness'
+                        src: 'essays/Gallery/Summer%20in%20the%20Catskills,%20George%20Inness.jpg'
                     },
                     {
-                        src: 'essays/Gallery/The%20Executive%20Apartment,%20Lynne%20Cohen.jpg',
-                        title: 'The Executive Apartment',
-                        artist: 'Lynne Cohen'
+                        src: 'essays/Gallery/The%20Executive%20Apartment,%20Lynne%20Cohen.jpg'
                     },
                     {
-                        src: 'essays/Gallery/The%20Monk,%20George%20Inness.jpg',
-                        title: 'The Monk',
-                        artist: 'George Inness'
+                        src: 'essays/Gallery/The%20Monk,%20George%20Inness.jpg'
                     }
                 ];
                 
@@ -351,35 +270,22 @@
                 this.images.forEach((imageData, index) => {
                     const img = document.createElement('img');
                     img.src = imageData.src;
-                    img.alt = imageData.title;
+                    img.alt = `Gallery image ${index + 1}`;
                     img.className = 'gallery-image';
                     if (index === 0) img.classList.add('active');
                     
                     // Add load/error event listeners for debugging
-                    img.onload = () => console.log(`Image ${index + 1} loaded: ${imageData.title}`);
+                    img.onload = () => console.log(`Image ${index + 1} loaded`);
                     img.onerror = () => console.log(`Image ${index + 1} failed to load: ${imageData.src}`);
                     
                     this.frame.appendChild(img);
                 });
 
-                // Create info box
-                const infoBox = document.createElement('div');
-                infoBox.className = 'gallery-info';
-                infoBox.id = 'gallery-info';
-                infoBox.innerHTML = `
-                    <div class="gallery-info-text" id="info-text">${this.images[0]?.title || 'Gallery'} • ${this.images[0]?.artist || 'Artist'}</div>
-                `;
-                this.frame.appendChild(infoBox);
-
-                // Update references
-                this.infoText = document.getElementById('info-text');
-
-                this.updateInfoBox();
                 console.log('Gallery setup complete');
             }
 
             goToSlide(index) {
-                console.log(`Going to slide ${index}: ${this.images[index]?.title}`);
+                console.log(`Going to slide ${index}`);
                 
                 // Update active image
                 document.querySelectorAll('.gallery-image').forEach((img, i) => {
@@ -387,7 +293,6 @@
                 });
                 
                 this.currentIndex = index;
-                this.updateInfoBox();
                 this.resetProgress();
             }
 
@@ -445,13 +350,6 @@
                 if (this.progressId) {
                     clearInterval(this.progressId);
                     this.progressId = null;
-                }
-            }
-
-            updateInfoBox() {
-                if (this.images.length > 0 && this.currentIndex < this.images.length) {
-                    const currentImage = this.images[this.currentIndex];
-                    this.infoText.textContent = `${currentImage.title || "Untitled"} • ${currentImage.artist || "Unknown Artist"}`;
                 }
             }
 

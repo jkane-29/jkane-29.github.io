@@ -145,7 +145,7 @@
 
         .gallery-info {
             position: absolute;
-            bottom: 40px;
+            bottom: 20px;
             left: 20px;
             right: 20px;
             background: rgba(0, 0, 0, 0.8);
@@ -237,7 +237,7 @@
                 this.currentIndex = 0;
                 this.intervalId = null;
                 this.progressId = null;
-                this.cycleTime = 20000; // 20 seconds
+                this.cycleTime = 30000; // 30 seconds
                 
                 this.frame = document.querySelector('.gallery-frame');
                 this.infoText = document.getElementById('info-text');
@@ -247,17 +247,15 @@
                 this.init();
             }
 
-            async init() {
-                await this.loadImages();
-                if (this.images.length > 0) {
-                    this.setupGallery();
-                    this.startSlideshow();
-                }
+            init() {
+                this.loadImages();
+                this.setupGallery();
+                this.startSlideshow();
             }
 
-            async loadImages() {
+            loadImages() {
                 // Art images from essays/Gallery/ directory with proper URL encoding
-                const imageData = [
+                this.images = [
                     {
                         src: 'essays/Gallery/Adelita,%20Alfredo%20Arreguin.jpeg',
                         title: 'Adelita',
@@ -309,26 +307,6 @@
                         artist: 'George Inness'
                     }
                 ];
-
-                // Load images that exist
-                for (const data of imageData) {
-                    try {
-                        await this.checkImageExists(data.src);
-                        this.images.push(data);
-                        console.log(`Loaded: ${data.title}`);
-                    } catch (error) {
-                        console.log(`Failed to load: ${data.src}`);
-                    }
-                }
-            }
-
-            checkImageExists(src) {
-                return new Promise((resolve, reject) => {
-                    const img = new Image();
-                    img.onload = () => resolve(src);
-                    img.onerror = () => reject(src);
-                    img.src = src;
-                });
             }
 
             setupGallery() {

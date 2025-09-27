@@ -237,7 +237,7 @@
                 this.currentIndex = 0;
                 this.intervalId = null;
                 this.progressId = null;
-                this.cycleTime = 30000; // 30 seconds
+                this.cycleTime = 5000; // 5 seconds for testing
                 
                 this.frame = document.querySelector('.gallery-frame');
                 this.infoText = document.getElementById('info-text');
@@ -307,9 +307,13 @@
                         artist: 'George Inness'
                     }
                 ];
+                
+                console.log(`Loaded ${this.images.length} images`);
             }
 
             setupGallery() {
+                console.log('Setting up gallery...');
+                
                 // Create image elements
                 this.images.forEach((imageData, index) => {
                     const img = document.createElement('img');
@@ -317,6 +321,11 @@
                     img.alt = imageData.title;
                     img.className = 'gallery-image';
                     if (index === 0) img.classList.add('active');
+                    
+                    // Add load/error event listeners for debugging
+                    img.onload = () => console.log(`Image ${index + 1} loaded: ${imageData.title}`);
+                    img.onerror = () => console.log(`Image ${index + 1} failed to load: ${imageData.src}`);
+                    
                     this.frame.appendChild(img);
                 });
 
@@ -333,9 +342,12 @@
                 this.infoText = document.getElementById('info-text');
 
                 this.updateInfoBox();
+                console.log('Gallery setup complete');
             }
 
             goToSlide(index) {
+                console.log(`Going to slide ${index}: ${this.images[index]?.title}`);
+                
                 // Update active image
                 document.querySelectorAll('.gallery-image').forEach((img, i) => {
                     img.classList.toggle('active', i === index);
@@ -348,12 +360,14 @@
 
             nextSlide() {
                 const nextIndex = (this.currentIndex + 1) % this.images.length;
+                console.log(`Next slide: ${nextIndex}`);
                 this.goToSlide(nextIndex);
             }
 
             startSlideshow() {
                 if (this.images.length <= 1) return;
                 
+                console.log('Starting slideshow...');
                 this.intervalId = setInterval(() => {
                     this.nextSlide();
                 }, this.cycleTime);
@@ -408,6 +422,7 @@
 
         // Initialize gallery when page loads
         document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM loaded, initializing gallery...');
             const gallery = new Gallery();
 
             // Pause on hover, resume on mouse leave

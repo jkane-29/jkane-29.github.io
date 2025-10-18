@@ -351,51 +351,15 @@
         <main class="main-content">
             <section class="intro">
                 <h1>Bookshelf</h1>
-                <p>
-                    I spend a lot of time reading. Below are some of my favorite articles and blogs, along with an interactive 3D bookshelf of books I've read.
+                <p class="bookshelf-info">
+                    Click on any book to see the cover, then click again to see the back with description and my notes. Click once more to return it to the shelf.
                 </p>
             </section>
 
             <section class="bio-section">
-                <h2>Articles/Blogs of Note</h2>
-                <div class="blog-item">
-                    <a href="https://nabeelqu.co/principles" class="blog-link" target="_blank">Principles - Nabeel Quereshi</a>
-                    <div class="item-comment">A great list! I probably think about a few of these everyday.</div>
-                </div>
-                
-                <div class="blog-item">
-                    <a href="https://www.henrikkarlsson.xyz/p/agency" class="blog-link" target="_blank">On Agency - Henrik Karlsson</a>
-                    <div class="item-comment">Reframing possibilities in the context of constraints.</div>
-                </div>
-                
-                <div class="blog-item">
-                    <a href="https://www.paulgraham.com/greatwork.html" class="blog-link" target="_blank">How to Do Great Work - Paul Graham</a>
-                    <div class="item-comment">Self-explanatory enough, came along to these very late, but they've had an outsized impact on my thinking, i.e what to work on.</div>
-                </div>
-                
-                <div class="blog-item">
-                    <a href="https://worksinprogress.co/issue/progress-unmoored/" class="blog-link" target="_blank">Progress Unmoored - Michael Hopkins/WIP</a>
-                    <div class="item-comment">Excellent writing from WIP in general, continually finds unexpected areas for growth. They take some incredibly mundane regulatory or civil process and break out into a maelstrom of incentives for good and bad.  </div>
-                </div>
-                
-                <div class="blog-item">
-                    <a href="https://www.newyorker.com/magazine/2023/03/13/the-fight-over-penn-station-and-madison-square-garden" class="blog-link" target="_blank">The Fight Over Penn Station and Madison Square Garden - William Finnegan</a>
-                    <div class="item-comment">Dramaticizes one of New York's great issues and it's downstream evolution.</div>
-                </div>
-
-                <div class="blog-item">
-                    <a href="https://danwang.co/college-girardian-terror/" class="blog-link" target="_blank">College as an Incubator of Girardian Terror - Dan Wang</a>
-                    <div class="item-comment">Insert straussian analysis here, thought this was excellent along with Dan Wang's yearly review.</div>
-                </div>        
-            </section>
-
-            <section class="bio-section">
-                <h2>Books</h2>
-                <p class="bookshelf-info">Click on any book to see the cover, then click again to see the back with description and my notes. Click once more to return it to the shelf.</p>
-                
                 <div class="bookshelf-container">
-<div style="display: flex; justify-content: center; align-items: center; min-height: 100vh;">
-  <div style="display: flex; flex-direction: column; gap: 120px; align-items: center;">
+                    <div style="display: flex; justify-content: center; align-items: center; min-height: 100vh;">
+                        <div style="display: flex; flex-direction: column; gap: 120px; align-items: center;">
     <!-- Row 1 -->
     <div class="container" style="perspective: 800px; height: 320px; width: 989.8457933105609px; position: relative; z-index: 1;">
     
@@ -1042,12 +1006,13 @@ This bestselling and hilarious book blew the doors off Wall Street's boardrooms 
     </div>
   </div>
     </div>
-  </div>
-</div>
-</div>
-</section>
+                        </div>
+                    </div>
+                </div>
+            </section>
         </main>
     </div>
+
 <script>
   function toggleBook(bookId) {
     var book = document.getElementById(bookId);
@@ -1102,5 +1067,6 @@ This bestselling and hilarious book blew the doors off Wall Street's boardrooms 
       }
     }
   }
+</script>
 </body>
 </html>

@@ -258,24 +258,37 @@
                     <input type="text" id="terminal-input" class="terminal-input" autocomplete="off">
                 </div>
             </div>
-            <div class="controls">
-                <button id="start-btn" class="btn">Start</button>
-                <button id="restart-btn" class="btn" style="display: none;">Restart</button>
-            </div>
         </main>
     </div>
 
     <script type="text/javascript">
         let inputResolver = null;
         let isWaitingForInput = false;
+        let outputLines = [];
+        const MAX_LINES = 20; // Keep last 20 lines visible
 
         function appendOutput(text) {
+            const lines = text.split('\n');
+            for (let line of lines) {
+                if (line !== '') {
+                    outputLines.push(line);
+                } else {
+                    outputLines.push(''); // Keep empty lines for spacing
+                }
+            }
+            
+            // Keep only the last MAX_LINES
+            if (outputLines.length > MAX_LINES) {
+                outputLines = outputLines.slice(-MAX_LINES);
+            }
+            
             const output = document.getElementById('terminal-output');
-            output.textContent += text;
+            output.textContent = outputLines.join('\n');
             output.scrollTop = output.scrollHeight;
         }
 
         function clearOutput() {
+            outputLines = [];
             document.getElementById('terminal-output').textContent = '';
         }
 
@@ -331,8 +344,6 @@
 
         async function runDecisionMaker() {
             clearOutput();
-            document.getElementById('start-btn').style.display = 'none';
-            document.getElementById('restart-btn').style.display = 'inline-block';
             
             try {
                 // Get number of decision makers
@@ -424,18 +435,18 @@
                 appendOutput("=".repeat(50) + "\n");
                 appendOutput(`\nThe group has chosen: ${options[0]}\n`);
                 appendOutput("\n" + "=".repeat(50) + "\n");
-                appendOutput("\n\nClick 'Restart' to make another decision!\n");
+                
+                // Wait 3 seconds then restart
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                runDecisionMaker();
                 
             } catch (err) {
                 appendOutput('\n\nError: ' + err.message + '\n');
             }
         }
 
-        document.getElementById('start-btn').addEventListener('click', runDecisionMaker);
-        document.getElementById('restart-btn').addEventListener('click', runDecisionMaker);
-
-        // Initial message
-        appendOutput('Click "Start" to begin making a decision.\n\n');
+        // Auto-start when page loads
+        runDecisionMaker();
     </script>
 </body>
 </html>

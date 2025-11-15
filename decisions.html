@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Decisions - Jack Kane</title>
     <link href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
     <style>
         * {
             margin: 0;
@@ -260,36 +259,15 @@
                 </div>
             </div>
             <div class="controls">
-                <button id="start-btn" class="btn" disabled>Start</button>
+                <button id="start-btn" class="btn">Start</button>
                 <button id="restart-btn" class="btn" style="display: none;">Restart</button>
-                <span id="loading-msg" class="loading-message">Initializing...</span>
             </div>
         </main>
     </div>
 
     <script type="text/javascript">
-        let pyodide;
-        let outputBuffer = '';
         let inputResolver = null;
         let isWaitingForInput = false;
-
-        async function loadPyodide() {
-            try {
-                pyodide = await loadPyodide();
-                await pyodide.loadPackage(['micropip']);
-                
-                // Set up input/output handling
-                pyodide.setStdout({ batched: (msg) => appendOutput(msg) });
-                pyodide.setStderr({ batched: (msg) => appendOutput('Error: ' + msg) });
-                
-                document.getElementById('start-btn').disabled = false;
-                document.getElementById('loading-msg').textContent = 'Ready!';
-                appendOutput('Python environment loaded. Click "Start" to begin.\n\n');
-            } catch (err) {
-                appendOutput('Error loading Python: ' + err.message + '\n');
-                document.getElementById('loading-msg').textContent = 'Error loading Python';
-            }
-        }
 
         function appendOutput(text) {
             const output = document.getElementById('terminal-output');
@@ -343,107 +321,111 @@
             }
         });
 
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
         async function runDecisionMaker() {
             clearOutput();
             document.getElementById('start-btn').style.display = 'none';
             document.getElementById('restart-btn').style.display = 'inline-block';
             
-            const pythonCode = `
-import random
-
-async def main():
-    # Get number of decision makers
-    while True:
-        try:
-            num_people = int(await input_async("Enter number of people making decisions: "))
-            if num_people > 0:
-                break
-            print("Please enter a positive number.")
-        except ValueError:
-            print("Please enter a valid number.")
-    
-    # Get number of options
-    while True:
-        try:
-            num_options = int(await input_async("Enter number of options to choose from: "))
-            if num_options > 1:
-                break
-            print("Please enter at least 2 options.")
-        except ValueError:
-            print("Please enter a valid number.")
-    
-    # Get option names
-    options = []
-    print("\\nEnter the name of each option:")
-    for i in range(num_options):
-        option = (await input_async(f"Option {i+1}: ")).strip()
-        options.append(option)
-    
-    # Create list of people (Person 1, Person 2, etc.)
-    people = [f"Person {i+1}" for i in range(num_people)]
-    
-    # Shuffle people for random starting order
-    random.shuffle(people)
-    
-    # Start elimination process
-    print("\\n" + "="*50)
-    print("ELIMINATION PROCESS")
-    print("="*50)
-    print(f"Turn order: {' → '.join(people)}")
-    
-    round_num = 1
-    person_index = 0
-    
-    while len(options) > 1:
-        print(f"\\nRound {round_num}")
-        print(f"Remaining options: {', '.join(options)}")
-        
-        # Select current person from rotation
-        current_person = people[person_index]
-        print(f"\\n{current_person}'s turn!")
-        print("Choose the option you want to ELIMINATE:")
-        
-        # Display options with numbers
-        for i, option in enumerate(options, 1):
-            print(f"  {i}. {option}")
-        
-        # Get elimination choice
-        while True:
-            try:
-                choice = int(await input_async(f"\\nEnter number (1-{len(options)}): "))
-                if 1 <= choice <= len(options):
-                    break
-                print(f"Please enter a number between 1 and {len(options)}.")
-            except ValueError:
-                print("Please enter a valid number.")
-        
-        # Remove chosen option
-        eliminated = options.pop(choice - 1)
-        print(f"\\n{eliminated} has been eliminated!")
-        
-        # Move to next person in rotation
-        person_index = (person_index + 1) % num_people
-        
-        round_num += 1
-    
-    # Announce winner
-    print("\\n" + "="*50)
-    print("FINAL DECISION")
-    print("="*50)
-    print(f"\\nThe group has chosen: {options[0]}")
-    print("\\n" + "="*50)
-    print("\\n\\nClick 'Restart' to make another decision!")
-
-await main()
-`;
-            
             try {
-                // Create async input function in Python scope
-                pyodide.globals.set('input_async', async (prompt) => {
-                    return await getInput(prompt);
-                });
+                // Get number of decision makers
+                let numPeople;
+                while (true) {
+                    const input = await getInput("Enter number of people making decisions: ");
+                    numPeople = parseInt(input);
+                    if (!isNaN(numPeople) && numPeople > 0) {
+                        break;
+                    }
+                    appendOutput("Please enter a positive number.\n");
+                }
                 
-                await pyodide.runPythonAsync(pythonCode);
+                // Get number of options
+                let numOptions;
+                while (true) {
+                    const input = await getInput("Enter number of options to choose from: ");
+                    numOptions = parseInt(input);
+                    if (!isNaN(numOptions) && numOptions > 1) {
+                        break;
+                    }
+                    appendOutput("Please enter at least 2 options.\n");
+                }
+                
+                // Get option names
+                const options = [];
+                appendOutput("\nEnter the name of each option:\n");
+                for (let i = 0; i < numOptions; i++) {
+                    const option = await getInput(`Option ${i + 1}: `);
+                    options.push(option.trim());
+                }
+                
+                // Create list of people (Person 1, Person 2, etc.)
+                const people = [];
+                for (let i = 0; i < numPeople; i++) {
+                    people.push(`Person ${i + 1}`);
+                }
+                
+                // Shuffle people for random starting order
+                shuffleArray(people);
+                
+                // Start elimination process
+                appendOutput("\n" + "=".repeat(50) + "\n");
+                appendOutput("ELIMINATION PROCESS\n");
+                appendOutput("=".repeat(50) + "\n");
+                appendOutput(`Turn order: ${people.join(' → ')}\n`);
+                
+                let roundNum = 1;
+                let personIndex = 0;
+                
+                while (options.length > 1) {
+                    appendOutput(`\nRound ${roundNum}\n`);
+                    appendOutput(`Remaining options: ${options.join(', ')}\n`);
+                    
+                    // Select current person from rotation
+                    const currentPerson = people[personIndex];
+                    appendOutput(`\n${currentPerson}'s turn!\n`);
+                    appendOutput("Choose the option you want to ELIMINATE:\n");
+                    
+                    // Display options with numbers
+                    for (let i = 0; i < options.length; i++) {
+                        appendOutput(`  ${i + 1}. ${options[i]}\n`);
+                    }
+                    
+                    // Get elimination choice
+                    let choice;
+                    while (true) {
+                        const input = await getInput(`\nEnter number (1-${options.length}): `);
+                        choice = parseInt(input);
+                        if (!isNaN(choice) && choice >= 1 && choice <= options.length) {
+                            break;
+                        }
+                        appendOutput(`Please enter a number between 1 and ${options.length}.\n`);
+                    }
+                    
+                    // Remove chosen option
+                    const eliminated = options.splice(choice - 1, 1)[0];
+                    appendOutput(`\n${eliminated} has been eliminated!\n`);
+                    
+                    // Move to next person in rotation
+                    personIndex = (personIndex + 1) % numPeople;
+                    
+                    roundNum++;
+                }
+                
+                // Announce winner
+                appendOutput("\n" + "=".repeat(50) + "\n");
+                appendOutput("FINAL DECISION\n");
+                appendOutput("=".repeat(50) + "\n");
+                appendOutput(`\nThe group has chosen: ${options[0]}\n`);
+                appendOutput("\n" + "=".repeat(50) + "\n");
+                appendOutput("\n\nClick 'Restart' to make another decision!\n");
+                
             } catch (err) {
                 appendOutput('\n\nError: ' + err.message + '\n');
             }
@@ -452,8 +434,8 @@ await main()
         document.getElementById('start-btn').addEventListener('click', runDecisionMaker);
         document.getElementById('restart-btn').addEventListener('click', runDecisionMaker);
 
-        // Load Pyodide when page loads
-        loadPyodide();
+        // Initial message
+        appendOutput('Click "Start" to begin making a decision.\n\n');
     </script>
 </body>
 </html>

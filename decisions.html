@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decision Maker - Jack Kane</title>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.4;
+            color: #374151;
+            background-color: #fefefe;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 60px;
+            padding: 60px 20px;
+        }
+
+        .sidebar {
+            position: sticky;
+            top: 60px;
+            height: fit-content;
+        }
+
+        .name {
+            font-family: 'Source Serif Pro', serif;
+            font-size: 2.2rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #111827;
+            line-height: 1.1;
+            text-decoration: none;
+            display: block;
+        }
+
+        .name:hover {
+            color: #059669;
+        }
+
+        .title {
+            color: #059669;
+            font-weight: 500;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+            line-height: 1.2;
+        }
+
+        .nav-links {
+            list-style: none;
+            margin-bottom: 30px;
+        }
+
+        .nav-links li {
+            margin-bottom: 8px;
+        }
+
+        .nav-links a {
+            color: #6b7280;
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.2s ease;
+            line-height: 1.3;
+        }
+
+        .nav-links a:hover {
+            color: #059669;
+        }
+
+        .nav-links a.current {
+            color: #059669;
+            font-weight: 500;
+        }
+
+        .contact-info {
+            font-size: 0.9rem;
+            color: #6b7280;
+            line-height: 1.4;
+        }
+
+        .contact-info a {
+            color: #059669;
+            text-decoration: none;
+        }
+
+        .main-content {
+            padding-top: 20px;
+        }
+
+        .terminal-container {
+            background-color: #0c0c0c;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            min-height: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .terminal-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #2a2a2a;
+        }
+
+        .terminal-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .dot-red { background-color: #ff5f56; }
+        .dot-yellow { background-color: #ffbd2e; }
+        .dot-green { background-color: #27c93f; }
+
+        .terminal-title {
+            color: #a0a0a0;
+            font-size: 0.85rem;
+            margin-left: 8px;
+        }
+
+        .terminal-output {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95rem;
+            color: #00ff00;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .terminal-input-line {
+            display: flex;
+            align-items: center;
+            margin-top: 8px;
+        }
+
+        .terminal-prompt {
+            color: #00ff00;
+            margin-right: 8px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        .terminal-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #00ff00;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95rem;
+            outline: none;
+            caret-color: #00ff00;
+        }
+
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .btn {
+            background-color: #059669;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .btn:hover {
+            background-color: #047857;
+        }
+
+        .btn:disabled {
+            background-color: #6b7280;
+            cursor: not-allowed;
+        }
+
+        .loading-message {
+            color: #a0a0a0;
+            font-size: 0.85rem;
+            font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                gap: 30px;
+                padding: 30px 20px;
+            }
+            
+            .sidebar {
+                position: static;
+                border-bottom: 1px solid #e5e7eb;
+                padding-bottom: 20px;
+            }
+            
+            .name {
+                font-size: 1.8rem;
+            }
+
+            .terminal-container {
+                max-height: 70vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <a href="index.html" class="name">Jack Kane</a>
+            
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="ideas.html">Ideas</a></li>
+                    <li><a href="bookshelf.html">Bookshelf</a></li>
+                    <li><a href="writing.html">Writing</a></li>
+                    <li><a href="woodshop.html">Woodshop</a></li>
+                    <li><a href="decisions.html" class="current">Decision Maker</a></li>
+                </ul>
+            </nav>
+            
+            <div class="contact-info">
+                <p><a href="mailto:jkane29@icloud.com">jkane29@icloud.com</a></p>
+                <p><a href="https://twitter.com/desperad0V" target="_blank">@desperad0V</a></p>
+                <p>Office: N/A</p>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="terminal-container">
+                <div class="terminal-header">
+                    <div class="terminal-dot dot-red"></div>
+                    <div class="terminal-dot dot-yellow"></div>
+                    <div class="terminal-dot dot-green"></div>
+                    <div class="terminal-title">decisions.py</div>
+                </div>
+                <div id="terminal-output" class="terminal-output">Loading Python environment...</div>
+                <div class="terminal-input-line" id="input-line" style="display: none;">
+                    <span class="terminal-prompt">></span>
+                    <input type="text" id="terminal-input" class="terminal-input" autocomplete="off">
+                </div>
+            </div>
+            <div class="controls">
+                <button id="start-btn" class="btn" disabled>Start Decision Maker</button>
+                <button id="restart-btn" class="btn" style="display: none;">Restart</button>
+                <span id="loading-msg" class="loading-message">Initializing...</span>
+            </div>
+        </main>
+    </div>
+
+    <script type="text/javascript">
+        let pyodide;
+        let outputBuffer = '';
+        let inputResolver = null;
+        let isWaitingForInput = false;
+
+        async function loadPyodide() {
+            try {
+                pyodide = await loadPyodide();
+                await pyodide.loadPackage(['micropip']);
+                
+                // Set up input/output handling
+                pyodide.setStdout({ batched: (msg) => appendOutput(msg) });
+                pyodide.setStderr({ batched: (msg) => appendOutput('Error: ' + msg) });
+                
+                document.getElementById('start-btn').disabled = false;
+                document.getElementById('loading-msg').textContent = 'Ready!';
+                appendOutput('Python environment loaded. Click "Start Decision Maker" to begin.\n\n');
+            } catch (err) {
+                appendOutput('Error loading Python: ' + err.message + '\n');
+                document.getElementById('loading-msg').textContent = 'Error loading Python';
+            }
+        }
+
+        function appendOutput(text) {
+            const output = document.getElementById('terminal-output');
+            output.textContent += text;
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function clearOutput() {
+            document.getElementById('terminal-output').textContent = '';
+        }
+
+        async function getInput(prompt = '') {
+            if (prompt) {
+                appendOutput(prompt);
+            }
+            
+            isWaitingForInput = true;
+            const inputLine = document.getElementById('input-line');
+            const inputField = document.getElementById('terminal-input');
+            
+            inputLine.style.display = 'flex';
+            inputField.value = '';
+            inputField.focus();
+            
+            return new Promise((resolve) => {
+                inputResolver = resolve;
+            });
+        }
+
+        function handleInputSubmit() {
+            if (!isWaitingForInput || !inputResolver) return;
+            
+            const inputField = document.getElementById('terminal-input');
+            const value = inputField.value;
+            
+            appendOutput(value + '\n');
+            
+            inputField.value = '';
+            document.getElementById('input-line').style.display = 'none';
+            
+            isWaitingForInput = false;
+            const resolver = inputResolver;
+            inputResolver = null;
+            resolver(value);
+        }
+
+        document.getElementById('terminal-input').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleInputSubmit();
+            }
+        });
+
+        async function runDecisionMaker() {
+            clearOutput();
+            document.getElementById('start-btn').style.display = 'none';
+            document.getElementById('restart-btn').style.display = 'inline-block';
+            
+            const pythonCode = `
+import random
+
+async def main():
+    # Get number of decision makers
+    while True:
+        try:
+            num_people = int(await input_async("Enter number of people making decisions: "))
+            if num_people > 0:
+                break
+            print("Please enter a positive number.")
+        except ValueError:
+            print("Please enter a valid number.")
+    
+    # Get number of options
+    while True:
+        try:
+            num_options = int(await input_async("Enter number of options to choose from: "))
+            if num_options > 1:
+                break
+            print("Please enter at least 2 options.")
+        except ValueError:
+            print("Please enter a valid number.")
+    
+    # Get option names
+    options = []
+    print("\\nEnter the name of each option:")
+    for i in range(num_options):
+        option = (await input_async(f"Option {i+1}: ")).strip()
+        options.append(option)
+    
+    # Create list of people (Person 1, Person 2, etc.)
+    people = [f"Person {i+1}" for i in range(num_people)]
+    
+    # Shuffle people for random starting order
+    random.shuffle(people)
+    
+    # Start elimination process
+    print("\\n" + "="*50)
+    print("ELIMINATION PROCESS")
+    print("="*50)
+    print(f"Turn order: {' → '.join(people)}")
+    
+    round_num = 1
+    person_index = 0
+    
+    while len(options) > 1:
+        print(f"\\nRound {round_num}")
+        print(f"Remaining options: {', '.join(options)}")
+        
+        # Select current person from rotation
+        current_person = people[person_index]
+        print(f"\\n{current_person}'s turn!")
+        print("Choose the option you want to ELIMINATE:")
+        
+        # Display options with numbers
+        for i, option in enumerate(options, 1):
+            print(f"  {i}. {option}")
+        
+        # Get elimination choice
+        while True:
+            try:
+                choice = int(await input_async(f"\\nEnter number (1-{len(options)}): "))
+                if 1 <= choice <= len(options):
+                    break
+                print(f"Please enter a number between 1 and {len(options)}.")
+            except ValueError:
+                print("Please enter a valid number.")
+        
+        # Remove chosen option
+        eliminated = options.pop(choice - 1)
+        print(f"\\n{eliminated} has been eliminated!")
+        
+        # Move to next person in rotation
+        person_index = (person_index + 1) % num_people
+        
+        round_num += 1
+    
+    # Announce winner
+    print("\\n" + "="*50)
+    print("FINAL DECISION")
+    print("="*50)
+    print(f"\\nThe group has chosen: {options[0]}")
+    print("\\n" + "="*50)
+    print("\\n\\nClick 'Restart' to make another decision!")
+
+await main()
+`;
+            
+            try {
+                // Create async input function in Python scope
+                pyodide.globals.set('input_async', async (prompt) => {
+                    return await getInput(prompt);
+                });
+                
+                await pyodide.runPythonAsync(pythonCode);
+            } catch (err) {
+                appendOutput('\n\nError: ' + err.message + '\n');
+            }
+        }
+
+        document.getElementById('start-btn').addEventListener('click', runDecisionMaker);
+        document.getElementById('restart-btn').addEventListener('click', runDecisionMaker);
+
+        // Load Pyodide when page loads
+        loadPyodide();
+    </script>
+</body>
+</html>
+

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Decision Maker - Jack Kane</title>
+    <title>Decisions - Jack Kane</title>
     <link href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
     <style>
@@ -234,7 +234,7 @@
                     <li><a href="bookshelf.html">Bookshelf</a></li>
                     <li><a href="writing.html">Writing</a></li>
                     <li><a href="woodshop.html">Woodshop</a></li>
-                    <li><a href="decisions.html" class="current">Decision Maker</a></li>
+                    <li><a href="decisions.html" class="current">Decisions</a></li>
                 </ul>
             </nav>
             
@@ -260,7 +260,7 @@
                 </div>
             </div>
             <div class="controls">
-                <button id="start-btn" class="btn" disabled>Start Decision Maker</button>
+                <button id="start-btn" class="btn" disabled>Start</button>
                 <button id="restart-btn" class="btn" style="display: none;">Restart</button>
                 <span id="loading-msg" class="loading-message">Initializing...</span>
             </div>
@@ -284,7 +284,7 @@
                 
                 document.getElementById('start-btn').disabled = false;
                 document.getElementById('loading-msg').textContent = 'Ready!';
-                appendOutput('Python environment loaded. Click "Start Decision Maker" to begin.\n\n');
+                appendOutput('Python environment loaded. Click "Start" to begin.\n\n');
             } catch (err) {
                 appendOutput('Error loading Python: ' + err.message + '\n');
                 document.getElementById('loading-msg').textContent = 'Error loading Python';

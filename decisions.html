@@ -433,73 +433,7 @@
                 }
                 
                 // Announce winner
-                appendOutput("\n" + "=".repeat(50) + "\n");
-                appendOutput("FINAL DECISION\n");
-                appendOutput("=".repeat(50) + "\n");
                 appendOutput(`\nThe group has chosen: ${options[0]}\n`);
-                
-                // ASCII art celebration
-                const winnerName = options[0].substring(0, 50); // Truncate if too long
-                const trophyArt = `
-
-       .-.,     ,.-.
- '-.  /:::\\   //:::\\  .-'
- '-.\\|':':' \`"\` ':':'|/.-'
- \`-./\`. .-=-. .-=-. .\`\\.-\`
-   /=- /     |     \\ -=\\
-  ;   |      |      |   ;
-  |=-.|______|______|.-=|
-  |==  \\  0 /_\\ 0  /  ==|
-  |=   /'---( )---'\\   =|
-   \\   \\:   .'.   :/   /
-    \`\\= '--\`   \`--' =/'
-      \`-=._     _.=-'
-           \`""\`\`
-`;
-                // Center the winner name in a 35-character space
-                const paddedName = winnerName.length <= 35 
-                    ? winnerName.padStart(Math.floor((35 + winnerName.length) / 2)).padEnd(35)
-                    : winnerName.substring(0, 35);
-                
-                // Create text box lines (without the outer padding)
-                const textBoxLines = [
-                    '═'.repeat(45),
-                    '╔═══════════════════════════════════════╗',
-                    '║                                       ║',
-                    '║      THE ULTIMATE DECISION            ║',
-                    '║                                       ║',
-                    `║  ${paddedName}  ║`,
-                    '║                                       ║',
-                    '╚═══════════════════════════════════════╝',
-                    '═'.repeat(45)
-                ];
-                
-                appendOutput("\n\n");
-                // Keep all lines including empty ones to preserve structure
-                const trophyLines = trophyArt.split('\n');
-                
-                // Combine trophy art and text box side by side
-                const maxLines = Math.max(trophyLines.length, textBoxLines.length);
-                const combinedLines = [];
-                
-                for (let i = 0; i < maxLines; i++) {
-                    const trophyLine = i < trophyLines.length ? trophyLines[i] : '';
-                    const textBoxLine = i < textBoxLines.length ? textBoxLines[i] : '';
-                    // Pad trophy line to consistent width (about 50 chars) then add text box
-                    const paddedTrophy = trophyLine.padEnd(50);
-                    combinedLines.push(paddedTrophy + '  ' + textBoxLine);
-                }
-                
-                // Output all lines at once, bypassing line limit for ASCII art
-                const output = document.getElementById('terminal-output');
-                const fullOutput = outputLines.join('\n') + '\n\n' + combinedLines.join('\n') + '\n' + "=".repeat(50) + '\n';
-                outputLines = fullOutput.split('\n');
-                // Keep more lines for ASCII art display
-                if (outputLines.length > 50) {
-                    outputLines = outputLines.slice(-50);
-                }
-                output.textContent = outputLines.join('\n');
-                output.scrollTop = output.scrollHeight;
                 
                 // Wait 7 seconds then restart
                 await new Promise(resolve => setTimeout(resolve, 7000));

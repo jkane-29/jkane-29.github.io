@@ -14,7 +14,7 @@ def main():
     # Get number of options
     while True:
         try:
-            num_options = int(input("Enter number of options to choose from: "))
+            num_options = int(input("Enter # of options deciding between: "))
             if num_options > 1:
                 break
             print("Please enter at least 2 options.")
@@ -23,7 +23,7 @@ def main():
     
     # Get option names
     options = []
-    print("\nEnter the name of each option:")
+    print("Enter the name of each option:")
     for i in range(num_options):
         option = input(f"Option {i+1}: ").strip()
         options.append(option)
@@ -80,7 +80,70 @@ def main():
     print("FINAL DECISION")
     print("="*50)
     print(f"\nThe group has chosen: {options[0]}")
-    print("\n" + "="*50)
+    
+    # ASCII art celebration
+    print("\n" * 2)
+    winner_name = options[0][:50]  # Truncate if too long
+    trophy_art = """
+        _ooo--.
+
+
+
+     @@@=@MMM\.`,_.',-
+
+   _.\\X/"/"   \\  33,
+
+  ===A   |     \\ P""B
+
+    /@,_ (  __,/""\\.M\\
+
+    |; \\"/\\"_,/ / .'.A
+
+    \\,\\._><-__./    "V
+
+     \\F _       a_3R"---,.
+
+      _>"#           _   )
+
+     (  /           .@J  /
+
+     ) /           /    )
+
+     ( |           \\    /,
+
+     | \\            `,._,/ ___
+
+      "=\\,          ]@7,.n| P @\\
+
+          7-______.  \\____.,   .)
+
+          /  /     \\ \\      \\WWW/
+
+          |  |     |  |      ""'
+
+   ___   /   \\.   ,/  \\._
+
+/"   \"\"\"      \\ (       \"\"\"\"\\
+
+|(       ___.-'  "--.       \\)
+
+ ""-`\"\"\"\"            `--(__)/
+
+"""
+    text_box = f"""
+{'═' * 80}
+{' ' * 20}╔═══════════════════════════════════════╗
+{' ' * 20}║                                       ║
+{' ' * 20}║      THE ULTIMATE DECISION            ║
+{' ' * 20}║                                       ║
+{' ' * 20}║  {winner_name:^35}  ║
+{' ' * 20}║                                       ║
+{' ' * 20}╚═══════════════════════════════════════╝
+{'═' * 80}
+"""
+    print(trophy_art)
+    print(text_box)
+    print("="*50)
 
 if __name__ == "__main__":
     main()

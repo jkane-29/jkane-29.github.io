@@ -346,12 +346,10 @@
         }
 
         async function runDecisionMaker() {
-            clearOutput();
-            
-            // Small delay to ensure DOM is ready
-            await new Promise(resolve => setTimeout(resolve, 100));
-            
             try {
+                console.log('runDecisionMaker called');
+                clearOutput();
+                
                 // Get number of decision makers
                 let numPeople;
                 while (true) {
@@ -507,11 +505,27 @@
         }
 
         // Auto-start when page loads
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                runDecisionMaker();
-            }, 100);
-        });
+        (function() {
+            console.log('Initializing decisions app, readyState:', document.readyState);
+            function startApp() {
+                console.log('Starting runDecisionMaker');
+                runDecisionMaker().catch(err => {
+                    console.error('Unhandled error:', err);
+                    const output = document.getElementById('terminal-output');
+                    if (output) {
+                        output.textContent = 'Error: ' + err.message;
+                    }
+                });
+            }
+            
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', function() {
+                    setTimeout(startApp, 50);
+                });
+            } else {
+                setTimeout(startApp, 50);
+            }
+        })();
     </script>
 </body>
 </html>

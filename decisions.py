@@ -86,9 +86,6 @@ def main():
     winner_name = options[0][:50]  # Truncate if too long
     trophy_art = """
         _ooo--.
-
-
-
      @@@=@MMM\.`,_.',-
    _.\\X/"/"   \\  33,
   ===A   |     \\ P""B

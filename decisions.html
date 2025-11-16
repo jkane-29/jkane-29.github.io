@@ -289,7 +289,10 @@
 
         function clearOutput() {
             outputLines = [];
-            document.getElementById('terminal-output').textContent = '';
+            const output = document.getElementById('terminal-output');
+            if (output) {
+                output.textContent = '';
+            }
         }
 
         async function getInput(prompt = '') {
@@ -344,6 +347,9 @@
 
         async function runDecisionMaker() {
             clearOutput();
+            
+            // Small delay to ensure DOM is ready
+            await new Promise(resolve => setTimeout(resolve, 100));
             
             try {
                 // Get number of decision makers
@@ -495,11 +501,17 @@
                 
             } catch (err) {
                 appendOutput('\n\nError: ' + err.message + '\n');
+                appendOutput('Stack: ' + err.stack + '\n');
+                console.error('Error in runDecisionMaker:', err);
             }
         }
 
         // Auto-start when page loads
-        runDecisionMaker();
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                runDecisionMaker();
+            }, 100);
+        });
     </script>
 </body>
 </html>

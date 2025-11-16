@@ -349,7 +349,7 @@
                 // Get number of decision makers
                 let numPeople;
                 while (true) {
-                    const input = await getInput("Enter number of people making decisions: ");
+                    const input = await getInput("Enter # of decision makers: ");
                     numPeople = parseInt(input);
                     if (!isNaN(numPeople) && numPeople > 0) {
                         break;
@@ -360,7 +360,7 @@
                 // Get number of options
                 let numOptions;
                 while (true) {
-                    const input = await getInput("Enter number of options to choose from: ");
+                    const input = await getInput("Enter # of options deciding between: ");
                     numOptions = parseInt(input);
                     if (!isNaN(numOptions) && numOptions > 1) {
                         break;
@@ -370,7 +370,7 @@
                 
                 // Get option names
                 const options = [];
-                appendOutput("\n");
+                appendOutput("Enter the name of each option:\n");
                 for (let i = 0; i < numOptions; i++) {
                     const option = await getInput(`Option ${i + 1}: `);
                     options.push(option.trim());
@@ -386,45 +386,118 @@
                 shuffleArray(people);
                 
                 // Start elimination process
-                appendOutput("=".repeat(40) + "\n");
+                appendOutput("\n" + "=".repeat(50) + "\n");
+                appendOutput("ELIMINATION PROCESS\n");
+                appendOutput("=".repeat(50) + "\n");
                 appendOutput(`Turn order: ${people.join(' → ')}\n`);
-                appendOutput("=".repeat(40) + "\n");
                 
+                let roundNum = 1;
                 let personIndex = 0;
                 
                 while (options.length > 1) {
+                    appendOutput(`\nRound ${roundNum}\n`);
+                    appendOutput(`Remaining options: ${options.join(', ')}\n`);
+                    
                     // Select current person from rotation
                     const currentPerson = people[personIndex];
-                    appendOutput(`\n${currentPerson}'s turn\n`);
+                    appendOutput(`\n${currentPerson}'s turn!\n`);
+                    appendOutput("Choose the option you want to ELIMINATE:\n");
                     
                     // Display options with numbers
                     for (let i = 0; i < options.length; i++) {
-                        appendOutput(`${i + 1}. ${options[i]}\n`);
+                        appendOutput(`  ${i + 1}. ${options[i]}\n`);
                     }
                     
                     // Get elimination choice
                     let choice;
                     while (true) {
-                        const input = await getInput(`Enter (1-${options.length}): `);
+                        const input = await getInput(`\nEnter number (1-${options.length}): `);
                         choice = parseInt(input);
                         if (!isNaN(choice) && choice >= 1 && choice <= options.length) {
                             break;
                         }
-                        appendOutput(`Enter 1-${options.length}\n`);
+                        appendOutput(`Please enter a number between 1 and ${options.length}.\n`);
                     }
                     
                     // Remove chosen option
                     const eliminated = options.splice(choice - 1, 1)[0];
-                    appendOutput(`${eliminated} eliminated\n`);
+                    appendOutput(`\n${eliminated} has been eliminated!\n`);
                     
                     // Move to next person in rotation
                     personIndex = (personIndex + 1) % numPeople;
+                    roundNum++;
                 }
                 
                 // Announce winner
-                appendOutput("\n" + "=".repeat(40) + "\n");
-                appendOutput(`WINNER: ${options[0]}\n`);
-                appendOutput("=".repeat(40) + "\n");
+                appendOutput("\n" + "=".repeat(50) + "\n");
+                appendOutput("FINAL DECISION\n");
+                appendOutput("=".repeat(50) + "\n");
+                appendOutput(`\nThe group has chosen: ${options[0]}\n`);
+                
+                // ASCII art celebration
+                const winnerName = options[0].substring(0, 50); // Truncate if too long
+                const trophyArt = `        _ooo--.
+
+
+
+     @@@=@MMM\\.\`,_.',-
+   _.\\X/"/"   \\\\  33,
+  ===A   |     \\\\ P""B
+    /@,_ (  __,/""\\.M\\\\
+    |; \\\\"/\\\\"_,/ / .'.A
+    \\\\,\\\\._><-__./    "V
+     \\\\F _       a_3R"---,.
+      _>"#           _   )
+     (  /           .@J  /
+     ) /           /    )
+     ( |           \\\\    /,
+     | \\\\            \`,._,/ ___
+      "=\\\\,          ]@7,.n| P @\\\\
+          7-______.  \\\\____.,   .)
+          /  /     \\\\ \\\\      \\\\WWW/
+          |  |     |  |      ""'
+   ___   /   \\\\.   ,/  \\\\._
+/"   \\"\\"\\"      \\\\ (       \\"\\"\\"\\"\\\\
+|(       ___.-'  "--.       \\\\)
+ ""-\`\\"\\"\\"\\"            \`--(__)/
+
+`;
+                // Center the winner name in a 35-character space
+                const paddedName = winnerName.length <= 35 
+                    ? winnerName.padStart(Math.floor((35 + winnerName.length) / 2)).padEnd(35)
+                    : winnerName.substring(0, 35);
+                
+                // Create text box lines (without the outer padding)
+                const textBoxLines = [
+                    '═'.repeat(45),
+                    '╔═══════════════════════════════════════╗',
+                    '║                                       ║',
+                    '║      THE ULTIMATE DECISION            ║',
+                    '║                                       ║',
+                    `║  ${paddedName}  ║`,
+                    '║                                       ║',
+                    '╚═══════════════════════════════════════╝',
+                    '═'.repeat(45)
+                ];
+                
+                appendOutput("\n\n");
+                // Remove empty lines from trophy art
+                const trophyLines = trophyArt.split('\n').filter(line => line.trim() !== '');
+                
+                // Combine trophy art and text box side by side
+                const maxLines = Math.max(trophyLines.length, textBoxLines.length);
+                const combinedLines = [];
+                
+                for (let i = 0; i < maxLines; i++) {
+                    const trophyLine = i < trophyLines.length ? trophyLines[i] : '';
+                    const textBoxLine = i < textBoxLines.length ? textBoxLines[i] : '';
+                    // Pad trophy line to consistent width (about 50 chars) then add text box
+                    const paddedTrophy = trophyLine.padEnd(50);
+                    combinedLines.push(paddedTrophy + '  ' + textBoxLine);
+                }
+                
+                appendOutput(combinedLines.join('\n'));
+                appendOutput("=".repeat(50) + "\n");
                 
                 // Wait 3 seconds then restart
                 await new Promise(resolve => setTimeout(resolve, 3000));

@@ -4,7 +4,7 @@ def main():
     # Get number of decision makers
     while True:
         try:
-            num_people = int(input("Enter number of people making decisions: "))
+            num_people = int(input("Enter # of decision makers: "))
             if num_people > 0:
                 break
             print("Please enter a positive number.")

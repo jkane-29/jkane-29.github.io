@@ -475,8 +475,8 @@
                 ];
                 
                 appendOutput("\n\n");
-                // Remove empty lines from trophy art
-                const trophyLines = trophyArt.split('\n').filter(line => line.trim() !== '');
+                // Keep all lines including empty ones to preserve structure
+                const trophyLines = trophyArt.split('\n');
                 
                 // Combine trophy art and text box side by side
                 const maxLines = Math.max(trophyLines.length, textBoxLines.length);
@@ -490,11 +490,19 @@
                     combinedLines.push(paddedTrophy + '  ' + textBoxLine);
                 }
                 
-                appendOutput(combinedLines.join('\n'));
-                appendOutput("=".repeat(50) + "\n");
+                // Output all lines at once, bypassing line limit for ASCII art
+                const output = document.getElementById('terminal-output');
+                const fullOutput = outputLines.join('\n') + '\n\n' + combinedLines.join('\n') + '\n' + "=".repeat(50) + '\n';
+                outputLines = fullOutput.split('\n');
+                // Keep more lines for ASCII art display
+                if (outputLines.length > 50) {
+                    outputLines = outputLines.slice(-50);
+                }
+                output.textContent = outputLines.join('\n');
+                output.scrollTop = output.scrollHeight;
                 
-                // Wait 3 seconds then restart
-                await new Promise(resolve => setTimeout(resolve, 3000));
+                // Wait 7 seconds then restart
+                await new Promise(resolve => setTimeout(resolve, 7000));
                 runDecisionMaker();
                 
             } catch (err) {

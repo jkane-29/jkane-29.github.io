@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Writing - Jack Kane</title>
+    <title>Reading - Jack Kane</title>
     <link href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
     <style>
         * {
@@ -119,11 +119,11 @@
             margin-bottom: 12px;
         }
 
-        .bio-section {
+        .section {
             margin-bottom: 35px;
         }
 
-        .bio-section h2 {
+        .section h2 {
             font-family: 'Source Serif Pro', serif;
             font-size: 1.5rem;
             font-weight: 500;
@@ -134,47 +134,26 @@
             line-height: 1.2;
         }
 
-        .bio-section p {
-            font-size: 1.05rem;
-            line-height: 1.6;
+        .idea {
             margin-bottom: 16px;
+            position: relative;
+            padding-left: 20px;
+        }
+
+        .idea::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 6px;
+            width: 6px;
+            height: 6px;
+            background-color: #059669;
+            border-radius: 50%;
+        }
+
+        .idea-text {
             color: #4b5563;
-        }
-
-        .bio-section ul {
-            list-style: none;
-            padding: 0;
-        }
-
-        .bio-section li {
-            font-size: 1.05rem;
-            line-height: 1.6;
-            margin-bottom: 8px;
-            color: #4b5563;
-        }
-
-        .blog-item {
-            margin-bottom: 20px;
-        }
-
-        .blog-link {
-            color: #059669;
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 1.05rem;
-            line-height: 1.4;
-        }
-
-        .blog-link:hover {
-            text-decoration: underline;
-        }
-
-        .item-comment {
-            font-style: italic;
-            color: #6b7280;
-            font-size: 0.95rem;
-            line-height: 1.4;
-            margin-top: 4px;
+            line-height: 1.5;
         }
 
         .highlight {
@@ -212,8 +191,8 @@
                 <ul class="nav-links">
                     <li><a href="ideas.html">Ideas</a></li>
                     <li><a href="bookshelf.html">Bookshelf</a></li>
-                    <li><a href="reading.html">Reading</a></li>
-                    <li><a href="writing.html" class="current">Writing</a></li>
+                    <li><a href="reading.html" class="current">Reading</a></li>
+                    <li><a href="writing.html">Writing</a></li>
                     <li><a href="woodshop.html">Woodshop</a></li>
                     <li><a href="decisions.html">Decisions</a></li>
                 </ul>
@@ -228,57 +207,14 @@
 
         <main class="main-content">
             <section class="intro">
-                <h1>Writing</h1>
+                <h1>Reading</h1>
                 <p>
-                    Essays and reflections on various topics.
+                    Articles, essays, and other things I've been reading.
                 </p>
             </section>
-
-            <!-- Temporarily hidden 2025 section
-            <section class="bio-section">
-                <h2>2025</h2>
-
-                <div class="blog-item">
-                    <a href="writing/biking-the-perimeter-of-chicago.html" class="blog-link">Biking the Perimeter of Chicago</a>
-                    <div class="item-comment">75-mile ride around the city limits.</div>
-                </div>
-
-                <div class="blog-item">
-                    <a href="essays/accelerating-growth.html" class="blog-link">Accelerating Growth</a>
-                    <div class="item-comment">What relationships scale?</div>
-                </div>
-            </section>
-            -->
-
-            <section class="bio-section">
-                <h2>2024</h2>
-
-                <div class="blog-item">
-                    <a href="essays/a-view-from-the-gallery.html" class="blog-link">A View from the Gallery</a>
-                    <div class="item-comment">Inhabiting others perspectives.</div>
-                </div>
-            </section>
-
-            <section class="bio-section">
-                <h2>2023</h2>
-                
-                <div class="blog-item">
-                    <a href="essays/working-as-a-cook.html" class="blog-link">Working as a Cook</a>
-                    <div class="item-comment">Subtle things I learned from 3 restaurant jobs.</div>
-                </div>
-            </section>
-
-            <section class="bio-section">
-                <h2>2022</h2>
-                
-                <div class="blog-item">
-                    <a href="essays/working-as-a-caddie.html" class="blog-link">Working as a Caddie</a>
-                    <div class="item-comment">Carrying a bag and reading greens.</div>
-                </div>
-            </section>
-
 
         </main>
     </div>
 </body>
 </html>
+

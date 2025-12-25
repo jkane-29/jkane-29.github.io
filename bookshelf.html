@@ -928,7 +928,7 @@ This bestselling and hilarious book blew the doors off Wall Street's boardrooms 
   <div class="book-container" style="transform: translateX(514.7480132315524px) translateY(17px);">
     <div id="book2_31" class="book" style="transform: rotateY(90deg);" onclick="toggleBook(this.id)">
       <img class="cover" src="bookshelf-covers/Fear_and_Loathing_on_the_Campaign_Trail_'72.jpg" style="width: 200px; height: 303px; display: block; object-fit: cover; object-position: bottom; transform: translateZ(18px); ">
-      <div class="spine" style="width: 36px; height: 303px; background: #000000 linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.1) 20%, rgba(255,255,255,0.1) 80%, rgba(255,255,255,0) 100%); line-height: 36px; transform: translateX(-18px) translateY(-303px) rotateY(-90deg); border: 1px solid #ddd; box-sizing: border-box;">
+      <div class="spine" style="width: 36px; height: 303px; background: #000000 linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.1) 20%, rgba(255,255,255,0.1) 80%, rgba(255,255,255,0) 100%); line-height: 36px; transform: translateX(-18px) translateY(-303px) rotateY(-90deg); border: 1px solid #000; box-sizing: border-box;">
         <div class="spinetext" style="width:100%; height: 303px">
           <span class="title" style="font-size: 9px; line-height: 36px; font-family: Caslon, serif; color: #fff;">Fear and Loathing on the Campaign Trail '72</span>&emsp;
           <span class="author" style="font-size: 8px; line-height: 36px; font-family: Caslon, serif; color: #fff;">Hunter S. Thompson</span>
@@ -951,7 +951,7 @@ This bestselling and hilarious book blew the doors off Wall Street's boardrooms 
         </div>
       </div>
       <div class="back" style="color: #000; width: 200px; height: 302px; background:#eaecdf; transform: translateY(-604px) translateZ(-13.586339199100768px) rotateY(180deg); overflow: hidden; box-sizing: border-box; font-family: Gill Sans, sans-serif; border: 1px solid #ddd;">
-        <div style="width: 184px; height: 278px; overflow: hidden; padding: 8px 0;"><div style="font-size: 8px; line-height: 1.3; margin-bottom: 6px;">A novel about addiction and America.</div></div><div style="width: 184px; height: 16px; text-align: center; padding: 4px 0; border-top: 1px solid rgba(255,255,255,0.2);"><span style="float:left; font-size: 7px;">322 pages</span></div>
+        <div style="width: 184px; height: 278px; overflow: hidden; padding: 8px 0;"><div style="font-size: 8px; line-height: 1.3; margin-bottom: 6px;">A novel about addiction and America.</div><div style="font-size: 8px; line-height: 1.3; color: #000; font-style: italic; border-top: 1px solid #000; padding-top: 4px; margin-top: 4px;">"Gave me some weird skills in diving business models of restaurants."</div></div><div style="width: 184px; height: 16px; text-align: center; padding: 4px 0; border-top: 1px solid rgba(255,255,255,0.2);"><span style="float:left; font-size: 7px;">322 pages</span></div>
       </div>
       <div class="pages" style="width: 26.172678398201537px; height: 296px; background: #f1f1f1; transform: translateY(-903px) translateX(183.41366080089924px) rotateY(90deg);"></div>
     </div>
@@ -1090,83 +1090,3 @@ This bestselling and hilarious book blew the doors off Wall Street's boardrooms 
     </div>
   </div>
     </div>
-                    </div>
-                </div>
-            </section>
-            </section>
-        </main>
-    </div>
-
-<script>
-  function toggleBook(bookId) {
-    var book = document.getElementById(bookId);
-    var bookContainer = book.parentElement;
-    
-    // Give the container a high z-index when book is active
-    if (book.className.includes("book-show") || book.className.includes("book-putaway")) {
-      bookContainer.style.zIndex = "1000";
-    }
-    
-    replaceOtherBooks(book);
-    if (book.className == "book") {
-      book.className = "book book-show";
-      bookContainer.style.zIndex = "1000";
-    } else if (book.className == "book book-putaway") {
-      book.className = "book book-show";
-      bookContainer.style.zIndex = "1000";
-    } else if (book.className == "book book-showaway") {
-      book.className = "book book-show";
-      bookContainer.style.zIndex = "1000";
-    } else if (book.className == "book book-show") {
-      book.className = "book book-showback";
-      bookContainer.style.zIndex = "1000";
-    } else if (book.className == "book book-showback") {
-      book.className = "book book-putaway";
-      // Keep z-index high during putaway animation
-      setTimeout(function() {
-        bookContainer.style.zIndex = "";
-      }, 700);
-    } else {
-      book.className = "book";
-      bookContainer.style.zIndex = "";
-    }
-  }
-
-  function replaceOtherBooks(book) {
-    var books = document.querySelectorAll('.book');
-    for (var i = 0; i < books.length; ++i) {
-      if (books[i] != book) {
-        var otherContainer = books[i].parentElement;
-        if (books[i].className == "book book-show") {
-          books[i].className = "book book-showaway";
-          setTimeout(function(container) {
-            return function() { container.style.zIndex = ""; };
-          }(otherContainer), 700);
-        } else if (books[i].className == "book book-showback") {
-          books[i].className = "book book-putaway";
-          setTimeout(function(container) {
-            return function() { container.style.zIndex = ""; };
-          }(otherContainer), 700);
-        }
-      }
-    }
-  }
-</script>
-</body>
-</html>
-
-<script>
-(function(){
-    function hsl(h,s,l){return 'hsl('+h+','+s+'%,'+l+'%)'}
-    var h = Math.floor(Math.random()*360);
-    var primary = hsl(h,62,36);
-    var primaryDark = hsl(h,58,26);
-    var primaryLight = hsl(h,70,94);
-    var primarySurface = hsl(h,75,96);
-    var root = document.documentElement.style;
-    root.setProperty('--primary', primary);
-    root.setProperty('--primary-dark', primaryDark);
-    root.setProperty('--primary-light', primaryLight);
-    root.setProperty('--primary-surface', primarySurface);
-})();
-</script>

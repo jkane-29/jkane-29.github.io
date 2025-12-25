@@ -265,10 +265,10 @@
 (function(){
     function hsl(h,s,l){return 'hsl('+h+','+s+'%,'+l+'%)'}
     var h = Math.floor(Math.random()*360);
-    var primary = hsl(h,62,36);
-    var primaryDark = hsl(h,58,26);
-    var primaryLight = hsl(h,70,94);
-    var primarySurface = hsl(h,75,96);
+    var primary = hsl(h,70,50); // Adjusted saturation and lightness for better orange/yellow representation
+    var primaryDark = hsl(h,65,40);
+    var primaryLight = hsl(h,80,90);
+    var primarySurface = hsl(h,85,95);
     var root = document.documentElement.style;
     root.setProperty('--primary', primary);
     root.setProperty('--primary-dark', primaryDark);

@@ -295,6 +295,21 @@
     </style>
 </head>
 <body>
+    <script>
+        (function(){
+            function hsl(h,s,l){return 'hsl('+h+','+s+'%,'+l+'%)'}
+            var h = Math.floor(Math.random()*360);
+            var primary = hsl(h,70,50); // Adjusted saturation and lightness for better orange/yellow representation
+            var primaryDark = hsl(h,65,40);
+            var primaryLight = hsl(h,80,90);
+            var primarySurface = hsl(h,85,95);
+            var root = document.documentElement.style;
+            root.setProperty('--primary', primary);
+            root.setProperty('--primary-dark', primaryDark);
+            root.setProperty('--primary-light', primaryLight);
+            root.setProperty('--primary-surface', primarySurface);
+        })();
+      </script>
     <div class="container">
         <aside class="sidebar">
             <a href="index.html" class="name">Jack Kane</a>
@@ -639,10 +654,8 @@ Engaging the reader in a lively conversation about how we think, Kahneman reveal
       <div class="pages" style="width: 24.412911168156548px; height: 296px; background: #f1f1f1; transform: translateY(-903px) translateX(184.29354441592173px) rotateY(90deg);"></div>
     </div>
   </div>
-    </div>
-    
-    <!-- Row 2 -->
-    <div class="shelf-row" style="perspective: 800px; height: 320px; width: 1400px; position: relative; z-index: 1;">
+  <!-- Row 2 -->
+  <div class="shelf-row" style="perspective: 800px; height: 320px; width: 1400px; position: relative; z-index: 1;">
     
   <!-- Working -->
   <div class="book-container" style="transform: translateX(11.41823969481929px) translateY(25px);">
@@ -1090,3 +1103,21 @@ This bestselling and hilarious book blew the doors off Wall Street's boardrooms 
     </div>
   </div>
     </div>
+    
+    <script>
+        (function(){
+            function hsl(h,s,l){return 'hsl('+h+','+s+'%,'+l+'%)'}
+            var h = Math.floor(Math.random()*360);
+            var primary = hsl(h,70,50); // Adjusted saturation and lightness for better orange/yellow representation
+            var primaryDark = hsl(h,65,40);
+            var primaryLight = hsl(h,80,90);
+            var primarySurface = hsl(h,85,95);
+            var root = document.documentElement.style;
+            root.setProperty('--primary', primary);
+            root.setProperty('--primary-dark', primaryDark);
+            root.setProperty('--primary-light', primaryLight);
+            root.setProperty('--primary-surface', primarySurface);
+        })();
+      </script>
+</body>
+</html>

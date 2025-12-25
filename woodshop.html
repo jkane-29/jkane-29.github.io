@@ -109,7 +109,7 @@
             margin-bottom: 16px;
             color: #111827;
             line-height: 1.2;
-            border-bottom: 2px solid #d1fae5;
+            border-bottom: 2px var(--primary-light);
             padding-bottom: 8px;
         }
 
@@ -179,7 +179,7 @@
 
         .highlight {
             background-color: #ecfdf5;
-            color: #047857;
+            color: var(r--primary-light);
             padding: 2px 6px;
             border-radius: 4px;
         }
@@ -260,3 +260,19 @@
     </div>
 </body>
 </html>
+
+<script>
+(function(){
+    function hsl(h,s,l){return 'hsl('+h+','+s+'%,'+l+'%)'}
+    var h = Math.floor(Math.random()*360);
+    var primary = hsl(h,62,36);
+    var primaryDark = hsl(h,58,26);
+    var primaryLight = hsl(h,70,94);
+    var primarySurface = hsl(h,75,96);
+    var root = document.documentElement.style;
+    root.setProperty('--primary', primary);
+    root.setProperty('--primary-dark', primaryDark);
+    root.setProperty('--primary-light', primaryLight);
+    root.setProperty('--primary-surface', primarySurface);
+})();
+</script>

@@ -6,6 +6,13 @@
     <title>Jack Kane</title>
     <link href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary: #059669;
+            --primary-dark: #047857;
+            --primary-light: #d1fae5;
+            --primary-surface: #ecfdf5;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -46,11 +53,11 @@
         }
 
         .name:hover {
-            color: #059669;
+            color: var(--primary);
         }
 
         .title {
-            color: #059669;
+            color: var(--primary);
             font-weight: 500;
             margin-bottom: 20px;
             font-size: 0.95rem;
@@ -75,7 +82,7 @@
         }
 
         .nav-links a:hover {
-            color: #059669;
+            color: var(--primary);
         }
 
         .contact-info {
@@ -85,7 +92,7 @@
         }
 
         .contact-info a {
-            color: #059669;
+            color: var(--primary);
             text-decoration: none;
         }
 
@@ -104,7 +111,7 @@
             margin-bottom: 16px;
             color: #111827;
             line-height: 1.2;
-            border-bottom: 2px solid #d1fae5;
+            border-bottom: 2px solid var(--primary-light);
             padding-bottom: 8px;
         }
 
@@ -142,7 +149,7 @@
             top: 6px;
             width: 6px;
             height: 6px;
-            background-color: #059669;
+            background-color: var(--primary);
             border-radius: 50%;
         }
 
@@ -160,12 +167,12 @@
         }
 
         .item-title a:hover {
-            color: #059669;
+            color: var(--primary);
         }
 
         .item-meta {
             font-size: 0.9rem;
-            color: #059669;
+            color: var(--primary);
             margin-bottom: 6px;
             font-weight: 500;
             line-height: 1.2;
@@ -177,8 +184,8 @@
         }
 
         .highlight {
-            background-color: #ecfdf5;
-            color: #047857;
+            background-color: var(--primary-surface);
+            color: var(--primary-dark);
             padding: 2px 6px;
             border-radius: 4px;
         }
@@ -259,7 +266,7 @@
                     </h3>
                     <p class="item-meta">Personal Project • Live</p>
                     <p class="item-description">
-                        Built an interactive 3D bookshelf to showcase books I've read. Click on any book to pull it off the shelf, flip it to see the back cover with descriptions then return it with another click. Based on an <a href="https://github.com/mawise/bookshelf" target="_blank" style="color: #059669; text-decoration: none;">open source project</a>.
+                        Built an interactive 3D bookshelf to showcase books I've read. Click on any book to pull it off the shelf, flip it to see the back cover with descriptions then return it with another click. Based on an <a href="https://github.com/mawise/bookshelf" target="_blank" style="color: var(--primary); text-decoration: none;">open source project</a>.
                     </p>
                 </div>
 
@@ -278,3 +285,19 @@
     </div>
 </body>
 </html>
+
+<script>
+(function(){
+    function hsl(h,s,l){return 'hsl('+h+','+s+'%,'+l+'%)'}
+    var h = Math.floor(Math.random()*360);
+    var primary = hsl(h,62,36);
+    var primaryDark = hsl(h,58,26);
+    var primaryLight = hsl(h,70,94);
+    var primarySurface = hsl(h,75,96);
+    var root = document.documentElement.style;
+    root.setProperty('--primary', primary);
+    root.setProperty('--primary-dark', primaryDark);
+    root.setProperty('--primary-light', primaryLight);
+    root.setProperty('--primary-surface', primarySurface);
+})();
+</script>

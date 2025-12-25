@@ -6,6 +6,13 @@
     <title>Ideas - Jack Kane</title>
     <link href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary: #059669;
+            --primary-dark: #047857;
+            --primary-light: #d1fae5;
+            --primary-surface: #ecfdf5;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -46,11 +53,11 @@
         }
 
         .name:hover {
-            color: #059669;
+            color: var(--primary);
         }
 
         .title {
-            color: #059669;
+            color: var(--primary);
             font-weight: 500;
             margin-bottom: 20px;
             font-size: 0.95rem;
@@ -75,11 +82,11 @@
         }
 
         .nav-links a:hover {
-            color: #059669;
+            color: var(--primary);
         }
 
         .nav-links a.current {
-            color: #059669;
+            color: var(--primary);
             font-weight: 500;
         }
 
@@ -90,7 +97,7 @@
         }
 
         .contact-info a {
-            color: #059669;
+            color: var(--primary);
             text-decoration: none;
         }
 
@@ -109,7 +116,7 @@
             margin-bottom: 16px;
             color: #111827;
             line-height: 1.2;
-            border-bottom: 2px solid #d1fae5;
+            border-bottom: 2px solid var(--primary-light);
             padding-bottom: 8px;
         }
 
@@ -147,7 +154,7 @@
             top: 6px;
             width: 6px;
             height: 6px;
-            background-color: #059669;
+            background-color: var(--primary);
             border-radius: 50%;
         }
 
@@ -157,8 +164,8 @@
         }
 
         .highlight {
-            background-color: #ecfdf5;
-            color: #047857;
+            background-color: var(--primary-surface);
+            color: var(--primary-dark);
             padding: 2px 6px;
             border-radius: 4px;
         }

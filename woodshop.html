@@ -109,7 +109,7 @@
             margin-bottom: 16px;
             color: #111827;
             line-height: 1.2;
-            border-bottom: 2px var(--primary-light);
+            border-bottom: 2px solid var(--primary-light); /* Added 'solid' to fix the border issue */
             padding-bottom: 8px;
         }
 
@@ -178,8 +178,8 @@
         }
 
         .highlight {
-            background-color: #ecfdf5;
-            color: var(--primary-light);
+            background-color: var(--primary-surface);
+            color: var(--primary-dark);
             padding: 2px 6px;
             border-radius: 4px;
         }

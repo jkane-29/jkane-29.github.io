@@ -183,6 +183,19 @@
             border-radius: 4px;
         }
 
+        .image-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .image-row img {
+            flex: 1;
+            width: 50%;
+            height: 400px;
+            object-fit: cover;
+        }
+
         @media (max-width: 900px) {
             .container {
                 grid-template-columns: 1fr;
@@ -246,7 +259,10 @@
             <div class="project">
                 <h3 class="project-title">Plywood Chair</h3>
                 <p class="project-meta">Skateboard Veneers | Plywood • 2023</p>
-                <img loading="eager" src="image2_optimized.jpg" alt="Plywood chair made from skateboard veneers" class="project-image">
+                <div class="image-row">
+                    <img loading="eager" src="chair_frame.jpg" alt="Plywood chair frame" class="project-image">
+                    <img loading="eager" src="image2_optimized.jpg" alt="Plywood chair made from skateboard veneers" class="project-image">
+                </div>
             </div>
         </main>
     </div>

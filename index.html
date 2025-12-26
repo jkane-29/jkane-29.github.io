@@ -6,13 +6,6 @@
     <title>Jack Kane</title>
     <link href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary: #059669;
-            --primary-dark: #047857;
-            --primary-light: #d1fae5;
-            --primary-surface: #ecfdf5;
-        }
-
         * {
             margin: 0;
             padding: 0;
@@ -290,10 +283,10 @@
 (function(){
     function hsl(h,s,l){return 'hsl('+h+','+s+'%,'+l+'%)'}
     var h = Math.floor(Math.random()*360);
-    var primary = hsl(h,62,36);
-    var primaryDark = hsl(h,58,26);
-    var primaryLight = hsl(h,70,94);
-    var primarySurface = hsl(h,75,96);
+    var primary = hsl(h,70,50);
+    var primaryDark = hsl(h,65,40);
+    var primaryLight = hsl(h,80,90);
+    var primarySurface = hsl(h,85,95);
     var root = document.documentElement.style;
     root.setProperty('--primary', primary);
     root.setProperty('--primary-dark', primaryDark);

@@ -52,7 +52,7 @@
         .title {
             color: var(--primary);
             font-weight: 500;
-            margin-bottom: 10px;
+            margin-bottom: 20px;
             font-size: 0.95rem;
             line-height: 1.2;
         }
@@ -178,8 +178,8 @@
         }
 
         .highlight {
-            background-color: #ecfdf5;
-            color: var(--primary);
+            background-color: var(--primary-surface);
+            color: var(--primary-dark);
             padding: 2px 6px;
             border-radius: 4px;
         }
@@ -270,10 +270,10 @@
 (function(){
     function hsl(h,s,l){return 'hsl('+h+','+s+'%,'+l+'%)'}
     var h = Math.floor(Math.random()*360);
-    var primary = hsl(h,62,36);
-    var primaryDark = hsl(h,58,26);
-    var primaryLight = hsl(h,70,94);
-    var primarySurface = hsl(h,75,96);
+    var primary = hsl(h,70,50);
+    var primaryDark = hsl(h,65,40);
+    var primaryLight = hsl(h,80,90);
+    var primarySurface = hsl(h,85,95);
     var root = document.documentElement.style;
     root.setProperty('--primary', primary);
     root.setProperty('--primary-dark', primaryDark);

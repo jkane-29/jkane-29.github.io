@@ -1,0 +1,11 @@
+{
+  "name": "jkane-website",
+  "version": "1.0.0",
+  "description": "Jack Kane's personal website",
+  "scripts": {
+    "build-essays": "node build-essays.js"
+  },
+  "dependencies": {
+    "marked": "^11.1.1"
+  }
+}

@@ -1,9 +1,23 @@
-<!DOCTYPE html>
+const fs = require('fs');
+const path = require('path');
+const { marked } = require('marked');
+
+// Configure marked options
+marked.setOptions({
+  breaks: false,
+  gfm: true
+});
+
+const essaysDir = path.join(__dirname, 'essays');
+
+// Essay template
+function createEssayHTML(title, content) {
+  return `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Working as a Cook - Jack Kane</title>
+    <title>${title} - Jack Kane</title>
     <link href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
     <style>
         * {
@@ -238,18 +252,52 @@
 
         <main class="main-content">
             <section class="intro">
-                <h1>Working as a Cook</h1>
+                <h1>${title}</h1>
             </section>
 
             <div class="essay-content">
-<p>Cooking and working in kitchens taught me many surprising things, not necessarily in the Bourdain style of &quot;Oh my god my bread is dirty!&quot;, but rather that cooking can require very different skillsets. Baking is a game of calculations, where a small variance leads to huge differences. A good baker is as much of a nightcrawler as they are an alchemist of yeast. For all the attention to detail there&#39;s a separate artistry required. Shaping dough/bread is the opposite of technical, more like learning the footwork to an intricate dance that takes many repetitions to feel natural.</p>
-<p>I also learned how fun it is to work in a flow state and optimize with constraints. Given 30 tasks as a prep cook, how can I optimize across my 6 burners, industrial mixing bowl, and 5 oven racks. It was an incredibly fun game of chess with people shouting, 500 degree ovens, tight spaces, and hard deadlines. Getting finished with my prep list 4 hours into my shift on my last day is an enduring moment of pride.</p>
-<p>Cooks are often extremely industrious. The prep cook I worked under named Mario had all these ingenious tricks for making our 5am starting shift habitable. He&#39;d order the line cooks to make us chilaquiles or French toast, methodically plan out tasks, and cut plastic bags so that you could tie them shut with a twist.</p>
-<p>Oddly, restaurant jobs also gave me a love for utilitarian hardware. My ideal kitchen is pretty much cambros, striped rags, and steel mixing bowls. It always seemed like when things got really busy that level of simplicity was necessary. Even since I stopped working in restaurants, I&#39;ve been looking for the simplest versions of things and I think that&#39;s where that started from.</p>
-<p>Maybe a final and possibly sad observation is that people don&#39;t really think about who made their food. Even now, I forget to recognize the very real human element of a restaurant meal, I think it&#39;s a crucial part of what makes a great meal and is something people should try to focus on.</p>
-
+${content}
             </div>
         </main>
     </div>
 </body>
 </html>
+`;
+}
+
+// Read all markdown files and convert them
+fs.readdir(essaysDir, (err, files) => {
+  if (err) {
+    console.error('Error reading essays directory:', err);
+    return;
+  }
+
+  const mdFiles = files.filter(file => file.endsWith('.md'));
+
+  mdFiles.forEach(file => {
+    const mdPath = path.join(essaysDir, file);
+    const htmlPath = path.join(essaysDir, file.replace('.md', '.html'));
+
+    // Read markdown file
+    const markdown = fs.readFileSync(mdPath, 'utf8');
+
+    // Extract title (first # heading)
+    const titleMatch = markdown.match(/^#\s+(.+)$/m);
+    const title = titleMatch ? titleMatch[1] : file.replace('.md', '');
+
+    // Remove the title from content since we'll use it in the template
+    const contentWithoutTitle = markdown.replace(/^#\s+.+$/m, '').trim();
+
+    // Convert markdown to HTML
+    const htmlContent = marked(contentWithoutTitle);
+
+    // Create full HTML page
+    const fullHTML = createEssayHTML(title, htmlContent);
+
+    // Write HTML file
+    fs.writeFileSync(htmlPath, fullHTML);
+    console.log(`✓ Generated ${file} → ${path.basename(htmlPath)}`);
+  });
+
+  console.log(`\nSuccessfully built ${mdFiles.length} essay(s)!`);
+});

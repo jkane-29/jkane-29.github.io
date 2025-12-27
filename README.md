@@ -1,5 +1,32 @@
 # Jack Kane's Personal Website
 
+## Project Structure
+
+```
+/
+├── index.html                 # Main homepage
+├── bookshelf.html            # Bookshelf page
+├── ideas.html                # Ideas page
+├── writing.html              # Writing page
+├── woodshop.html             # Woodshop page
+├── decisions.html            # Decisions page
+├── assets/
+│   ├── images/
+│   │   ├── woodshop/        # Woodshop project images
+│   │   └── misc/            # Miscellaneous images
+│   ├── cv.pdf               # CV document
+│   └── decisions.py         # Python script for decisions
+├── bookshelf-covers/        # Book cover images
+├── essays/                  # Essay markdown and HTML files
+├── scripts/
+│   └── build-essays.js      # Build script for essays
+├── node_modules/
+├── package.json
+├── package-lock.json
+├── README.md
+└── .gitignore
+```
+
 ## Writing Essays in Markdown
 
 All essays are now written in markdown format in the `essays/` directory.

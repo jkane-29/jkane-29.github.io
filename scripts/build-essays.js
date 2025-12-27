@@ -8,7 +8,7 @@ marked.setOptions({
   gfm: true
 });
 
-const essaysDir = path.join(__dirname, 'essays');
+const essaysDir = path.join(__dirname, '..', 'essays');
 
 // Essay template
 function createEssayHTML(title, content) {

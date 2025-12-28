@@ -283,7 +283,43 @@ fs.readdir(essaysDir, (err, files) => {
 
     // Extract title (first # heading)
     const titleMatch = markdown.match(/^#\s+(.+)$/m);
-    const title = titleMatch ? titleMatch[1] : file.replace('.md', '');
+    const baseTitle = titleMatch ? titleMatch[1] : file.replace('.md', '');
+
+    // Determine version date based on file modification times
+    let versionDate;
+    let wasModified = false;
+
+    // Check if HTML exists and compare modification times
+    if (fs.existsSync(htmlPath)) {
+      const mdStats = fs.statSync(mdPath);
+      const htmlStats = fs.statSync(htmlPath);
+
+      // If markdown is newer than HTML, use new date
+      if (mdStats.mtime > htmlStats.mtime) {
+        const now = new Date();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const year = String(now.getFullYear()).slice(-2);
+        versionDate = `v${month}.${day}.${year}`;
+        wasModified = true;
+      } else {
+        // Extract existing version date from HTML
+        const existingHTML = fs.readFileSync(htmlPath, 'utf8');
+        const existingVersionMatch = existingHTML.match(/<h1>.*?(v\d{2}\.\d{2}\.\d{2})<\/h1>/);
+        versionDate = existingVersionMatch ? existingVersionMatch[1] : `v${String(new Date().getMonth() + 1).padStart(2, '0')}.${String(new Date().getDate()).padStart(2, '0')}.${String(new Date().getFullYear()).slice(-2)}`;
+        wasModified = false;
+      }
+    } else {
+      // HTML doesn't exist, use current date
+      const now = new Date();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const year = String(now.getFullYear()).slice(-2);
+      versionDate = `v${month}.${day}.${year}`;
+      wasModified = true;
+    }
+
+    const title = `${baseTitle} ${versionDate}`;
 
     // Remove the title from content since we'll use it in the template
     const contentWithoutTitle = markdown.replace(/^#\s+.+$/m, '').trim();
@@ -296,7 +332,10 @@ fs.readdir(essaysDir, (err, files) => {
 
     // Write HTML file
     fs.writeFileSync(htmlPath, fullHTML);
-    console.log(`✓ Generated ${file} → ${path.basename(htmlPath)}`);
+
+    // Show status
+    const status = wasModified ? '✓ Updated' : '• Rebuilt';
+    console.log(`${status} ${file} → ${path.basename(htmlPath)} (${versionDate})`);
   });
 
   console.log(`\nSuccessfully built ${mdFiles.length} essay(s)!`);

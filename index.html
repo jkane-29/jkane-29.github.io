@@ -272,6 +272,8 @@
                 </div>
 
             </section>
+
+            <iframe id="overengineering-embed" src='https://overengineering.kognise.dev/embed/jack' title='overengineeRING embed' width='100%' height='100' style='user-select: none;' frameBorder='0'></iframe>
         </main>
     </div>
 </body>
@@ -280,6 +282,16 @@
 <script>
 (function(){
     function hsl(h,s,l){return 'hsl('+h+','+s+'%,'+l+'%)'}
+    function hslToHex(h,s,l){
+        s/=100;l/=100;
+        var c=(1-Math.abs(2*l-1))*s,x=c*(1-Math.abs((h/60)%2-1)),m=l-c/2,r=0,g=0,b=0;
+        if(h<60){r=c;g=x;b=0}else if(h<120){r=x;g=c;b=0}else if(h<180){r=0;g=c;b=x}
+        else if(h<240){r=0;g=x;b=c}else if(h<300){r=x;g=0;b=c}else{r=c;g=0;b=x}
+        r=Math.round((r+m)*255).toString(16).padStart(2,'0');
+        g=Math.round((g+m)*255).toString(16).padStart(2,'0');
+        b=Math.round((b+m)*255).toString(16).padStart(2,'0');
+        return r+g+b;
+    }
     var h = Math.floor(Math.random()*360);
     var primary = hsl(h,70,50);
     var primaryDark = hsl(h,65,40);
@@ -290,5 +302,12 @@
     root.setProperty('--primary-dark', primaryDark);
     root.setProperty('--primary-light', primaryLight);
     root.setProperty('--primary-surface', primarySurface);
+
+    // Update iframe with link color
+    var hexColor = hslToHex(h,70,50);
+    var iframe = document.getElementById('overengineering-embed');
+    if(iframe){
+        iframe.src = 'https://overengineering.kognise.dev/embed/jack?link_color=' + hexColor;
+    }
 })();
 </script>

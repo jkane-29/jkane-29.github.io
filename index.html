@@ -303,11 +303,11 @@
     root.setProperty('--primary-light', primaryLight);
     root.setProperty('--primary-surface', primarySurface);
 
-    // Update iframe with link color
+    // Update iframe with link color and button color
     var hexColor = hslToHex(h,70,50);
     var iframe = document.getElementById('overengineering-embed');
     if(iframe){
-        iframe.src = 'https://overengineering.kognise.dev/embed/jack?link_color=' + hexColor;
+        iframe.src = 'https://overengineering.kognise.dev/embed/jack?link_color=' + hexColor + '&button_color=' + hexColor;
     }
 })();
 </script>

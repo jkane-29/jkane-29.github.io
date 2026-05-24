@@ -1,0 +1,7 @@
+.DS_Store
+.claude/
+test.html
+*.log
+
+# Nested unrelated project (Ruby bookshelf generator — source not needed for site)
+bookshelf files/bookshelf copy/

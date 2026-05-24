@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Postcard - Jack Kane</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tangerine:wght@400;700&family=Special+Elite&family=Cinzel:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #2a2520;
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      font-family: 'Special Elite', 'Courier New', monospace;
+    }
+
+    .postcard {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    .postcard-img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      pointer-events: none;
+    }
+
+    /* Writing area — positioned BELOW the "post card" title on the image */
+    .message-input {
+      position: absolute;
+      top: 26%;
+      left: 6%;
+      width: 50%;
+      height: 60%;
+      background: transparent;
+      border: none;
+      resize: none;
+      outline: none;
+      font-family: 'Tangerine', cursive;
+      font-size: clamp(18px, 3vw, 34px);
+      line-height: 1.1;
+      color: #2e2415;
+      padding: 4px;
+    }
+
+    .message-input::placeholder {
+      color: rgba(74, 58, 37, 0.4);
+      font-style: italic;
+    }
+
+    /* Send button — bare, styled to match the POST CARD title */
+    .send-box {
+      position: absolute;
+      bottom: 3%;
+      right: 8%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      z-index: 5;
+    }
+
+    .send-btn {
+      background: transparent;
+      color: #a8804a;
+      border: none;
+      font-family: 'Cinzel', serif;
+      font-weight: 500;
+      font-size: clamp(9px, 1vw, 13px);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      padding: 4px 8px;
+      cursor: pointer;
+      transition: color 0.15s;
+    }
+    .send-btn:hover { color: #8a5e30; }
+
+    .send-hint {
+      font-family: 'Cinzel', serif;
+      font-size: 9px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #a8804a;
+      min-height: 11px;
+    }
+  </style>
+</head>
+<body>
+  <div class="postcard">
+    <img class="postcard-img" src="../items/california oranges2.png" alt="Postcard back">
+    <textarea
+      id="msg"
+      class="message-input"
+      placeholder="Write a note…"
+      autofocus
+      spellcheck="false"
+    ></textarea>
+    <div class="send-box">
+      <button id="send" class="send-btn">Send</button>
+    </div>
+  </div>
+
+  <script>
+  (function () {
+    const TO = 'jkane29@icloud.com';
+    const msg = document.getElementById('msg');
+    document.getElementById('send').addEventListener('click', () => {
+      const body = msg.value.trim();
+      if (!body) return;
+      const subject = encodeURIComponent('Postcard from your fridge');
+      const mailBody = encodeURIComponent(body + '\n\n— sent from the fridge');
+      window.location.href = `mailto:${TO}?subject=${subject}&body=${mailBody}`;
+    });
+  })();
+  </script>
+</body>
+</html>

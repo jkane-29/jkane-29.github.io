@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jack Kane</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    /* ── Mobile (default) ── */
+    body {
+      background: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 0 60px;
+    }
+    .fridge-viewport { width: 100%; display: flex; justify-content: center; }
+    .fridge { position: relative; width: min(700px, 92vw); user-select: none; }
+
+    /* ── Desktop: zoom/pan canvas ── */
+    @media (hover: hover) and (pointer: fine) {
+      body { overflow: hidden; height: 100vh; width: 100vw; display: block; padding: 0; }
+      .fridge-viewport {
+        position: fixed; inset: 0; overflow: hidden;
+        cursor: grab; display: block; width: auto; justify-content: unset;
+      }
+      .fridge-viewport.panning { cursor: grabbing; }
+      .fridge { position: absolute; top: 0; left: 0; width: 900px; transform-origin: 0 0; }
+    }
+
+    .fridge > img.fridge-bg { width: 100%; height: auto; display: block; pointer-events: none; }
+
+    /* Open-fridge crossfade layer */
+    .fridge-open {
+      position: absolute; inset: 0;
+      width: 100%; height: auto;
+      display: block; pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.45s ease;
+      z-index: 2;
+    }
+    .fridge.open .fridge-open { opacity: 1; }
+
+    /* Invisible click target over the lower door */
+    .fridge-trigger {
+      position: absolute;
+      top: 28%; bottom: 14%; left: 8%; right: 8%;
+      cursor: pointer;
+      z-index: 3;
+    }
+    body.edit-mode .fridge-trigger { display: none; }
+
+    /* Items on the lower door swing away with it */
+    .item { transition: opacity 0.45s ease; }
+    .fridge.open .item.on-lower { opacity: 0; pointer-events: none; }
+
+    /* ── Decorative items ── */
+    .item { position: absolute; transform-origin: center center; }
+    .item img { width: 100%; height: auto; display: block; pointer-events: none; }
+
+    .item-hover-label {
+      display: none;
+      position: absolute;
+      bottom: calc(100% + 6px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: #111;
+      color: #fff;
+      font-family: 'Microgramma D Extended Bold', 'Microgramma', 'Eurostile Extended', sans-serif;
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 4px 8px;
+      border-radius: 2px;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+    body:not(.edit-mode) .item:hover .item-hover-label { display: block; }
+
+    /* Edit mode: selection outline + grab cursor */
+    body.edit-mode .item { cursor: grab; outline: 1.5px dashed rgba(255,255,255,0.4); outline-offset: 2px; }
+    body.edit-mode .item:active { cursor: grabbing; }
+    body.edit-mode .item.selected { outline: 2px solid #f6d400; outline-offset: 2px; }
+
+    /* ── Fridge OS Window ── */
+    #os-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.45);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 900;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+    #os-overlay.open { opacity: 1; pointer-events: all; }
+
+    #os-window {
+      width: min(84vw, 960px); height: 76vh;
+      background: #1c1c1e;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 50px 120px rgba(0,0,0,0.8), 0 0 0 0.5px rgba(0,0,0,0.5);
+      display: flex; flex-direction: column;
+      overflow: hidden;
+      transform: scale(0.97);
+      transition: transform 0.2s cubic-bezier(.34,1.2,.64,1);
+    }
+    #os-overlay.open #os-window { transform: scale(1); }
+
+    #os-titlebar {
+      height: 38px; min-height: 38px;
+      background: #2a2a2c;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      display: flex; align-items: center;
+      padding: 0 14px;
+      position: relative;
+      user-select: none;
+    }
+
+    /* Window edge resize handles — transparent zones */
+    #os-window .resize-handle {
+      position: absolute; z-index: 10;
+      background: transparent; border: none; border-radius: 0;
+      bottom: auto; right: auto; width: auto; height: auto;
+    }
+    #os-window .resize-e  { right: 0;  top: 8px; bottom: 8px; width: 6px; cursor: ew-resize; }
+    #os-window .resize-s  { bottom: 0; left: 8px; right: 8px; height: 6px; cursor: ns-resize; }
+    #os-window .resize-w  { left: 0;   top: 8px; bottom: 8px; width: 6px; cursor: ew-resize; }
+    #os-window .resize-se { right: 0;  bottom: 0; width: 14px; height: 14px; cursor: nwse-resize; }
+    #os-window .resize-sw { left: 0;   bottom: 0; width: 14px; height: 14px; cursor: nesw-resize; }
+
+    .traffic-lights { display: flex; align-items: center; gap: 8px; z-index: 1; }
+    .tl-btn {
+      width: 12px; height: 12px; border-radius: 50%; border: none; cursor: pointer;
+      position: relative;
+      display: flex; align-items: center; justify-content: center;
+      transition: filter 0.1s;
+      flex-shrink: 0;
+    }
+    .tl-btn:hover { filter: brightness(1.15); }
+    .tl-close { background: #ff5f57; }
+    .tl-min   { background: #febc2e; }
+    .tl-max   { background: #28c840; }
+    .tl-btn::after { font-size: 10px; font-weight: 900; color: rgba(0,0,0,0.65); line-height: 1; }
+    #os-titlebar:hover .tl-btn::after { content: attr(data-glyph); }
+
+    #os-window-title {
+      position: absolute; left: 50%; transform: translateX(-50%);
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+      font-size: 13px; font-weight: 500; color: #8a8a8e;
+      letter-spacing: 0.01em; pointer-events: none;
+    }
+
+    /* Content */
+    #os-content {
+      flex: 1; overflow: auto;
+      -webkit-overflow-scrolling: touch;
+      background: #fff; position: relative;
+    }
+    #os-content-inner { min-height: 100%; }
+
+    /* Writing / Apple Notes — warm paper background */
+    #os-content:has(.notes-header) { background: #f2ede6; }
+
+    /* Decisions terminal — fill window, dark background, hide redundant header */
+    #os-content:has(.terminal-container),
+    #os-content-inner:has(.terminal-container),
+    #os-content-inner:has(.terminal-container) > div {
+      display: flex; flex-direction: column;
+    }
+    #os-content:has(.terminal-container) { background: #0c0c0c; overflow: hidden; }
+    #os-content-inner:has(.terminal-container),
+    #os-content-inner:has(.terminal-container) > div { flex: 1; min-height: 0; }
+    #os-content-inner .terminal-container { flex: 1; min-height: 0 !important; max-height: none !important; }
+    #os-content-inner .terminal-header { display: none; }
+
+    /* Postcard — fills window, no scroll, sized to image aspect via JS */
+    #os-content:has(.postcard) { overflow: hidden; }
+    #os-content-inner:has(.postcard) { height: 100%; overflow: hidden; }
+    #os-content-inner:has(.postcard) > body,
+    #os-content-inner:has(.postcard) .postcard { height: 100%; }
+
+    /* Woodshop slideshow */
+    #os-content:has(#ws-slide) { overflow: hidden; background: #000; }
+    #os-content-inner:has(#ws-slide) { height: 100%; overflow: hidden; }
+    #ws-slide {
+      position: relative; width: 100%; height: 100%;
+      background: #000;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+    #ws-img { max-width: 100%; max-height: 100%; object-fit: contain; display: block; }
+    #ws-counter {
+      position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%);
+      font: 12px -apple-system, sans-serif;
+      color: rgba(255,255,255,0.5);
+      letter-spacing: 0.1em;
+      pointer-events: none;
+    }
+    .ws-nav {
+      position: absolute; bottom: 12px;
+      background: none; border: none; cursor: pointer;
+      font-size: 22px; line-height: 1; padding: 4px 8px;
+      color: rgba(255,255,255,0.7);
+    }
+    .ws-nav.prev { left: 16px; }
+    .ws-nav.next { right: 16px; }
+
+    /* Generic injected-page overrides */
+    #os-content-inner .container { grid-template-columns: 1fr !important; max-width: 100%; gap: 0 !important; }
+    #os-content-inner .bookshelf-container { margin: 0 !important; }
+
+    /* Item edit-mode resize handle (single yellow dot on selected item) */
+    .resize-handle {
+      position: absolute;
+      bottom: -6px; right: -6px;
+      width: 14px; height: 14px;
+      background: #f6d400;
+      border: 2px solid #111;
+      border-radius: 50%;
+      cursor: se-resize;
+      z-index: 20;
+      touch-action: none;
+    }
+
+    /* Letter magnets */
+    .letter {
+      position: absolute;
+      font-family: 'Cooper Black', 'Cooper Std Black', serif;
+      font-size: clamp(11px, 1.4vw, 17px);
+      line-height: 1; padding: 1px;
+      cursor: grab; touch-action: none;
+      background: none;
+      z-index: 500;
+    }
+    .letter:active { cursor: grabbing; }
+
+    /* Edit panel */
+    #edit-panel {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: #111; color: #fff;
+      font-family: 'Microgramma D Extended Bold', 'Microgramma', 'Eurostile Extended', sans-serif;
+      font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 12px 20px;
+      display: flex; align-items: center; gap: 16px;
+      flex-wrap: wrap;
+      z-index: 1000;
+    }
+    #edit-panel input {
+      background: #222; border: 1px solid #444; color: #fff;
+      font: inherit;
+      padding: 5px 8px; border-radius: 2px;
+      width: 180px;
+    }
+    #edit-panel input::placeholder { color: #666; }
+    #edit-panel button {
+      background: #333; border: 1px solid #555; color: #fff;
+      font: inherit;
+      padding: 5px 12px; border-radius: 2px;
+      cursor: pointer;
+    }
+    #edit-panel button:hover { background: #444; }
+    #edit-panel button.primary { background: #f6d400; color: #111; border-color: #f6d400; }
+    #edit-panel button.primary:hover { background: #ffe033; }
+    #edit-panel button.danger { background: #e63946; border-color: #e63946; }
+    #edit-panel button.danger:hover { background: #ff4d5a; }
+    .ep-divider { width: 1px; height: 24px; background: #333; flex-shrink: 0; }
+    #selected-section { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    #edit-mode-badge { color: #f6d400; flex-shrink: 0; }
+  </style>
+  <style id="os-injected-style"></style>
+</head>
+<body>
+
+  <div class="fridge-viewport" id="fridge-viewport">
+    <div class="fridge" id="fridge">
+      <img class="fridge-bg" src="fridge2.png" alt="Retro black refrigerator">
+      <img class="fridge-open" src="openfridge.png" alt="Open refrigerator">
+      <div class="fridge-trigger" id="fridge-trigger"></div>
+    </div>
+  </div>
+
+  <!-- Edit panel (shown only in ?edit mode) -->
+  <div id="edit-panel" style="display:none">
+    <span id="edit-mode-badge">✦ Edit mode</span>
+    <div class="ep-divider"></div>
+    <label id="add-btn" style="cursor:pointer">
+      Add item
+      <input id="add-file" type="file" accept="image/*" style="display:none">
+    </label>
+    <div class="ep-divider"></div>
+    <div id="selected-section" style="display:none">
+      <span id="selected-id" style="color:#888"></span>
+      <input id="sel-href"   placeholder="href (e.g. /writing.html)" style="width:160px">
+      <input id="sel-label"  placeholder="hover label" style="width:120px">
+      <input id="sel-rotate" placeholder="rotate °" type="number" style="width:72px">
+      <input id="sel-width"  placeholder="width %" type="number" style="width:72px">
+      <button id="delete-btn" class="danger">Delete</button>
+    </div>
+    <div style="margin-left:auto"><button id="copy-btn" class="primary">Copy layout</button></div>
+  </div>
+
+  <!-- Fridge OS Window -->
+  <div id="os-overlay">
+    <div id="os-window">
+      <div id="os-titlebar">
+        <div class="traffic-lights">
+          <button class="tl-btn tl-close" id="tl-close" data-glyph="✕"></button>
+          <button class="tl-btn tl-min"   id="tl-min"   data-glyph="−"></button>
+          <button class="tl-btn tl-max"   id="tl-max"   data-glyph="+"></button>
+        </div>
+        <span id="os-window-title"></span>
+      </div>
+      <div id="os-content"><div id="os-content-inner"></div></div>
+      <div class="resize-handle resize-e"  data-dir="e"></div>
+      <div class="resize-handle resize-w"  data-dir="w"></div>
+      <div class="resize-handle resize-s"  data-dir="s"></div>
+      <div class="resize-handle resize-se" data-dir="se"></div>
+      <div class="resize-handle resize-sw" data-dir="sw"></div>
+    </div>
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
+  <script>
+    // ── Helpers ────────────────────────────────────────────────
+    const $ = id => document.getElementById(id);
+    const pageType = href => {
+      const h = href.toLowerCase();
+      return h.includes('bookshelf') ? 'bookshelf'
+           : h.includes('decisions') ? 'decisions'
+           : h.includes('woodshop')  ? 'woodshop'
+           : h.includes('postcard')  ? 'postcard'
+           : 'generic';
+    };
+
+    // ── Firebase ───────────────────────────────────────────────
+    firebase.initializeApp({
+      apiKey: "AIzaSyBNcJ4SXzzcTKH8edt1cqt9Rm30aN6CFuo",
+      authDomain: "fridge-b5a68.firebaseapp.com",
+      databaseURL: "https://fridge-b5a68-default-rtdb.firebaseio.com",
+      projectId: "fridge-b5a68",
+      storageBucket: "fridge-b5a68.firebasestorage.app",
+      messagingSenderId: "813069686196",
+      appId: "1:813069686196:web:54550c3883d20850f04ee1"
+    });
+    const db = firebase.database();
+
+    // ── Letter set (magnets) ───────────────────────────────────
+    const PALETTE = ['#e63946','#f6d400','#3a86ff','#2dc653','#ff6b35','#9b5de5','#ff85a1','#ffffff'];
+    const LETTER_SET = ['E','T','A','O','I','N','S','H'].map((char, i) => ({
+      id: `${char.toLowerCase()}${i}`, char, color: PALETTE[i % PALETTE.length]
+    }));
+    const letterDefaultPos = i => ({
+      left: (74 + (i % 2) * 8).toFixed(1),
+      top:  (76 + Math.floor(i / 2) * 6).toFixed(1)
+    });
+
+    // ── Items config (edit with ?edit + Copy layout) ───────────
+    let ITEMS = [
+  { id: "item_1779583589922", src: "items/Bike Business.png", top: 47.454251, left: 27.61084, width: 22, rotate: 0, href: "https://ridewithgps.com/users/9210747", hoverLabel: "Rides" },
+  { id: "item_1779583597274", src: "items/california oranges.jpg", top: 9.737723, left: 27.214286, width: 20, rotate: 0, href: "postcard/postcard.html", hoverLabel: null, windowTitle: "Send a Note" },
+  { id: "item_1779583606062", src: "items/furniture.HEIC", top: 17.584821, left: 25.425223, width: 12, rotate: 0, href: "woodshop/woodshop copy.html", hoverLabel: "Woodshop" },
+  { id: "item_1779583626817", src: "items/good luck dim sum.png", top: 34.484554, left: 55.026723, width: 16, rotate: 0, href: null, hoverLabel: null },
+  { id: "item_1779583634617", src: "items/googly.png", top: 10.620536, left: 63.537388, width: 8, rotate: 0, href: null, hoverLabel: null },
+  { id: "item_1779583643716", src: "items/greeting.png", top: 10.049851, left: 49.011719, width: 13, rotate: 0, href: null, hoverLabel: null },
+  { id: "item_1779583680072", src: "items/michigan2.png", top: 47.698317, left: 51.325787, width: 22, rotate: 0, href: null, hoverLabel: null },
+  { id: "item_1779584269424", src: "items/shopping.png", top: 10.596726, left: 53.606027, width: 2, rotate: 0, href: null, hoverLabel: null },
+  { id: "item_1779584289791", src: "items/shopping.png", top: 35.136283, left: 62.550158, width: 2, rotate: 0, href: null, hoverLabel: null },
+  { id: "item_1779584304657", src: "items/shopping.png", top: 10.049851, left: 34.571987, width: 2, rotate: 0, href: null, hoverLabel: null },
+  { id: "item_1779586060280", src: "items/tj receipt.jpg", top: 14.15253, left: 63.565848, width: 8, rotate: 0, href: "https://tj-prices.com", hoverLabel: "TJ Prices" },
+  { id: "item_1779587617934", src: "items/bookshelf painting.png", top: 19.366443, left: 37.597656, width: 10, rotate: 0, href: "bookshelf files/bookshelf copy.html", hoverLabel: "Bookshelf" },
+  { id: "item_1779587650752", src: "items/shopping.png", top: 19.582217, left: 41.595982, width: 2, rotate: 0, href: null, hoverLabel: null },
+  { id: "item_1779587973438", src: "items/masonic.png", top: 24.74256, left: 49.932478, width: 22, rotate: 0, href: null, hoverLabel: null },
+  { id: "item_1779639122791", src: "items/jobs.png", top: 37.228035, left: 42.391816, width: 10, rotate: 0, href: null, hoverLabel: null /* href: "writing/writing.html", hoverLabel: "Jobs" — re-enable when ready */ },
+  { id: "item_1779639259040", src: "items/decisions.png", top: 36.28463, left: 28.29366, width: 11.8, rotate: 0, href: "decisions/decisions copy.html", hoverLabel: "Decisions" }
+];
+
+    // ── Mode ───────────────────────────────────────────────────
+    const isEditMode = new URLSearchParams(location.search).has('edit');
+    if (isEditMode) document.body.classList.add('edit-mode');
+
+    // ── Local storage (edit mode auto-save) ────────────────────
+    const LS_KEY = 'fridgeEditItems';
+    function syncAllPositions() {
+      ITEMS.forEach(item => {
+        const el = document.querySelector(`.item[data-id="${item.id}"]`);
+        if (el) { item.top = parseFloat(el.style.top); item.left = parseFloat(el.style.left); }
+      });
+    }
+    function saveToLS() { syncAllPositions(); localStorage.setItem(LS_KEY, JSON.stringify(ITEMS)); }
+    function loadFromLS() {
+      try { const s = localStorage.getItem(LS_KEY); if (s) { ITEMS = JSON.parse(s); return true; } } catch(e) {}
+      return false;
+    }
+
+    // ── Drag system ────────────────────────────────────────────
+    let maxZ = 100, letterMaxZ = 500;
+    function makeDraggable(el, onDrop, isLetter = false) {
+      el.addEventListener('pointerdown', e => {
+        if (!isEditMode && el.classList.contains('item')) return;
+        e.preventDefault();
+        el.setPointerCapture(e.pointerId);
+        el.style.zIndex = isLetter ? ++letterMaxZ : ++maxZ;
+
+        const cRect = $('fridge').getBoundingClientRect();
+        const eRect = el.getBoundingClientRect();
+        const ox = e.clientX - eRect.left, oy = e.clientY - eRect.top;
+
+        const onMove = e => {
+          el.style.left = Math.max(0, Math.min(95, (e.clientX - cRect.left - ox) / cRect.width * 100)) + '%';
+          el.style.top  = Math.max(0, Math.min(95, (e.clientY - cRect.top  - oy) / cRect.height * 100)) + '%';
+        };
+        const onUp = () => {
+          el.removeEventListener('pointermove', onMove);
+          el.removeEventListener('pointerup',   onUp);
+          if (onDrop) onDrop(el);
+        };
+        el.addEventListener('pointermove', onMove);
+        el.addEventListener('pointerup',   onUp);
+      });
+    }
+
+    // ── Fridge OS window ───────────────────────────────────────
+    const _injectedFonts = new Set();
+    let _windowCleanup = null;
+
+    async function openWindow(href, title) {
+      if (_windowCleanup) { _windowCleanup(); _windowCleanup = null; }
+      if (href.startsWith('http')) { window.open(href, '_blank'); return; }
+
+      const overlay   = $('os-overlay');
+      const contentEl = $('os-content-inner');
+      const styleEl   = $('os-injected-style');
+      $('os-window-title').textContent = title || 'Jack Kane';
+      overlay.classList.add('open');
+      contentEl.innerHTML = '<div style="padding:48px 56px;color:#aaa;font-family:-apple-system,sans-serif;font-size:14px;">Loading…</div>';
+      styleEl.textContent = '';
+
+      const type = pageType(href);
+
+      try {
+        const resp = await fetch(encodeURI(href), { cache: 'no-store' });
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        let html = await resp.text();
+
+        // Bookshelf covers live in a different folder than the page references
+        if (type === 'bookshelf') {
+          html = html.replace(/src="bookshelf-covers\//g, 'src="bookshelf files/bookshelf-covers copy/');
+        }
+
+        const doc = new DOMParser().parseFromString(html, 'text/html');
+
+        // Drop the page's own sidebar nav — irrelevant inside the OS window
+        doc.querySelectorAll('.sidebar, aside').forEach(el => el.remove());
+
+        // Bookshelf: merge 3 rows into 2 by redistributing row-3 books
+        if (type === 'bookshelf') mergeBookshelfRows(doc);
+
+        // Fix relative image paths (prepend baseDir, except bookshelf covers already fixed)
+        const baseDir = href.includes('/') ? href.substring(0, href.lastIndexOf('/') + 1) : '';
+        doc.querySelectorAll('img[src]').forEach(img => {
+          const src = img.getAttribute('src');
+          if (src && !src.startsWith('http') && !src.startsWith('/') && !src.startsWith('data:')
+              && !src.startsWith('bookshelf files/')) {
+            img.setAttribute('src', baseDir + src);
+          }
+        });
+
+        // Inject external stylesheets (fonts, etc.) once
+        doc.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
+          const fh = link.getAttribute('href');
+          if (fh && !_injectedFonts.has(fh)) {
+            const l = document.createElement('link');
+            l.rel = 'stylesheet'; l.href = fh;
+            document.head.appendChild(l);
+            _injectedFonts.add(fh);
+          }
+        });
+
+        // Extract and scope page styles (rewrite body{} → #os-content-inner{})
+        let css = '';
+        doc.querySelectorAll('style').forEach(s => { css += s.textContent; });
+        styleEl.textContent = css.replace(/\bbody\s*{/g, '#os-content-inner {');
+
+        // Build body content per page type
+        let bodyContent, wsSrcs = null;
+        if (type === 'bookshelf') {
+          const shelf = doc.querySelector('.bookshelf-container');
+          bodyContent = shelf
+            ? `<div style="padding:32px 24px;min-height:100%;display:flex;flex-direction:column;align-items:flex-start;">${shelf.outerHTML}</div>`
+            : doc.body.innerHTML;
+        } else if (type === 'decisions') {
+          const terminal = doc.querySelector('.terminal-container');
+          bodyContent = terminal
+            ? `<div style="padding:20px;box-sizing:border-box;">${terminal.outerHTML}</div>`
+            : doc.body.innerHTML;
+        } else if (type === 'woodshop') {
+          wsSrcs = Array.from(doc.querySelectorAll('img.project-image')).map(img => img.getAttribute('src'));
+          bodyContent = `<div id="ws-slide">
+  <img id="ws-img" src="${wsSrcs[0]}">
+  <div id="ws-counter">1 / ${wsSrcs.length}</div>
+  <button id="ws-prev" class="ws-nav prev" title="Previous">◀</button>
+  <button id="ws-next" class="ws-nav next" title="Next">▶</button>
+</div>`;
+        } else {
+          bodyContent = doc.body.innerHTML;
+        }
+        contentEl.innerHTML = bodyContent;
+
+        if (type === 'woodshop') wireWoodshop(contentEl, wsSrcs);
+        if (type === 'decisions') _windowCleanup = startDecisionsGame();
+        if (type === 'bookshelf') sizeBookshelf(contentEl);
+        if (type === 'postcard')  sizePostcard();
+
+        // Re-execute inline scripts (decisions handles its own logic above)
+        if (type !== 'decisions') {
+          doc.querySelectorAll('script').forEach(oldScript => {
+            const s = document.createElement('script');
+            if (oldScript.src) s.src = oldScript.src;
+            else s.textContent = oldScript.textContent;
+            document.body.appendChild(s);
+            document.body.removeChild(s);
+          });
+        }
+
+      } catch (err) {
+        contentEl.innerHTML = `<div style="padding:48px 56px;color:#e63946;font-family:-apple-system,sans-serif;font-size:13px;">Could not load page.<br><br><code>${err.message}</code></div>`;
+        console.error('openWindow:', err);
+      }
+    }
+
+    // ── Bookshelf: merge 3 rows into 2 ─────────────────────────
+    function mergeBookshelfRows(doc) {
+      const rows = doc.querySelectorAll('.shelf-row');
+      if (rows.length < 3) return;
+      const [row1, row2, row3] = rows;
+
+      // X coord where row's last book ends (translateX + spine width)
+      const rowEnd = row => {
+        let end = 0;
+        row.querySelectorAll('.book-container').forEach(bc => {
+          const m = (bc.getAttribute('style') || '').match(/translateX\(([0-9.]+)px\)/);
+          const sw = parseFloat(bc.querySelector('.spine')?.style.width || '30');
+          if (m) end = Math.max(end, parseFloat(m[1]) + sw);
+        });
+        return end;
+      };
+
+      // Append books to targetRow starting at end+initialGap, preserving relative spacing.
+      // Inserted in REVERSE order BEFORE the existing books so left-side originals paint
+      // over any 3D back-faces from the appended (right-side) books.
+      const appendBooks = (books, targetRow, initialGap, extra) => {
+        if (!books.length) return;
+        const end = rowEnd(targetRow);
+        const origXs = books.map(bc => {
+          const m = (bc.getAttribute('style') || '').match(/translateX\(([0-9.]+)px\)/);
+          return m ? parseFloat(m[1]) : 0;
+        });
+        let cursor = end + initialGap;
+        const newXs = [cursor];
+        for (let i = 1; i < books.length; i++) {
+          cursor += (origXs[i] - origXs[i - 1]) + extra;
+          newXs.push(cursor);
+        }
+        books.forEach((bc, i) => {
+          bc.setAttribute('style', (bc.getAttribute('style') || '').replace(
+            /translateX\(([0-9.]+)px\)/, () => `translateX(${newXs[i].toFixed(3)}px)`));
+        });
+        const anchor = targetRow.firstChild;
+        [...books].reverse().forEach(bc => anchor ? targetRow.insertBefore(bc, anchor) : targetRow.appendChild(bc));
+      };
+
+      const row3Books = Array.from(row3.querySelectorAll('.book-container'));
+      const half = Math.ceil(row3Books.length / 2);
+      appendBooks(row3Books.slice(0, half), row1, 0, 0);
+      appendBooks(row3Books.slice(half),    row2, 0, 0);
+      row3.remove();
+    }
+
+    // ── Bookshelf: scale + size window precisely to the shelf ──
+    function sizeBookshelf(contentEl) {
+      requestAnimationFrame(() => {
+        const shelfFlex = contentEl.querySelector('.bookshelf-container > div');
+        if (!shelfFlex) return;
+
+        let maxRight = 0;
+        shelfFlex.querySelectorAll('.book-container').forEach(bc => {
+          const m = (bc.getAttribute('style') || '').match(/translateX\(([0-9.]+)px\)/);
+          if (m) maxRight = Math.max(maxRight, parseFloat(m[1]) + 40);
+        });
+        const naturalW = (maxRight || 700) + 20;
+        const naturalH = shelfFlex.offsetHeight;
+
+        const WRAP_PAD_H = 64, WRAP_PAD_W = 48, TITLEBAR = 38;
+        const maxContentW = (contentEl.clientWidth || window.innerWidth * 0.84) - WRAP_PAD_W;
+        const maxContentH = window.innerHeight * 0.92 - TITLEBAR - WRAP_PAD_H;
+        const scale = Math.min(1, maxContentW / naturalW, maxContentH / naturalH);
+
+        shelfFlex.style.transformOrigin = 'top left';
+        shelfFlex.style.transform = scale < 1 ? `scale(${scale})` : '';
+
+        const sizer = document.createElement('div');
+        Object.assign(sizer.style, {
+          width:  Math.round(naturalW * scale) + 'px',
+          height: Math.round(naturalH * scale) + 'px',
+          overflow: 'visible', flexShrink: '0'
+        });
+        shelfFlex.parentNode.insertBefore(sizer, shelfFlex);
+        sizer.appendChild(shelfFlex);
+
+        requestAnimationFrame(() => {
+          const osContent = $('os-content');
+          $('os-window').style.height = (osContent.scrollHeight + TITLEBAR) + 'px';
+          osContent.style.overflow = 'hidden';
+        });
+      });
+    }
+
+    // ── Postcard: size window to image aspect (1568×1003) ──────
+    function sizePostcard() {
+      requestAnimationFrame(() => {
+        const win = $('os-window');
+        const w = win.getBoundingClientRect().width;
+        const TITLEBAR = 38;
+        const targetH = w * (1003 / 1568) + TITLEBAR;
+        const maxH = window.innerHeight * 0.92;
+        if (targetH <= maxH) {
+          win.style.height = targetH + 'px';
+        } else {
+          // Image is too tall — shrink width instead, keep aspect
+          const h = maxH - TITLEBAR;
+          win.style.height = maxH + 'px';
+          win.style.width  = (h * (1568 / 1003)) + 'px';
+        }
+        $('os-content').style.overflow = 'hidden';
+      });
+    }
+
+    // ── Woodshop slideshow wiring ──────────────────────────────
+    function wireWoodshop(contentEl, srcs) {
+      if (!srcs?.length) return;
+      const img = contentEl.querySelector('#ws-img');
+      const ctr = contentEl.querySelector('#ws-counter');
+      let i = 0;
+      const show = n => {
+        i = (n + srcs.length) % srcs.length;
+        img.src = srcs[i];
+        ctr.textContent = (i + 1) + ' / ' + srcs.length;
+      };
+      contentEl.querySelector('#ws-next').onclick = () => show(i + 1);
+      contentEl.querySelector('#ws-prev').onclick = () => show(i - 1);
+      contentEl.querySelector('#ws-slide').onclick = e => {
+        if (e.target.tagName !== 'BUTTON') show(i + 1);
+      };
+    }
+
+    // ── Decisions terminal game ────────────────────────────────
+    function startDecisionsGame() {
+      let cancelled = false;
+      const OPTION_COLORS = ['#27c93f','#ffbd2e','#56d3e8','#e06c75','#c678dd','#61afef','#e5c07b'];
+      let outputLines = [], inputResolver = null, isWaitingForInput = false, optionColors = {};
+      const MAX_LINES = 20;
+
+      const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      const colored = (t, c) => `<span style="color:${c}">${esc(t)}</span>`;
+      const optionSpan = n => colored(n, optionColors[n] || '#00ff00');
+
+      const flushOutput = () => {
+        if (cancelled) return;
+        const out = $('terminal-output'); if (!out) return;
+        if (outputLines.length > MAX_LINES) outputLines = outputLines.slice(-MAX_LINES);
+        out.innerHTML = outputLines.join('\n');
+        out.scrollTop = out.scrollHeight;
+      };
+      const appendOutput = text => { text.split('\n').forEach(l => outputLines.push(esc(l))); flushOutput(); };
+      const appendHTML   = html => { outputLines.push(html); flushOutput(); };
+      const clearOutput  = () => { outputLines = []; const o = $('terminal-output'); if (o) o.innerHTML = ''; };
+
+      const getInput = prompt => {
+        if (cancelled) return Promise.resolve('');
+        if (prompt) appendOutput(prompt);
+        isWaitingForInput = true;
+        const il = $('input-line'), fi = $('terminal-input');
+        if (il) il.style.display = 'flex';
+        if (fi) { fi.value = ''; fi.focus(); }
+        return new Promise(r => { inputResolver = r; });
+      };
+
+      const handleSubmit = () => {
+        if (!isWaitingForInput || !inputResolver) return;
+        const fi = $('terminal-input');
+        const val = fi ? fi.value : '';
+        appendOutput(val + '\n');
+        if (fi) fi.value = '';
+        const il = $('input-line'); if (il) il.style.display = 'none';
+        isWaitingForInput = false;
+        const r = inputResolver; inputResolver = null; r(val);
+      };
+
+      const onKey = e => { if (!cancelled && e.key === 'Enter') { e.preventDefault(); handleSubmit(); } };
+      const fi = $('terminal-input');
+      if (fi) fi.addEventListener('keydown', onKey);
+
+      const shuffle = a => {
+        for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+        return a;
+      };
+
+      const askInt = async (prompt, ok, errMsg) => {
+        while (true) {
+          if (cancelled) return null;
+          const n = parseInt(await getInput(prompt));
+          if (!isNaN(n) && ok(n)) return n;
+          appendOutput(errMsg + '\n');
+        }
+      };
+
+      async function run() {
+        try {
+          clearOutput(); optionColors = {};
+          const numPeople  = await askInt('Enter # of decision makers: ', n => n > 0, 'Please enter a positive number.');
+          if (numPeople == null) return;
+          const numOptions = await askInt('Enter # of options deciding between: ', n => n > 1, 'Please enter at least 2 options.');
+          if (numOptions == null) return;
+
+          const options = [];
+          appendOutput('Enter the name of each option:\n');
+          for (let i = 0; i < numOptions; i++) {
+            if (cancelled) return;
+            const name = (await getInput(`Option ${i+1}: `)).trim();
+            options.push(name);
+            optionColors[name] = OPTION_COLORS[i % OPTION_COLORS.length];
+          }
+          const people = shuffle(Array.from({length: numPeople}, (_, i) => `Person ${i+1}`));
+          appendOutput('\n' + '='.repeat(50) + '\n');
+          appendOutput('ELIMINATION PROCESS\n');
+          appendOutput('='.repeat(50) + '\n');
+          appendOutput(`Turn order: ${people.join(' → ')}\n`);
+
+          let round = 1, pi = 0;
+          while (options.length > 1) {
+            if (cancelled) return;
+            appendOutput(`\nRound ${round}\n`);
+            appendHTML(`Remaining: ${options.map(optionSpan).join(', ')}`);
+            appendOutput(`\n${people[pi]}'s turn!\n`);
+            appendOutput('Choose the option to ELIMINATE:\n');
+            options.forEach((o, i) => appendHTML(`  ${i+1}. ${optionSpan(o)}`));
+            const choice = await askInt(`\nEnter number (1-${options.length}): `,
+              n => n >= 1 && n <= options.length,
+              `Please enter a number between 1 and ${options.length}.`);
+            if (choice == null) return;
+            const gone = options.splice(choice-1, 1)[0];
+            appendHTML(`\n${colored('✗','#e06c75')} ${optionSpan(gone)} eliminated!\n`);
+            pi = (pi+1) % numPeople; round++;
+          }
+          appendHTML(`\n${colored('★','#ffbd2e')} The group has chosen: ${optionSpan(options[0])}\n`);
+          await new Promise(r => setTimeout(r, 7000));
+          if (!cancelled) run();
+        } catch(e) { if (!cancelled) appendOutput('\nError: ' + e.message + '\n'); }
+      }
+
+      run();
+      return () => { cancelled = true; if (fi) fi.removeEventListener('keydown', onKey); };
+    }
+
+    function closeWindow() {
+      if (_windowCleanup) { _windowCleanup(); _windowCleanup = null; }
+      $('os-overlay').classList.remove('open');
+      const win = $('os-window');
+      setTimeout(() => {
+        $('os-content-inner').innerHTML = '';
+        $('os-injected-style').textContent = '';
+        win.style.width = ''; win.style.height = '';
+        $('os-content').style.overflow = '';
+      }, 250);
+    }
+
+    $('tl-close').addEventListener('click', closeWindow);
+    $('os-overlay').addEventListener('click', e => { if (e.target === $('os-overlay')) closeWindow(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeWindow(); });
+
+    // ── Resizable window ───────────────────────────────────────
+    let _resize = null;
+    const MIN_W = 320, MIN_H = 200;
+    document.querySelectorAll('#os-window .resize-handle').forEach(handle => {
+      handle.addEventListener('mousedown', e => {
+        if (e.button !== 0) return;
+        e.preventDefault(); e.stopPropagation();
+        const win = $('os-window');
+        const rect = win.getBoundingClientRect();
+        win.style.width  = rect.width  + 'px';
+        win.style.height = rect.height + 'px';
+        _resize = {
+          dir: handle.dataset.dir,
+          startX: e.clientX, startY: e.clientY,
+          origW: rect.width, origH: rect.height
+        };
+      });
+    });
+    document.addEventListener('mousemove', e => {
+      if (!_resize) return;
+      const win = $('os-window');
+      const dx = e.clientX - _resize.startX, dy = e.clientY - _resize.startY;
+      const { dir, origW, origH } = _resize;
+      if (dir === 'e'  || dir === 'se') win.style.width = Math.max(MIN_W, origW + dx) + 'px';
+      if (dir === 'w'  || dir === 'sw') win.style.width = Math.max(MIN_W, origW - dx) + 'px';
+      if (dir === 's'  || dir === 'se' || dir === 'sw') {
+        win.style.height = Math.max(MIN_H, origH + dy) + 'px';
+        $('os-content').style.overflow = 'auto';
+      }
+    });
+    document.addEventListener('mouseup', () => { _resize = null; });
+
+    // ── Render items ───────────────────────────────────────────
+    function createItemEl(item) {
+      const wrap = document.createElement('div');
+      wrap.className = 'item' + (item.top > 25 ? ' on-lower' : '');
+      wrap.dataset.id = item.id;
+      Object.assign(wrap.style, {
+        top:    item.top    + '%',
+        left:   item.left   + '%',
+        width:  item.width  + '%',
+        transform: `rotate(${item.rotate || 0}deg)`,
+        zIndex: 10
+      });
+      const img = document.createElement('img');
+      img.src = encodeURI(item.src);
+      wrap.appendChild(img);
+      if (item.hoverLabel) {
+        const label = document.createElement('span');
+        label.className = 'item-hover-label';
+        label.textContent = item.hoverLabel;
+        wrap.appendChild(label);
+      }
+      return wrap;
+    }
+
+    function renderItems() {
+      const fridge = $('fridge');
+      ITEMS.forEach(item => {
+        const el = createItemEl(item);
+        fridge.appendChild(el);
+        if (isEditMode) {
+          makeDraggable(el, saveToLS);
+          el.addEventListener('pointerdown', () => selectItem(el));
+        } else if (item.href) {
+          el.style.cursor = 'pointer';
+          el.addEventListener('click', () => {
+            if (item.href.startsWith('http')) window.open(item.href, '_blank');
+            else openWindow(item.href, item.windowTitle || item.hoverLabel || item.href);
+          });
+        }
+      });
+    }
+
+    function renderLetters(savedPositions) {
+      const fridge = $('fridge');
+      LETTER_SET.forEach((letter, i) => {
+        const el = document.createElement('div');
+        el.className = 'letter';
+        el.textContent = letter.char;
+        el.dataset.id = letter.id;
+        el.style.color = letter.color;
+        const pos = savedPositions[letter.id] || letterDefaultPos(i);
+        el.style.left = pos.left + '%';
+        el.style.top  = pos.top  + '%';
+        fridge.appendChild(el);
+        makeDraggable(el, el => db.ref(`letters/${letter.id}`).set({
+          left: parseFloat(el.style.left), top: parseFloat(el.style.top)
+        }), true);
+      });
+    }
+
+    // ── Edit mode ──────────────────────────────────────────────
+    let selectedEl = null, resizeHandle = null;
+
+    function selectItem(el) {
+      document.querySelectorAll('.item').forEach(e => e.classList.remove('selected'));
+      if (resizeHandle) { resizeHandle.remove(); resizeHandle = null; }
+      el.classList.add('selected');
+      selectedEl = el;
+      const item = ITEMS.find(i => i.id === el.dataset.id);
+      if (!item) return;
+
+      $('selected-section').style.display = 'flex';
+      $('selected-id').textContent = item.id;
+      $('sel-href').value   = item.href       || '';
+      $('sel-label').value  = item.hoverLabel || '';
+      $('sel-rotate').value = item.rotate     || 0;
+      $('sel-width').value  = item.width      || 20;
+
+      resizeHandle = document.createElement('div');
+      resizeHandle.className = 'resize-handle';
+      el.appendChild(resizeHandle);
+      makeResizable(resizeHandle, el);
+    }
+
+    function makeResizable(handle, el) {
+      handle.addEventListener('pointerdown', e => {
+        e.stopPropagation(); e.preventDefault();
+        handle.setPointerCapture(e.pointerId);
+        const cRect  = $('fridge').getBoundingClientRect();
+        const startX = e.clientX, startW = parseFloat(el.style.width);
+        const onMove = e => {
+          const dx = (e.clientX - startX) / cRect.width * 100;
+          const newW = Math.max(3, Math.round((startW + dx) * 10) / 10);
+          el.style.width = newW + '%';
+          const item = ITEMS.find(i => i.id === el.dataset.id);
+          if (item) item.width = newW;
+          $('sel-width').value = newW;
+        };
+        const onUp = () => {
+          handle.removeEventListener('pointermove', onMove);
+          handle.removeEventListener('pointerup',   onUp);
+          saveToLS();
+        };
+        handle.addEventListener('pointermove', onMove);
+        handle.addEventListener('pointerup',   onUp);
+      });
+    }
+
+    function syncSelectedToItem() {
+      if (!selectedEl) return;
+      const item = ITEMS.find(i => i.id === selectedEl.dataset.id);
+      if (!item) return;
+      item.href       = $('sel-href').value   || null;
+      item.hoverLabel = $('sel-label').value  || null;
+      item.rotate     = parseFloat($('sel-rotate').value) || 0;
+      item.width      = parseFloat($('sel-width').value)  || 20;
+      item.top        = parseFloat(selectedEl.style.top);
+      item.left       = parseFloat(selectedEl.style.left);
+      selectedEl.style.transform = `rotate(${item.rotate}deg)`;
+      selectedEl.style.width     = item.width + '%';
+      saveToLS();
+    }
+
+    function copyLayout() {
+      syncAllPositions();
+      const lines = ITEMS.map(i =>
+        `  { id: "${i.id}", src: "${i.src}", top: ${i.top}, left: ${i.left}, width: ${i.width}, rotate: ${i.rotate || 0}, href: ${i.href ? `"${i.href}"` : 'null'}, hoverLabel: ${i.hoverLabel ? `"${i.hoverLabel}"` : 'null'} }`
+      );
+      navigator.clipboard.writeText(`let ITEMS = [\n${lines.join(',\n')}\n];`).then(() => {
+        const btn = $('copy-btn');
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = 'Copy layout', 1500);
+      });
+    }
+
+    function addItem(src, previewUrl) {
+      const item = { id: 'item_' + Date.now(), src, top: 10, left: 10, width: 20, rotate: 0, href: null, hoverLabel: null };
+      ITEMS.push(item);
+      const el = createItemEl(item);
+      if (previewUrl) el.querySelector('img').src = previewUrl;
+      $('fridge').appendChild(el);
+      makeDraggable(el, saveToLS);
+      el.addEventListener('pointerdown', () => selectItem(el));
+      selectItem(el);
+      saveToLS();
+    }
+
+    function deleteSelected() {
+      if (!selectedEl) return;
+      ITEMS = ITEMS.filter(i => i.id !== selectedEl.dataset.id);
+      selectedEl.remove();
+      selectedEl = null;
+      resizeHandle = null;
+      $('selected-section').style.display = 'none';
+      saveToLS();
+    }
+
+    // ── Init ───────────────────────────────────────────────────
+    if (isEditMode) loadFromLS();
+    renderItems();
+
+    // Lower door click → toggle open state (skip in edit mode)
+    if (!isEditMode) {
+      $('fridge-trigger').addEventListener('click', e => {
+        e.stopPropagation();
+        $('fridge').classList.toggle('open');
+      });
+    }
+
+    if (isEditMode) {
+      $('edit-panel').style.display = 'flex';
+      $('add-file').addEventListener('change', e => {
+        const file = e.target.files[0]; if (!file) return;
+        addItem('items/' + file.name, URL.createObjectURL(file));
+        e.target.value = '';
+      });
+      ['sel-href','sel-label','sel-rotate','sel-width'].forEach(id =>
+        $(id).addEventListener('input', syncSelectedToItem));
+      $('delete-btn').addEventListener('click', deleteSelected);
+      $('copy-btn').addEventListener('click', copyLayout);
+    }
+
+    // db.ref('letters').once('value').then(snap => renderLetters(snap.val() || {}));
+
+    // ── Zoom / pan (desktop only) ──────────────────────────────
+    if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+      const zFridge = $('fridge');
+      let zoom = 1, panX = 0, panY = 0;
+      const MIN_ZOOM = 0.3, MAX_ZOOM = 5;
+      const applyTransform = () => { zFridge.style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`; };
+
+      const initZoom = () => {
+        const fW = zFridge.offsetWidth, fH = zFridge.offsetHeight;
+        zoom = Math.min((window.innerWidth * 1.05) / fW, (window.innerHeight * 1.05) / fH);
+        panX = (window.innerWidth  - fW * zoom) / 2;
+        panY = (window.innerHeight - fH * zoom) / 2;
+        applyTransform();
+      };
+      const bgImg = zFridge.querySelector('.fridge-bg');
+      bgImg.complete ? initZoom() : bgImg.addEventListener('load', initZoom);
+
+      document.addEventListener('wheel', e => {
+        e.preventDefault();
+        const delta = e.deltaY !== 0 ? e.deltaY : -e.deltaX;
+        const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom * (delta < 0 ? 1.08 : 0.93)));
+        const fx = (e.clientX - panX) / zoom, fy = (e.clientY - panY) / zoom;
+        zoom = newZoom;
+        panX = e.clientX - fx * zoom;
+        panY = e.clientY - fy * zoom;
+        applyTransform();
+      }, { passive: false });
+
+      let panning = false, panStart = {x:0,y:0}, panOrigin = {x:0,y:0};
+      document.addEventListener('pointerdown', e => {
+        if (e.target !== zFridge && !e.target.classList.contains('fridge-bg')) return;
+        panning = true;
+        document.body.style.cursor = 'grabbing';
+        panStart  = { x: e.clientX, y: e.clientY };
+        panOrigin = { x: panX, y: panY };
+      });
+      document.addEventListener('pointermove', e => {
+        if (!panning) return;
+        panX = panOrigin.x + (e.clientX - panStart.x);
+        panY = panOrigin.y + (e.clientY - panStart.y);
+        applyTransform();
+      });
+      document.addEventListener('pointerup', () => {
+        panning = false;
+        document.body.style.cursor = '';
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Working As... - Jack Kane</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; background: #f2ede6; }
+
+    .notes-header {
+      position: sticky; top: 0; z-index: 10;
+      background: #f2ede6;
+      border-bottom: 1px solid #d9d3c8;
+      padding: 9px 16px 8px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .notes-header-title { font-size: 15px; font-weight: 600; color: #1c1c1e; letter-spacing: -0.01em; }
+    .notes-count { position: absolute; right: 14px; font-size: 11px; color: #8e8e93; }
+
+    .note-row { border-bottom: 1px solid #d9d3c8; cursor: pointer; user-select: none; }
+    .note-row-header {
+      background: #f2ede6;
+      padding: 10px 16px 9px;
+      display: flex; align-items: baseline; gap: 10px;
+      transition: background 0.1s;
+    }
+    .note-row:hover .note-row-header { background: #e8e2d8; }
+    .note-row.open .note-row-header { background: #f5e472; }
+
+    .note-row-title {
+      flex: 1;
+      font-size: 14px; font-weight: 600; color: #1c1c1e;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .note-row-date { font-size: 11px; color: #8e8e93; flex-shrink: 0; }
+    .note-row-chevron { font-size: 10px; color: #c7c7cc; flex-shrink: 0; transition: transform 0.2s; }
+    .note-row.open .note-row-chevron { transform: rotate(90deg); }
+
+    .note-body-wrap {
+      display: none;
+      background: #fffef8;
+      padding: 20px 36px 28px;
+      border-top: 1px solid #d9d3c8;
+    }
+    .note-row.open .note-body-wrap { display: block; }
+    .note-body-date { font-size: 11px; color: #8e8e93; text-align: center; margin-bottom: 16px; }
+    .note-body-title { font-size: 21px; font-weight: 700; color: #1c1c1e; line-height: 1.3; margin-bottom: 8px; }
+    .note-body-text { font-size: 15px; line-height: 28px; color: #1c1c1e; }
+    .note-body-text p { margin: 0; min-height: 28px; }
+  </style>
+</head>
+<body>
+  <div class="notes-header">
+    <span class="notes-header-title">Working As…</span>
+    <span class="notes-count" id="notes-count"></span>
+  </div>
+  <div id="notes-list"></div>
+
+  <script>
+  (function () {
+    const NOTES = [
+      { title: "Working As a ___", date: "May 2026", body: `<p>Essay content goes here.</p>` }
+    ];
+
+    document.getElementById('notes-count').textContent =
+      `${NOTES.length} essay${NOTES.length !== 1 ? 's' : ''}`;
+
+    const list = document.getElementById('notes-list');
+    NOTES.forEach((note, i) => {
+      const row = document.createElement('div');
+      row.className = 'note-row' + (i === 0 ? ' open' : '');
+      row.innerHTML = `
+        <div class="note-row-header">
+          <span class="note-row-title">${note.title}</span>
+          <span class="note-row-date">${note.date}</span>
+          <span class="note-row-chevron">›</span>
+        </div>
+        <div class="note-body-wrap">
+          <div class="note-body-date">${note.date}</div>
+          <div class="note-body-title">${note.title}</div>
+          <div class="note-body-text">${note.body}</div>
+        </div>`;
+      row.querySelector('.note-row-header').addEventListener('click', () => row.classList.toggle('open'));
+      list.appendChild(row);
+    });
+  })();
+  </script>
+</body>
+</html>

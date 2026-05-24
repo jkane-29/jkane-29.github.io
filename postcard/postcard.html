@@ -43,7 +43,9 @@
       border: none;
       resize: none;
       outline: none;
-      font-family: 'Tangerine', cursive;
+      /* Trattatello: native on macOS/iOS; gracefully falls back to Tangerine
+         (Google Fonts) on other platforms. */
+      font-family: 'Trattatello', 'Trattarello', 'Tangerine', cursive;
       font-size: clamp(18px, 3vw, 34px);
       line-height: 1.1;
       color: #2e2415;

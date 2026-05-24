@@ -19,6 +19,13 @@
     .fridge-viewport { width: 100%; display: flex; justify-content: center; }
     .fridge { position: relative; width: min(700px, 92vw); user-select: none; }
 
+    /* Mobile / touch: enter zoomed-in so just the center of the fridge fills the screen */
+    @media (max-width: 900px), (pointer: coarse) {
+      body { align-items: flex-start; }
+      .fridge-viewport { width: max-content; justify-content: flex-start; }
+      .fridge { width: 130vw; }
+    }
+
     /* ── Desktop: zoom/pan canvas ── */
     @media (hover: hover) and (pointer: fine) {
       body { overflow: hidden; height: 100vh; width: 100vw; display: block; padding: 0; }
@@ -31,30 +38,6 @@
     }
 
     .fridge > img.fridge-bg { width: 100%; height: auto; display: block; pointer-events: none; }
-
-    /* Open-fridge crossfade layer */
-    .fridge-open {
-      position: absolute; inset: 0;
-      width: 100%; height: auto;
-      display: block; pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.45s ease;
-      z-index: 2;
-    }
-    .fridge.open .fridge-open { opacity: 1; }
-
-    /* Invisible click target over the lower door */
-    .fridge-trigger {
-      position: absolute;
-      top: 28%; bottom: 14%; left: 8%; right: 8%;
-      cursor: pointer;
-      z-index: 3;
-    }
-    body.edit-mode .fridge-trigger { display: none; }
-
-    /* Items on the lower door swing away with it */
-    .item { transition: opacity 0.45s ease; }
-    .fridge.open .item.on-lower { opacity: 0; pointer-events: none; }
 
     /* ── Decorative items ── */
     .item { position: absolute; transform-origin: center center; }
@@ -268,6 +251,122 @@
     .ep-divider { width: 1px; height: 24px; background: #333; flex-shrink: 0; }
     #selected-section { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
     #edit-mode-badge { color: #f6d400; flex-shrink: 0; }
+
+    /* Minimize: show ONLY the Copy state button — hide all other panel chrome */
+    #edit-panel.collapsed {
+      background: transparent !important;
+      padding: 8px !important;
+      border: none !important;
+      box-shadow: none !important;
+      pointer-events: none;
+    }
+    #edit-panel.collapsed > * { display: none !important; }
+    #edit-panel.collapsed .copy-state-wrap {
+      display: block !important;
+      pointer-events: auto;
+      margin: 0 !important;
+    }
+    #panel-toggle {
+      background: transparent !important;
+      border: 1px solid #444 !important;
+      color: #f6d400 !important;
+      padding: 4px 10px !important;
+      min-width: 32px;
+    }
+
+    /* Nudge pad — for precise positioning on touch */
+    .nudge-row { display: flex; gap: 6px; align-items: center; }
+    .nudge-row .lbl { font-size: 10px; color: #999; min-width: 44px; }
+    .nudge-btn {
+      width: 38px; height: 38px;
+      padding: 0 !important;
+      font-size: 16px !important;
+      letter-spacing: 0 !important;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* Mobile / touch edit panel: stack everything, big touch targets */
+    @media (max-width: 900px), (pointer: coarse) {
+      #edit-panel {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        padding: 10px 12px 14px;
+        max-height: 60vh;
+        overflow-y: auto;
+      }
+      #edit-panel input {
+        width: 100% !important;
+        font-size: 14px;
+        padding: 10px 12px;
+        min-height: 38px;
+      }
+      #edit-panel button {
+        font-size: 12px;
+        padding: 10px 14px;
+        min-height: 38px;
+      }
+      #edit-panel .nudge-btn { padding: 0 !important; min-height: 38px; }
+      #selected-section {
+        flex-direction: column;
+        align-items: stretch;
+        width: 100%;
+        gap: 8px;
+      }
+      .ep-divider { display: none; }
+      .ep-row { display: flex; gap: 8px; }
+      .ep-row > * { flex: 1; }
+    }
+
+    /* Bigger resize handle on touch devices */
+    @media (pointer: coarse) {
+      .resize-handle {
+        width: 24px; height: 24px;
+        bottom: -12px; right: -12px;
+        border-width: 3px;
+      }
+    }
+
+    /* overengineeRING webring — bumper-sticker style: rounded rect, double border, drop shadow */
+    #ring-wrap {
+      position: absolute;
+      top: 88%;
+      left: 6%;
+      width: 88%;
+      height: 6%;
+      z-index: 4;
+      background: #fdfcf7;
+      border: 1.5px solid #1a1a1a;
+      border-radius: 6px;
+      outline: 1.5px solid #1a1a1a;
+      outline-offset: 3px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.25);
+      box-sizing: border-box;
+    }
+    #ring-embed {
+      /* Render at 1.5× the wrapper dimensions then scale back down so the
+         iframe sees enough horizontal room to lay out on a single row. */
+      width: 150%;
+      height: 150%;
+      transform: scale(0.6667);
+      transform-origin: top left;
+      border: none;
+      background: transparent;
+    }
+    body.edit-mode #ring-wrap {
+      cursor: grab;
+      outline: 1.5px dashed rgba(255,255,255,0.4);
+      outline-offset: 2px;
+    }
+    body.edit-mode #ring-wrap:active { cursor: grabbing; }
+    /* Block iframe pointer events in edit mode so the wrapper catches the drag */
+    body.edit-mode #ring-embed { pointer-events: none; }
+
+    /* Mobile / touch: scale border/shadow + hardcode webring position */
+    @media (max-width: 900px), (pointer: coarse) {
+      /* Webring hidden on mobile — desktop only */
+      #ring-wrap { display: none !important; }
+    }
   </style>
   <style id="os-injected-style"></style>
 </head>
@@ -276,14 +375,20 @@
   <div class="fridge-viewport" id="fridge-viewport">
     <div class="fridge" id="fridge">
       <img class="fridge-bg" src="fridge2.png" alt="Retro black refrigerator">
-      <img class="fridge-open" src="openfridge.png" alt="Open refrigerator">
-      <div class="fridge-trigger" id="fridge-trigger"></div>
+      <!-- overengineeRING webring -->
+      <div id="ring-wrap">
+        <iframe id="ring-embed"
+                src="https://overengineering.kognise.dev/embed/jack?link_color=%23000000"
+                title="overengineeRING embed"
+                loading="lazy"></iframe>
+      </div>
     </div>
   </div>
 
   <!-- Edit panel (shown only in ?edit mode) -->
   <div id="edit-panel" style="display:none">
     <span id="edit-mode-badge">✦ Edit mode</span>
+    <button id="panel-toggle" title="Minimize / expand">▾</button>
     <div class="ep-divider"></div>
     <label id="add-btn" style="cursor:pointer">
       Add item
@@ -292,13 +397,34 @@
     <div class="ep-divider"></div>
     <div id="selected-section" style="display:none">
       <span id="selected-id" style="color:#888"></span>
+
+      <!-- Nudge pad: precise position adjustment -->
+      <div class="nudge-row">
+        <span class="lbl">Move</span>
+        <button class="nudge-btn" data-nudge="left">←</button>
+        <button class="nudge-btn" data-nudge="up">↑</button>
+        <button class="nudge-btn" data-nudge="down">↓</button>
+        <button class="nudge-btn" data-nudge="right">→</button>
+      </div>
+      <div class="nudge-row">
+        <span class="lbl">Size</span>
+        <button class="nudge-btn" data-size="-">−</button>
+        <button class="nudge-btn" data-size="+">+</button>
+        <span class="lbl">Rotate</span>
+        <button class="nudge-btn" data-rotate="-">↺</button>
+        <button class="nudge-btn" data-rotate="+">↻</button>
+      </div>
+
       <input id="sel-href"   placeholder="href (e.g. /writing.html)" style="width:160px">
       <input id="sel-label"  placeholder="hover label" style="width:120px">
       <input id="sel-rotate" placeholder="rotate °" type="number" style="width:72px">
       <input id="sel-width"  placeholder="width %" type="number" style="width:72px">
       <button id="delete-btn" class="danger">Delete</button>
     </div>
-    <div style="margin-left:auto"><button id="copy-btn" class="primary">Copy layout</button></div>
+    <button id="copy-btn" class="primary">Copy layout</button>
+    <div class="copy-state-wrap" style="margin-left:auto;">
+      <button id="copy-state-btn">Copy state</button>
+    </div>
   </div>
 
   <!-- Fridge OS Window -->
@@ -321,9 +447,11 @@
     </div>
   </div>
 
-  <!-- Firebase -->
+  <!-- Firebase (disabled — re-enable when DB rules are tightened) -->
+  <!--
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  -->
 
   <script>
     // ── Helpers ────────────────────────────────────────────────
@@ -337,7 +465,8 @@
            : 'generic';
     };
 
-    // ── Firebase ───────────────────────────────────────────────
+    // ── Firebase (disabled — re-enable when DB rules are tightened) ───────
+    /*
     firebase.initializeApp({
       apiKey: "AIzaSyBNcJ4SXzzcTKH8edt1cqt9Rm30aN6CFuo",
       authDomain: "fridge-b5a68.firebaseapp.com",
@@ -348,6 +477,8 @@
       appId: "1:813069686196:web:54550c3883d20850f04ee1"
     });
     const db = firebase.database();
+    */
+    const db = null;
 
     // ── Letter set (magnets) ───────────────────────────────────
     const PALETTE = ['#e63946','#f6d400','#3a86ff','#2dc653','#ff6b35','#9b5de5','#ff85a1','#ffffff'];
@@ -378,6 +509,9 @@
   { id: "item_1779639122791", src: "items/jobs.png", top: 37.228035, left: 42.391816, width: 10, rotate: 0, href: null, hoverLabel: null /* href: "writing/writing.html", hoverLabel: "Jobs" — re-enable when ready */ },
   { id: "item_1779639259040", src: "items/decisions.png", top: 36.28463, left: 28.29366, width: 11.8, rotate: 0, href: "decisions/decisions copy.html", hoverLabel: "Decisions" }
 ];
+
+    // Optional per-item edit-mode overrides — paste from Copy Layout to update
+    // positions/widths; href/hoverLabel/windowTitle stay set above.
 
     // ── Mode ───────────────────────────────────────────────────
     const isEditMode = new URLSearchParams(location.search).has('edit');
@@ -411,8 +545,8 @@
         const ox = e.clientX - eRect.left, oy = e.clientY - eRect.top;
 
         const onMove = e => {
-          el.style.left = Math.max(0, Math.min(95, (e.clientX - cRect.left - ox) / cRect.width * 100)) + '%';
-          el.style.top  = Math.max(0, Math.min(95, (e.clientY - cRect.top  - oy) / cRect.height * 100)) + '%';
+          el.style.left = Math.max(0, Math.min(95,  (e.clientX - cRect.left - ox) / cRect.width  * 100)) + '%';
+          el.style.top  = Math.max(0, Math.min(110, (e.clientY - cRect.top  - oy) / cRect.height * 100)) + '%';
         };
         const onUp = () => {
           el.removeEventListener('pointermove', onMove);
@@ -818,7 +952,7 @@
     // ── Render items ───────────────────────────────────────────
     function createItemEl(item) {
       const wrap = document.createElement('div');
-      wrap.className = 'item' + (item.top > 25 ? ' on-lower' : '');
+      wrap.className = 'item';
       wrap.dataset.id = item.id;
       Object.assign(wrap.style, {
         top:    item.top    + '%',
@@ -869,9 +1003,12 @@
         el.style.left = pos.left + '%';
         el.style.top  = pos.top  + '%';
         fridge.appendChild(el);
-        makeDraggable(el, el => db.ref(`letters/${letter.id}`).set({
-          left: parseFloat(el.style.left), top: parseFloat(el.style.top)
-        }), true);
+        makeDraggable(el, el => {
+          if (!db) return; // letter persistence disabled until Firebase re-enabled
+          db.ref(`letters/${letter.id}`).set({
+            left: parseFloat(el.style.left), top: parseFloat(el.style.top)
+          });
+        }, true);
       });
     }
 
@@ -976,16 +1113,82 @@
     if (isEditMode) loadFromLS();
     renderItems();
 
-    // Lower door click → toggle open state (skip in edit mode)
-    if (!isEditMode) {
-      $('fridge-trigger').addEventListener('click', e => {
-        e.stopPropagation();
-        $('fridge').classList.toggle('open');
+    // On desktop, restore saved webring position + size (set in edit mode).
+    // On mobile / touch, the CSS media query pins the webring above the
+    // ventilation strip — skip restore so saved values can't override it.
+    const _isTouch = window.matchMedia('(pointer: coarse), (max-width: 900px)').matches;
+    if (!_isTouch) {
+      try {
+        const rp = JSON.parse(localStorage.getItem('ringPos') || 'null');
+        if (rp) {
+          const w = $('ring-wrap');
+          if (rp.top    != null) w.style.top    = rp.top    + '%';
+          if (rp.left   != null) w.style.left   = rp.left   + '%';
+          if (rp.width  != null) w.style.width  = rp.width  + '%';
+          if (rp.height != null) w.style.height = rp.height + '%';
+        }
+      } catch (e) {}
+    }
+
+    function saveRingPos() {
+      const w = $('ring-wrap');
+      localStorage.setItem('ringPos', JSON.stringify({
+        top:    parseFloat(w.style.top    || getComputedStyle(w).top),
+        left:   parseFloat(w.style.left   || getComputedStyle(w).left),
+        width:  parseFloat(w.style.width  || getComputedStyle(w).width),
+        height: parseFloat(w.style.height || getComputedStyle(w).height)
+      }));
+    }
+
+    // Make webring draggable + resizable in edit mode (desktop only)
+    if (isEditMode && !_isTouch) {
+      const ring = $('ring-wrap');
+      makeDraggable(ring, saveRingPos);
+
+      // Resize handle (corner) — independent width/height scaling
+      const rh = document.createElement('div');
+      rh.className = 'resize-handle';
+      ring.appendChild(rh);
+      rh.addEventListener('pointerdown', e => {
+        e.stopPropagation(); e.preventDefault();
+        rh.setPointerCapture(e.pointerId);
+        const cRect = $('fridge').getBoundingClientRect();
+        const ringRect = ring.getBoundingClientRect();
+        const sX = e.clientX, sY = e.clientY;
+        const sW = ringRect.width  / cRect.width  * 100;
+        const sH = ringRect.height / cRect.height * 100;
+        const onMove = e => {
+          const dx = (e.clientX - sX) / cRect.width  * 100;
+          const dy = (e.clientY - sY) / cRect.height * 100;
+          ring.style.width  = Math.max(5, Math.round((sW + dx) * 10) / 10) + '%';
+          ring.style.height = Math.max(2, Math.round((sH + dy) * 10) / 10) + '%';
+        };
+        const onUp = () => {
+          rh.removeEventListener('pointermove', onMove);
+          rh.removeEventListener('pointerup',   onUp);
+          saveRingPos();
+        };
+        rh.addEventListener('pointermove', onMove);
+        rh.addEventListener('pointerup',   onUp);
       });
     }
 
     if (isEditMode) {
       $('edit-panel').style.display = 'flex';
+      // On touch devices, start collapsed (only Copy state shows). Append
+      // `&full` to the URL to start fully expanded for layout work.
+      const wantFull = new URLSearchParams(location.search).has('full');
+      if (_isTouch && !wantFull) $('edit-panel').classList.add('collapsed');
+      $('panel-toggle').addEventListener('click', () => {
+        $('edit-panel').classList.toggle('collapsed');
+      });
+      // Long-press Copy state to expand the full panel
+      let _pressT;
+      $('copy-state-btn').addEventListener('pointerdown', () => {
+        _pressT = setTimeout(() => $('edit-panel').classList.remove('collapsed'), 600);
+      });
+      ['pointerup','pointerleave','pointercancel'].forEach(ev =>
+        $('copy-state-btn').addEventListener(ev, () => clearTimeout(_pressT)));
       $('add-file').addEventListener('change', e => {
         const file = e.target.files[0]; if (!file) return;
         addItem('items/' + file.name, URL.createObjectURL(file));
@@ -995,9 +1198,132 @@
         $(id).addEventListener('input', syncSelectedToItem));
       $('delete-btn').addEventListener('click', deleteSelected);
       $('copy-btn').addEventListener('click', copyLayout);
+
+      // Copy current view state (zoom/scroll/webring) for sharing with Claude.
+      // Shows a textarea overlay so the user can manually select/copy on
+      // mobile/HTTP where navigator.clipboard is unavailable.
+      $('copy-state-btn').addEventListener('click', () => {
+        const f = $('fridge');
+        const fr = f.getBoundingClientRect();
+        const w = $('ring-wrap');
+        const wr = w ? w.getBoundingClientRect() : null;
+        const fCx = f.offsetWidth;
+        const state = {
+          viewport: { w: window.innerWidth, h: window.innerHeight, dpr: window.devicePixelRatio },
+          scroll:   { x: window.scrollX, y: window.scrollY },
+          fridge:   {
+            width_px: fCx,
+            width_vw: +(fCx / window.innerWidth * 100).toFixed(2),
+            screen_x: +fr.left.toFixed(0),
+            screen_y: +fr.top.toFixed(0)
+          },
+          ring: wr ? {
+            screen_x:   +wr.left.toFixed(0),
+            screen_y:   +wr.top.toFixed(0),
+            width_px:   +wr.width.toFixed(0),
+            height_px:  +wr.height.toFixed(0),
+            width_pct:  +(wr.width  / fCx * 100).toFixed(2),
+            height_pct: +(wr.height / f.offsetHeight * 100).toFixed(2)
+          } : null,
+          touch: window.matchMedia('(pointer: coarse)').matches,
+          ua: navigator.userAgent
+        };
+        const json = JSON.stringify(state, null, 2);
+
+        // Overlay textarea — works even when clipboard API is blocked (HTTP/iOS)
+        const overlay = document.createElement('div');
+        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:99999;display:flex;flex-direction:column;padding:16px;gap:8px;';
+        const status = document.createElement('div');
+        status.textContent = 'Tap "Copy" to copy. If that fails, long-press the text → Select All → Copy.';
+        status.style.cssText = 'color:#f6d400;font-family:-apple-system,sans-serif;font-size:12px;line-height:1.4;';
+        const ta = document.createElement('textarea');
+        ta.value = json;
+        // NOT readOnly — iOS Safari can't copy from readOnly via execCommand
+        ta.style.cssText = 'flex:1;width:100%;font-family:monospace;font-size:11px;padding:10px;background:#111;color:#0f0;border:1px solid #333;resize:none;-webkit-user-select:text;user-select:text;';
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex;gap:8px;';
+        const copy = document.createElement('button');
+        copy.textContent = 'Copy';
+        copy.style.cssText = 'flex:1;padding:14px;background:#f6d400;color:#111;border:none;font-size:14px;font-weight:bold;border-radius:4px;';
+        const close = document.createElement('button');
+        close.textContent = 'Close';
+        close.style.cssText = 'flex:1;padding:14px;background:#333;color:#fff;border:none;font-size:14px;border-radius:4px;';
+        row.appendChild(copy); row.appendChild(close);
+        overlay.appendChild(status); overlay.appendChild(ta); overlay.appendChild(row);
+        document.body.appendChild(overlay);
+
+        // iOS-compatible select + copy
+        function doCopy() {
+          // Try modern API first (HTTPS only, but worth trying)
+          if (navigator.clipboard?.writeText) {
+            navigator.clipboard.writeText(json).then(() => {
+              status.textContent = '✓ Copied to clipboard';
+            }).catch(() => execCopy());
+          } else {
+            execCopy();
+          }
+        }
+        function execCopy() {
+          ta.focus();
+          ta.setSelectionRange(0, ta.value.length);
+          let ok = false;
+          try { ok = document.execCommand('copy'); } catch (e) {}
+          status.textContent = ok
+            ? '✓ Copied to clipboard'
+            : 'Copy failed — long-press the text above, Select All, Copy.';
+        }
+        copy.onclick = doCopy;
+        close.onclick = () => overlay.remove();
+
+        // Pre-select so iOS users can immediately long-press → Copy
+        setTimeout(() => { ta.focus(); ta.setSelectionRange(0, ta.value.length); }, 50);
+      });
+
+      // Nudge pad — precise position / size / rotation adjustments
+      const POS_STEP = 0.5, SIZE_STEP = 0.5, ROT_STEP = 5;
+      function applyNudge(e) {
+        if (!selectedEl) return;
+        const item = ITEMS.find(i => i.id === selectedEl.dataset.id);
+        if (!item) return;
+        const t = e.currentTarget;
+        if (t.dataset.nudge) {
+          if (t.dataset.nudge === 'up')    item.top  = Math.max(0,   item.top  - POS_STEP);
+          if (t.dataset.nudge === 'down')  item.top  = Math.min(110, item.top  + POS_STEP);
+          if (t.dataset.nudge === 'left')  item.left = Math.max(0,   item.left - POS_STEP);
+          if (t.dataset.nudge === 'right') item.left = Math.min(95,  item.left + POS_STEP);
+          selectedEl.style.top  = item.top  + '%';
+          selectedEl.style.left = item.left + '%';
+        } else if (t.dataset.size) {
+          item.width = Math.max(2, item.width + (t.dataset.size === '+' ? SIZE_STEP : -SIZE_STEP));
+          selectedEl.style.width = item.width + '%';
+          $('sel-width').value = item.width;
+        } else if (t.dataset.rotate) {
+          item.rotate = (item.rotate || 0) + (t.dataset.rotate === '+' ? ROT_STEP : -ROT_STEP);
+          selectedEl.style.transform = `rotate(${item.rotate}deg)`;
+          $('sel-rotate').value = item.rotate;
+        }
+        saveToLS();
+      }
+      document.querySelectorAll('.nudge-btn').forEach(b => b.addEventListener('click', applyNudge));
     }
 
     // db.ref('letters').once('value').then(snap => renderLetters(snap.val() || {}));
+
+    // ── Mobile/touch: center the scroll on the fridge after it lays out ──
+    if (window.matchMedia('(pointer: coarse), (max-width: 900px)').matches
+        && !window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+      const centerScroll = () => {
+        const f = document.getElementById('fridge');
+        const r = f.getBoundingClientRect();
+        const fcx = r.left + window.scrollX + r.width  / 2;
+        const fcy = r.top  + window.scrollY + r.height / 2;
+        window.scrollTo(fcx - window.innerWidth / 2, fcy - window.innerHeight / 2);
+      };
+      const bg = document.querySelector('.fridge-bg');
+      if (bg && bg.complete) requestAnimationFrame(centerScroll);
+      else if (bg) bg.addEventListener('load', centerScroll);
+      else window.addEventListener('load', centerScroll);
+    }
 
     // ── Zoom / pan (desktop only) ──────────────────────────────
     if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {

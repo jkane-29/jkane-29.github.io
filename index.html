@@ -1336,15 +1336,18 @@
       document.querySelectorAll('.nudge-btn').forEach(b => b.addEventListener('click', applyNudge));
     }
 
-    // Initial render with defaults, then Firebase syncs positions live
-    renderLetters({});
-    db.ref('letters').on('value', snap => {
-      const positions = snap.val() || {};
-      LETTER_SET.forEach(letter => {
-        if (activeDrags.has(letter.id)) return; // don't interrupt local drag
-        const el = document.querySelector(`.letter[data-id="${letter.id}"]`);
-        const pos = positions[letter.id];
-        if (el && pos) { el.style.left = pos.left + '%'; el.style.top = pos.top + '%'; }
+    // Fetch saved positions BEFORE rendering so letters appear in place (no jump)
+    db.ref('letters').once('value').then(snap => {
+      renderLetters(snap.val() || {});
+      // Now wire up the live listener for future updates from other visitors
+      db.ref('letters').on('value', snap => {
+        const positions = snap.val() || {};
+        LETTER_SET.forEach(letter => {
+          if (activeDrags.has(letter.id)) return; // don't interrupt local drag
+          const el = document.querySelector(`.letter[data-id="${letter.id}"]`);
+          const pos = positions[letter.id];
+          if (el && pos) { el.style.left = pos.left + '%'; el.style.top = pos.top + '%'; }
+        });
       });
     });
 

@@ -39,8 +39,27 @@
 
     .fridge > img.fridge-bg { width: 100%; height: auto; display: block; pointer-events: none; }
 
+    /* Block native browser drag-ghost on every image */
+    * { -webkit-tap-highlight-color: transparent; }
+    body {
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+    /* Re-enable selection inside actual text inputs / editable content */
+    input, textarea, [contenteditable="true"] {
+      -webkit-user-select: text;
+      user-select: text;
+    }
+    img {
+      -webkit-user-drag: none;
+      user-drag: none;
+      -webkit-touch-callout: none;
+    }
+
     /* ── Decorative items ── */
-    .item { position: absolute; transform-origin: center center; }
+    .item { position: absolute; transform-origin: center center; user-select: none; }
     .item img { width: 100%; height: auto; display: block; pointer-events: none; }
 
     .item-hover-label {
@@ -214,13 +233,17 @@
     .letter {
       position: absolute;
       font-family: 'Cooper Black', 'Cooper Std Black', serif;
-      font-size: clamp(11px, 1.4vw, 17px);
+      font-size: clamp(22px, 2.8vw, 36px);
       line-height: 1; padding: 1px;
       cursor: grab; touch-action: none;
       background: none;
       z-index: 500;
+      filter: drop-shadow(1px 1.5px 1.5px rgba(0,0,0,0.3));
     }
-    .letter:active { cursor: grabbing; }
+    .letter:active {
+      cursor: grabbing;
+      filter: drop-shadow(2px 3px 4px rgba(0,0,0,0.35));
+    }
 
     /* Edit panel */
     #edit-panel {
@@ -377,7 +400,7 @@
 
   <div class="fridge-viewport" id="fridge-viewport">
     <div class="fridge" id="fridge">
-      <img class="fridge-bg" src="fridge2.jpg" alt="Retro black refrigerator">
+      <img class="fridge-bg" src="fridge2.jpg" alt="Retro black refrigerator" draggable="false">
       <!-- overengineeRING webring -->
       <div id="ring-wrap">
         <iframe id="ring-embed"
@@ -450,13 +473,15 @@
     </div>
   </div>
 
-  <!-- Firebase (disabled — re-enable when DB rules are tightened) -->
-  <!--
+  <!-- Firebase realtime DB for shared letter positions -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-  -->
 
   <script>
+    // Kill native browser drag-ghost on any image (capture phase, all elements)
+    document.addEventListener('dragstart', e => e.preventDefault(), true);
+    document.addEventListener('drag',      e => e.preventDefault(), true);
+
     // ── Helpers ────────────────────────────────────────────────
     const $ = id => document.getElementById(id);
     const pageType = href => {
@@ -468,8 +493,7 @@
            : 'generic';
     };
 
-    // ── Firebase (disabled — re-enable when DB rules are tightened) ───────
-    /*
+    // ── Firebase realtime DB ───────────────────────────────────
     firebase.initializeApp({
       apiKey: "AIzaSyBNcJ4SXzzcTKH8edt1cqt9Rm30aN6CFuo",
       authDomain: "fridge-b5a68.firebaseapp.com",
@@ -480,12 +504,10 @@
       appId: "1:813069686196:web:54550c3883d20850f04ee1"
     });
     const db = firebase.database();
-    */
-    const db = null;
 
     // ── Letter set (magnets) ───────────────────────────────────
     const PALETTE = ['#e63946','#f6d400','#3a86ff','#2dc653','#ff6b35','#9b5de5','#ff85a1','#ffffff'];
-    const LETTER_SET = ['E','T','A','O','I','N','S','H'].map((char, i) => ({
+    const LETTER_SET = ['e','t','a','o','i','n','s','h'].map((char, i) => ({
       id: `${char.toLowerCase()}${i}`, char, color: PALETTE[i % PALETTE.length]
     }));
     const letterDefaultPos = i => ({
@@ -966,6 +988,7 @@
       const img = document.createElement('img');
       img.src = encodeURI(item.src);
       img.loading = 'lazy';
+      img.draggable = false;
       wrap.appendChild(img);
       if (item.hoverLabel) {
         const label = document.createElement('span');
@@ -994,6 +1017,8 @@
       });
     }
 
+    const activeDrags = new Set(); // letters currently being dragged by this user
+
     function renderLetters(savedPositions) {
       const fridge = $('fridge');
       LETTER_SET.forEach((letter, i) => {
@@ -1006,8 +1031,9 @@
         el.style.left = pos.left + '%';
         el.style.top  = pos.top  + '%';
         fridge.appendChild(el);
+        el.addEventListener('pointerdown', () => activeDrags.add(letter.id));
         makeDraggable(el, el => {
-          if (!db) return; // letter persistence disabled until Firebase re-enabled
+          activeDrags.delete(letter.id);
           db.ref(`letters/${letter.id}`).set({
             left: parseFloat(el.style.left), top: parseFloat(el.style.top)
           });
@@ -1310,7 +1336,17 @@
       document.querySelectorAll('.nudge-btn').forEach(b => b.addEventListener('click', applyNudge));
     }
 
-    // db.ref('letters').once('value').then(snap => renderLetters(snap.val() || {}));
+    // Initial render with defaults, then Firebase syncs positions live
+    renderLetters({});
+    db.ref('letters').on('value', snap => {
+      const positions = snap.val() || {};
+      LETTER_SET.forEach(letter => {
+        if (activeDrags.has(letter.id)) return; // don't interrupt local drag
+        const el = document.querySelector(`.letter[data-id="${letter.id}"]`);
+        const pos = positions[letter.id];
+        if (el && pos) { el.style.left = pos.left + '%'; el.style.top = pos.top + '%'; }
+      });
+    });
 
     // ── Mobile/touch: center the scroll on the fridge after it lays out ──
     if (window.matchMedia('(pointer: coarse), (max-width: 900px)').matches

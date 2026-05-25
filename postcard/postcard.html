@@ -96,18 +96,42 @@
       font-style: italic;
     }
 
-    .send-box {
+    .action-bar {
       position: absolute;
       bottom: 7%;
-      right: 8%;
+      left: 56%;
+      right: 6%;
+      display: flex;
+      align-items: center;
+      gap: 10px;
       z-index: 5;
+    }
+    .return-address-input {
+      flex: 1;
+      min-width: 0;
+      background: transparent;
+      border: 2px dashed #004B97;
+      outline: none;
+      font-family: 'Oswald', 'Arial Narrow', sans-serif;
+      font-weight: 700;
+      font-size: clamp(13px, 1.5vw, 20px);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #004B97;
+      padding: 5px 10px;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .return-address-input::placeholder {
+      color: rgba(0, 75, 151, 0.4);
+      font-style: normal;
+    }
+    .return-address-input:focus {
+      border-color: #004B97;
     }
     .send-btn {
       background: transparent;
-      color: #004B97;
+      color: #DA291C;
       border: 2px dashed #DA291C;
-      outline: 2px dashed #004B97;
-      outline-offset: 4px;
       font-family: 'Oswald', 'Arial Narrow', sans-serif;
       font-weight: 700;
       font-size: clamp(13px, 1.5vw, 20px);
@@ -118,9 +142,8 @@
       transition: color 0.15s, border-color 0.15s;
     }
     .send-btn:hover {
-      color: #DA291C;
-      border-color: #004B97;
-      outline-color: #DA291C;
+      color: #a01c10;
+      border-color: #a01c10;
     }
     .send-icon {
       font-size: 1.6em;
@@ -259,7 +282,8 @@
       autofocus
       spellcheck="false"
     ></textarea>
-    <div class="send-box">
+    <div class="action-bar">
+      <input id="return-email" class="return-address-input" type="email" placeholder="FROM" autocomplete="email" spellcheck="false">
       <button id="send" class="send-btn">Send <span class="send-icon">✉</span></button>
     </div>
   </div>
@@ -385,23 +409,29 @@
     btn.addEventListener('click', async () => {
       const body = msg.value.trim();
       if (!body) return;
+      const replyEmail = document.getElementById('return-email').value.trim();
       btn.disabled = true;
       btn.textContent = 'Sending…';
       try {
+        const payload = {
+          access_key: ACCESS_KEY,
+          subject:    'Postcard from your fridge',
+          from_name:  'Fridge Postcard',
+          message:    body,
+          stamp:      selectedStamp || '(no stamp selected)'
+        };
+        if (replyEmail) payload.reply_to = replyEmail;
         const r = await fetch('https://api.web3forms.com/submit', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-          body: JSON.stringify({
-            access_key: ACCESS_KEY,
-            subject:    'Postcard from your fridge',
-            from_name:  'Fridge Postcard',
-            message:    body,
-            stamp:      selectedStamp || '(no stamp selected)'
-          })
+          body: JSON.stringify(payload)
         });
         const data = await r.json().catch(() => ({}));
-        if (r.ok && data.success !== false) { btn.textContent = 'Sent ✓'; msg.value = ''; }
-        else { btn.textContent = 'Failed'; }
+        if (r.ok && data.success !== false) {
+          btn.textContent = 'Sent ✓';
+          msg.value = '';
+          document.getElementById('return-email').value = '';
+        } else { btn.textContent = 'Failed'; }
       } catch (e) { btn.textContent = 'Failed'; }
       setTimeout(() => { btn.textContent = originalLabel; btn.disabled = false; }, 2500);
     });

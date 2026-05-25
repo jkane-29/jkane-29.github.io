@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Postcard - Jack Kane</title>
-  <link href="https://fonts.googleapis.com/css2?family=Tangerine:wght@400;700&family=Special+Elite&family=Cinzel:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Tangerine:wght@400;700&family=Special+Elite&family=Cinzel:wght@500;700&family=Oswald:wght@700&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -14,12 +14,15 @@
       width: 100%;
       overflow: hidden;
       font-family: 'Special Elite', 'Courier New', monospace;
+      display: flex;
+      flex-direction: column;
     }
 
     .postcard {
       position: relative;
+      flex: 1;
+      min-height: 0;
       width: 100%;
-      height: 100%;
     }
 
     .postcard-img {
@@ -32,7 +35,46 @@
       pointer-events: none;
     }
 
-    /* Writing area — positioned BELOW the "post card" title on the image */
+    /* ── ADJUST THESE 4 VALUES TO MATCH THE PRINTED PLACE STAMP HERE BOX ── */
+    .stamp-placeholder,
+    .stamp-overlay {
+      position: absolute;
+      top: 6%;
+      right: 4%;
+      width: 20%;
+      height: 24.5%;
+    }
+    /* ────────────────────────────────────────────────────────────────── */
+
+    .stamp-placeholder {
+      background: transparent;
+      border: 1.5px dashed #a8804a;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      z-index: 3;
+    }
+    .stamp-placeholder:hover {
+      border-color: #6e5630;
+      box-shadow: 0 0 0 2px rgba(168, 128, 74, 0.25);
+    }
+    .stamp-placeholder.hidden { display: none; }
+
+    .stamp-overlay {
+      object-fit: contain;
+      display: none;
+      filter: drop-shadow(0 2px 3px rgba(0,0,0,0.25));
+      z-index: 4;
+      cursor: pointer;
+    }
+    .stamp-overlay.visible { display: block; }
+    .stamp-overlay.snap-in { animation: stamp-snap 0.32s cubic-bezier(.34,1.5,.64,1) both; }
+    @keyframes stamp-snap {
+      0%   { transform: scale(1.6); opacity: 0; }
+      60%  { transform: scale(0.92); opacity: 1; }
+      100% { transform: scale(1); }
+    }
+
     .message-input {
       position: absolute;
       top: 26%;
@@ -43,60 +85,173 @@
       border: none;
       resize: none;
       outline: none;
-      /* Trattatello: native on macOS/iOS; gracefully falls back to Tangerine
-         (Google Fonts) on other platforms. */
       font-family: 'Trattatello', 'Trattarello', 'Tangerine', cursive;
       font-size: clamp(18px, 3vw, 34px);
       line-height: 1.1;
       color: #2e2415;
       padding: 4px;
     }
-
     .message-input::placeholder {
       color: rgba(74, 58, 37, 0.4);
       font-style: italic;
     }
 
-    /* Send button — bare, styled to match the POST CARD title */
     .send-box {
       position: absolute;
-      bottom: 3%;
+      bottom: 7%;
       right: 8%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
       z-index: 5;
     }
-
     .send-btn {
       background: transparent;
-      color: #a8804a;
-      border: none;
-      font-family: 'Cinzel', serif;
-      font-weight: 500;
-      font-size: clamp(9px, 1vw, 13px);
-      letter-spacing: 0.18em;
+      color: #004B97;
+      border: 2px dashed #DA291C;
+      outline: 2px dashed #004B97;
+      outline-offset: 4px;
+      font-family: 'Oswald', 'Arial Narrow', sans-serif;
+      font-weight: 700;
+      font-size: clamp(13px, 1.5vw, 20px);
+      letter-spacing: 0.2em;
       text-transform: uppercase;
-      padding: 4px 8px;
+      padding: 5px 14px;
       cursor: pointer;
-      transition: color 0.15s;
+      transition: color 0.15s, border-color 0.15s;
     }
-    .send-btn:hover { color: #8a5e30; }
+    .send-btn:hover {
+      color: #DA291C;
+      border-color: #004B97;
+      outline-color: #DA291C;
+    }
+    .send-icon {
+      font-size: 1.6em;
+      vertical-align: middle;
+      line-height: 0;
+      position: relative;
+      top: -0.3em;
+    }
 
-    .send-hint {
+    /* ── Stamp picker modal ── */
+    .picker-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.72);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .picker-backdrop.open { display: flex; }
+
+    .picker {
+      background: #f4e9d2;
+      border: 1.5px solid #1a1a1a;
+      border-radius: 6px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+      width: min(560px, 100%);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .picker-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+      background: #ece0c4;
+    }
+    .picker-title {
       font-family: 'Cinzel', serif;
-      font-size: 9px;
-      letter-spacing: 0.18em;
+      font-size: 13px;
+      letter-spacing: 0.22em;
       text-transform: uppercase;
-      color: #a8804a;
-      min-height: 11px;
+      color: #2e2415;
+    }
+    .picker-close {
+      background: transparent;
+      border: none;
+      font-size: 22px;
+      color: #6e5630;
+      cursor: pointer;
+      line-height: 1;
+      padding: 4px 8px;
+    }
+    .picker-close:hover { color: #2e2415; }
+
+    /* Paginated row of 3 stamps */
+    .picker-body {
+      padding: 24px 14px 10px;
+    }
+    .picker-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+    .picker-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 20% 16px;
+    }
+    .picker-nav {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-size: 28px;
+      color: #6e5630;
+      padding: 8px 6px;
+      line-height: 1;
+      transition: color 0.15s, transform 0.15s;
+    }
+    .picker-nav:hover { color: #2e2415; transform: scale(1.15); }
+    .picker-nav:disabled { color: #c9b48a; cursor: default; transform: none; }
+    .stamp-option {
+      width: 100%;
+      height: 130px;
+      background: #fbf5e3;
+      padding: 6px;
+      border: 1.5px dashed #6e5630;
+      cursor: pointer;
+      object-fit: contain;
+      transition: transform 0.12s, border-color 0.12s, box-shadow 0.12s;
+      display: block;
+    }
+    .stamp-option:hover {
+      transform: scale(1.04);
+      border-color: #a8804a;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    }
+    .stamp-option.selected {
+      border-color: #f6d400;
+      border-style: solid;
+      box-shadow: 0 0 0 2px rgba(246, 212, 0, 0.5);
+    }
+    .picker-empty {
+      grid-column: 1 / -1;
+      text-align: center;
+      color: #6e5630;
+      font-family: 'Cinzel', serif;
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+    .picker-pageinfo {
+      text-align: center;
+      font-family: 'Cinzel', serif;
+      font-size: 10px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: #6e5630;
     }
   </style>
 </head>
 <body>
-  <div class="postcard">
-    <img class="postcard-img" src="../items/california oranges2.png" alt="Postcard back">
+
+  <div class="postcard" id="postcard">
+    <img class="postcard-img" src="updated postcard.png" alt="Postcard back">
+    <div id="stamp-placeholder" class="stamp-placeholder"></div>
+    <img id="stamp-overlay" class="stamp-overlay" alt="Selected stamp">
     <textarea
       id="msg"
       class="message-input"
@@ -105,20 +260,150 @@
       spellcheck="false"
     ></textarea>
     <div class="send-box">
-      <button id="send" class="send-btn">Send</button>
+      <button id="send" class="send-btn">Send <span class="send-icon">✉</span></button>
+    </div>
+  </div>
+
+  <!-- Stamp picker modal -->
+  <div class="picker-backdrop" id="picker-backdrop">
+    <div class="picker" role="dialog" aria-label="Choose a stamp">
+      <div class="picker-header">
+        <span class="picker-title">Choose a stamp</span>
+        <button class="picker-close" id="picker-close" aria-label="Close">×</button>
+      </div>
+      <div class="picker-body">
+        <div class="picker-grid" id="picker-grid"></div>
+      </div>
+      <div class="picker-footer">
+        <button class="picker-nav" id="picker-prev" aria-label="Previous">‹</button>
+        <div class="picker-pageinfo" id="picker-pageinfo"></div>
+        <button class="picker-nav" id="picker-next" aria-label="Next">›</button>
+      </div>
     </div>
   </div>
 
   <script>
   (function () {
-    const TO = 'jkane29@icloud.com';
-    const msg = document.getElementById('msg');
-    document.getElementById('send').addEventListener('click', () => {
+    const ACCESS_KEY = '798f7e5e-4b89-4fa6-8b1c-1bb7631cec37';
+    // Root-relative path so it resolves correctly whether the postcard is
+    // loaded standalone OR injected into the OS window from index.html.
+    const STAMPS_DIR = '/postcard/stamps2/';
+    const STAMP_KEY  = 'postcardStamp2';
+
+    const msg         = document.getElementById('msg');
+    const btn         = document.getElementById('send');
+    const overlay     = document.getElementById('stamp-overlay');
+    const placeholder = document.getElementById('stamp-placeholder');
+    const backdrop    = document.getElementById('picker-backdrop');
+    const grid        = document.getElementById('picker-grid');
+    const closeBtn    = document.getElementById('picker-close');
+    const originalLabel = btn.textContent;
+
+    // Clear any stale edit-mode localStorage values from earlier testing
+    try { localStorage.removeItem('stampBoxPos'); } catch (e) {}
+
+    let selectedStamp = null;
+
+    function openPicker()  { backdrop.classList.add('open'); }
+    function closePicker() { backdrop.classList.remove('open'); }
+
+    placeholder.addEventListener('click', openPicker);
+    overlay.addEventListener('click', openPicker);
+    closeBtn.addEventListener('click', closePicker);
+    backdrop.addEventListener('click', e => { if (e.target === backdrop) closePicker(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closePicker(); });
+
+    function selectStamp(src, animate = true) {
+      selectedStamp = src;
+      overlay.src = src;
+      overlay.classList.add('visible');
+      placeholder.classList.add('hidden');
+      if (animate) {
+        overlay.classList.remove('snap-in');
+        void overlay.offsetWidth;
+        overlay.classList.add('snap-in');
+      }
+      grid.querySelectorAll('.stamp-option').forEach(el => {
+        el.classList.toggle('selected', el.dataset.src === src);
+      });
+      try { localStorage.setItem(STAMP_KEY, src); } catch (e) {}
+      closePicker();
+    }
+
+    // ── Paginated stamp picker (3 per page) ────────────────────
+    const PAGE_SIZE = 3;
+    let allStamps  = [];
+    let pageIndex  = 0;
+
+    const prevBtn  = document.getElementById('picker-prev');
+    const nextBtn  = document.getElementById('picker-next');
+    const pageInfo = document.getElementById('picker-pageinfo');
+
+    function renderPage() {
+      const pages = Math.max(1, Math.ceil(allStamps.length / PAGE_SIZE));
+      pageIndex = Math.max(0, Math.min(pageIndex, pages - 1));
+      const start = pageIndex * PAGE_SIZE;
+      const slice = allStamps.slice(start, start + PAGE_SIZE);
+
+      grid.innerHTML = '';
+      if (!slice.length) {
+        grid.innerHTML = '<div class="picker-empty">No stamps available</div>';
+      } else {
+        slice.forEach(src => {
+          const img = document.createElement('img');
+          img.className   = 'stamp-option';
+          img.src         = src;
+          img.dataset.src = src;
+          img.addEventListener('click', () => selectStamp(src));
+          if (src === selectedStamp) img.classList.add('selected');
+          grid.appendChild(img);
+        });
+      }
+
+      prevBtn.disabled = pageIndex === 0;
+      nextBtn.disabled = pageIndex >= pages - 1;
+      pageInfo.textContent = `${pageIndex + 1} / ${pages}`;
+    }
+
+    prevBtn.addEventListener('click', () => { pageIndex--; renderPage(); });
+    nextBtn.addEventListener('click', () => { pageIndex++; renderPage(); });
+
+    fetch(STAMPS_DIR + 'stamps.json', { cache: 'no-store' })
+      .then(r => r.ok ? r.json() : [])
+      .then(stamps => {
+        const real = (stamps || []).filter(name => name && !name.startsWith('_'));
+        allStamps = real.map(n => STAMPS_DIR + n);
+        renderPage();
+
+        try {
+          const saved = localStorage.getItem(STAMP_KEY);
+          if (saved && allStamps.includes(saved)) selectStamp(saved, false);
+        } catch (e) {}
+      })
+      .catch(() => renderPage());
+
+    btn.addEventListener('click', async () => {
       const body = msg.value.trim();
       if (!body) return;
-      const subject = encodeURIComponent('Postcard from your fridge');
-      const mailBody = encodeURIComponent(body + '\n\n— sent from the fridge');
-      window.location.href = `mailto:${TO}?subject=${subject}&body=${mailBody}`;
+      btn.disabled = true;
+      btn.textContent = 'Sending…';
+      try {
+        const r = await fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({
+            access_key: ACCESS_KEY,
+            subject:    'Postcard from your fridge',
+            from_name:  'Fridge Postcard',
+            message:    body,
+            stamp:      selectedStamp || '(no stamp selected)'
+          })
+        });
+        const data = await r.json().catch(() => ({}));
+        if (r.ok && data.success !== false) { btn.textContent = 'Sent ✓'; msg.value = ''; }
+        else { btn.textContent = 'Failed'; }
+      } catch (e) { btn.textContent = 'Failed'; }
+      setTimeout(() => { btn.textContent = originalLabel; btn.disabled = false; }, 2500);
     });
   })();
   </script>

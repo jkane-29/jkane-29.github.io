@@ -377,7 +377,7 @@
 
   <div class="fridge-viewport" id="fridge-viewport">
     <div class="fridge" id="fridge">
-      <img class="fridge-bg" src="fridge2.png" alt="Retro black refrigerator">
+      <img class="fridge-bg" src="fridge2.jpg" alt="Retro black refrigerator">
       <!-- overengineeRING webring -->
       <div id="ring-wrap">
         <iframe id="ring-embed"
@@ -965,6 +965,7 @@
       });
       const img = document.createElement('img');
       img.src = encodeURI(item.src);
+      img.loading = 'lazy';
       wrap.appendChild(img);
       if (item.hoverLabel) {
         const label = document.createElement('span');

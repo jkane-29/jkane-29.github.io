@@ -47,7 +47,8 @@
     .note-body-date { font-size: 11px; color: #8e8e93; text-align: center; margin-bottom: 16px; }
     .note-body-title { font-size: 21px; font-weight: 700; color: #1c1c1e; line-height: 1.3; margin-bottom: 8px; }
     .note-body-text { font-size: 15px; line-height: 28px; color: #1c1c1e; }
-    .note-body-text p { margin: 0; min-height: 28px; }
+    .note-body-text p { margin: 0 0 16px; }
+    .note-body-text p:last-child { margin-bottom: 0; }
   </style>
 </head>
 <body>
@@ -60,7 +61,34 @@
   <script>
   (function () {
     const NOTES = [
-      { title: "Working As a ___", date: "May 2026", body: `<p>Essay content goes here.</p>` }
+      {
+        title: "Working as a Sound Designer",
+        date: "May 2026",
+        body: `<p>The most objectively creative job I had was as a sound design intern for an animation studio. This was in the second semester of junior year, when most of my college friends were in the depths of recruiting for internships and jobs after college. Instead, I was an unpaid intern for a 3 person animation studio, making jingles on Ableton for a Children's television show, a realtors association, and an Avengers inspired short film (the details escape me).</p>
+<p>Those were my halcyon days. I'd spring out of some economics class to meet with the creative director who'd increasingly <a href="https://en.wikipedia.org/wiki/Ecco_the_Dolphin" target="_blank" style="color:#1c1c1e;">obscure</a> video game soundtracks as we talked through my latest rough cut. Later, I'd take his feedback on the low end of a bass line or the phrasing of a melody and hammer it out in the university's math atrium.</p>
+<p>The hardest part of the internship was explaining it to others. For the more career oriented individuals in my circle, there was no path between an economics degree and a brassy synth roll. To grasp for control, I'd revert to a spiel on my future life as an IP lawyer. It was as convenient a truth as any.</p>
+<p>Although the work may have been conventionally unwise it taught me the core elements of project management. Every piece of work I produced, the tracks, filters, effects, and samples had to be in support of the final output. That output or the theme of the output as I began was the only known constraint, what I was learning was how to add and subtract elements with a goal in mind.</p>
+<p>I remember the piece I put together for the realtors association. The core theme was distinctive sounds of home ownership, think jangling keys and a creaking door backed by an escalating piano roll. In scanning through hundreds of samples of keys and doors I thought with each, does this connect to my idea, is it sufficiently good to force me to revise the existing tracks? This process was like sifting, taking the massive compiled world of noise and filtering for the piece that wouldn't sound dissonant.</p>
+<p>I wasn't exceptional at jingle making and knew then that my lack of formal musical education was leading to generic output. I'd spent so much time deciding when each individual track could be called finished, that I realized I was finished making music myself.</p>`
+      },
+      {
+        title: "Working as a Cook",
+        date: "May 2026",
+        body: `<p>Cooking and working in kitchens taught me many surprising things, not in the Bourdain style of "wow my bread is dirty!", but how different disciplines require very different skillsets. Baking is a game of calculations, where a small variance leads to huge differences. A good baker is as much of a nightcrawler as they are an alchemist of yeast. For all the attention to detail there's a separate artistry required. Shaping dough/bread is the opposite of technical, more like learning the footwork to an intricate dance that takes many repetitions to feel natural.</p>
+<p>I also learned how fun it is to work in a flow state and optimize with constraints. Given 30 tasks as a prep cook, how can I optimize across my 6 burners, industrial mixing bowl, and 5 oven racks. It was an incredibly fun game of chess with people shouting, 500 degree ovens, tight spaces, and hard deadlines. Finishing my prep list in 4 hours on my final shift is an enduring moment of pride.</p>
+<p>I've always liked resourceful people, and cooks are the best at making the most out of nearly nothing. The prep cook I worked under named Mario had all these ingenious tricks for making our 5am starting shift habitable. He'd order the line cooks to make us chilaquiles or french toast, methodically plan out tasks, and cut plastic bags so that you could tie them shut with a twist. Waste was his enemy. He'd see around the corners of our busy shift, pre-stocking the cinnamon, thinking about how it could all go wrong. He was an incredibly savvy and brilliant cook from a process perspective.</p>
+<p>Oddly, restaurant jobs also gave me a love for utilitarian hardware. An ideal kitchen would be cambros, striped rags, and steel mixing bowls. The busiest times always required that level of simplicity. Even since I stopped working in restaurants, I've been looking for the simplest versions of things and I think that's where that started from.</p>
+<p>On the net, working as a cook taught me empathy. The early mornings, the grease burns up my wrists, the aching back from too many long shifts standing, it's all quite exhausting, but it was at minimum useful and at best wildly entertaining.</p>`
+      },
+      {
+        title: "Working as a Caddie",
+        date: "May 2026",
+        body: `<p>Working as a golf caddie taught me to become a close study of emotions and to adapt the advice I gave with them in mind. On meeting someone you'd bluntly assess: are they talkative, somber, open to reaching decisions collectively? Everything after would be a priori, incrementing after a shrug off or smile given a suggestion. It's a pure service job, and I became a chameleon, adapting to hundreds of players.</p>
+<p>In that way, the role taught me to be exceptionally perceptive. It was my job to know and see the things that weren't immediately obvious and be trusted for that insight. In more advanced matches you'd see risk and defend against it towards the middle of a green or short of a hazard. Any advice was never purely based on external conditions, but also the emotions gleaned from the player beside me.</p>
+<p>In the best matches I felt I was verbalizing the next shot. Instructions to draw a 4 iron off the chimney of the white house would be followed by the ball arching beautifully in that direction. This narrow gap between advice and results was extremely rewarding. That direct feedback is something I deeply miss.</p>
+<p>I also noticed that the people I instructed best, and who often performed the best, seemed to share a language with me. We looked at risks and opportunities similarly; my idea of how aggressively they would hit a shot was in line with how aggressively they actually did. Skill was a precursor for this, but the players who were most successful at executing were usually the most perceptive as well.</p>
+<p>If there is some hard earned insight to this it's reality is what you perceive. An abject fact could be prized by a championship golfer. What might seem useless, the grain of the grass, the idiosyncratic schedules of the grounds crew, and the height of a creek can be conquered, dictated, and determine the fortunes of competition.</p>`
+      }
     ];
 
     document.getElementById('notes-count').textContent =
@@ -69,7 +97,7 @@
     const list = document.getElementById('notes-list');
     NOTES.forEach((note, i) => {
       const row = document.createElement('div');
-      row.className = 'note-row' + (i === 0 ? ' open' : '');
+      row.className = 'note-row';
       row.innerHTML = `
         <div class="note-row-header">
           <span class="note-row-title">${note.title}</span>

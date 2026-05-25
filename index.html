@@ -158,11 +158,14 @@
     #os-content-inner .terminal-container { flex: 1; min-height: 0 !important; max-height: none !important; }
     #os-content-inner .terminal-header { display: none; }
 
-    /* Postcard — fills window, no scroll, sized to image aspect via JS */
+    /* Postcard — fills window, no scroll. Inner page uses its own flex layout. */
     #os-content:has(.postcard) { overflow: hidden; }
-    #os-content-inner:has(.postcard) { height: 100%; overflow: hidden; }
-    #os-content-inner:has(.postcard) > body,
-    #os-content-inner:has(.postcard) .postcard { height: 100%; }
+    #os-content-inner:has(.postcard) {
+      height: 100%;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
 
     /* Woodshop slideshow */
     #os-content:has(#ws-slide) { overflow: hidden; background: #000; }
@@ -506,7 +509,7 @@
   { id: "item_1779587617934", src: "items/bookshelf painting.png", top: 19.366443, left: 37.597656, width: 10, rotate: 0, href: "bookshelf files/bookshelf copy.html", hoverLabel: "Bookshelf" },
   { id: "item_1779587650752", src: "items/shopping.png", top: 19.582217, left: 41.595982, width: 2, rotate: 0, href: null, hoverLabel: null },
   { id: "item_1779587973438", src: "items/masonic.png", top: 24.74256, left: 49.932478, width: 22, rotate: 0, href: null, hoverLabel: null },
-  { id: "item_1779639122791", src: "items/jobs.png", top: 37.228035, left: 42.391816, width: 10, rotate: 0, href: null, hoverLabel: null /* href: "writing/writing.html", hoverLabel: "Jobs" — re-enable when ready */ },
+  { id: "item_1779639122791", src: "items/jobs.png", top: 37.228035, left: 42.391816, width: 10, rotate: 0, href: "writing/writing.html", hoverLabel: "Jobs" },
   { id: "item_1779639259040", src: "items/decisions.png", top: 36.28463, left: 28.29366, width: 11.8, rotate: 0, href: "decisions/decisions copy.html", hoverLabel: "Decisions" }
 ];
 
@@ -765,7 +768,6 @@
         if (targetH <= maxH) {
           win.style.height = targetH + 'px';
         } else {
-          // Image is too tall — shrink width instead, keep aspect
           const h = maxH - TITLEBAR;
           win.style.height = maxH + 'px';
           win.style.width  = (h * (1568 / 1003)) + 'px';
@@ -1342,7 +1344,10 @@
       const bgImg = zFridge.querySelector('.fridge-bg');
       bgImg.complete ? initZoom() : bgImg.addEventListener('load', initZoom);
 
+      const windowOpen = () => $('os-overlay').classList.contains('open');
+
       document.addEventListener('wheel', e => {
+        if (windowOpen()) return;
         e.preventDefault();
         const delta = e.deltaY !== 0 ? e.deltaY : -e.deltaX;
         const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom * (delta < 0 ? 1.08 : 0.93)));
@@ -1355,6 +1360,7 @@
 
       let panning = false, panStart = {x:0,y:0}, panOrigin = {x:0,y:0};
       document.addEventListener('pointerdown', e => {
+        if (windowOpen()) return;
         if (e.target !== zFridge && !e.target.classList.contains('fridge-bg')) return;
         panning = true;
         document.body.style.cursor = 'grabbing';

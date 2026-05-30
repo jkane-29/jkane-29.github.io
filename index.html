@@ -145,6 +145,22 @@
       flex-shrink: 0;
     }
     .tl-btn:hover { filter: brightness(1.15); }
+    @media (pointer: coarse) {
+      /* Full-screen OS window, no titlebar on touch */
+      #os-titlebar { display: none; }
+      #os-window {
+        width: 100vw !important;
+        height: 100vh !important;
+        height: 100dvh !important; /* dynamic vh: accounts for iOS toolbar */
+        max-width: 100vw !important;
+        border-radius: 0;
+        border: none;
+      }
+      #os-overlay {
+        padding: 0;
+        align-items: flex-start;
+      }
+    }
     .tl-close { background: #ff5f57; }
     .tl-min   { background: #febc2e; }
     .tl-max   { background: #28c840; }
@@ -215,6 +231,14 @@
     }
     .ws-nav.prev { left: 16px; }
     .ws-nav.next { right: 16px; }
+    /* Larger tap targets on touch (Apple HIG ≥44px) */
+    @media (pointer: coarse) {
+      .ws-nav {
+        font-size: 28px;
+        min-width: 44px; min-height: 44px;
+        display: flex; align-items: center; justify-content: center;
+      }
+    }
 
     /* Generic injected-page overrides */
     #os-content-inner .container { grid-template-columns: 1fr !important; max-width: 100%; gap: 0 !important; }
@@ -247,6 +271,10 @@
     .letter:active {
       cursor: grabbing;
       filter: drop-shadow(2px 3px 4px rgba(0,0,0,0.35));
+    }
+    @media (max-width: 900px), (pointer: coarse) {
+      /* Fridge is 130vw wide on mobile, so scale letters proportionally */
+      .letter { font-size: clamp(30px, 4.5vw, 52px); }
     }
 
     /* Edit panel */
@@ -327,9 +355,9 @@
       }
       #edit-panel input {
         width: 100% !important;
-        font-size: 14px;
+        font-size: 16px; /* avoid iOS focus zoom */
         padding: 10px 12px;
-        min-height: 38px;
+        min-height: 44px;
       }
       #edit-panel button {
         font-size: 12px;
@@ -521,9 +549,9 @@
 
     // ── Items config (edit with ?edit + Copy layout) ───────────
     let ITEMS = [
-  { id: "item_1779583589922", src: "items/Bike Business.png", top: 47.454251, left: 27.61084, width: 22, rotate: 0, href: "https://ridewithgps.com/users/9210747", hoverLabel: "Rides" },
+  { id: "item_1779583589922", src: "items/Bike Business.png", top: 47.454251, left: 27.61084, width: 22, rotate: 0, href: null, hoverLabel: null },
   { id: "item_1779583597274", src: "items/california oranges.jpg", top: 9.737723, left: 27.214286, width: 20, rotate: 0, href: "postcard/postcard.html", hoverLabel: "Send a Note", windowTitle: "Send a Note" },
-  { id: "item_1779583606062", src: "items/furniture.HEIC", top: 17.584821, left: 25.425223, width: 12, rotate: 0, href: "woodshop/woodshop copy.html", hoverLabel: "Woodshop" },
+  { id: "item_1779583606062", src: "items/furniture_web.png", top: 17.584821, left: 25.425223, width: 12, rotate: 0, href: "woodshop/woodshop copy.html", hoverLabel: "Woodshop" },
   { id: "item_1779583626817", src: "items/good luck dim sum.png", top: 34.484554, left: 55.026723, width: 16, rotate: 0, href: null, hoverLabel: null },
   { id: "item_1779583634617", src: "items/googly.png", top: 10.620536, left: 63.537388, width: 8, rotate: 0, href: null, hoverLabel: null },
   { id: "item_1779583643716", src: "items/greeting.png", top: 10.049851, left: 49.011719, width: 13, rotate: 0, href: null, hoverLabel: null },
@@ -594,12 +622,15 @@
     async function openWindow(href, title) {
       if (_windowCleanup) { _windowCleanup(); _windowCleanup = null; }
       if (href.startsWith('http')) { window.open(href, '_blank'); return; }
+      // On touch: push history state so back button closes the overlay
+      if (_isTouch) history.pushState({ fridgeWindow: true }, '', '');
 
       const overlay   = $('os-overlay');
       const contentEl = $('os-content-inner');
       const styleEl   = $('os-injected-style');
       $('os-window-title').textContent = title || 'Jack Kane';
       overlay.classList.add('open');
+      document.body.style.overflow = 'hidden'; // lock background scroll while open
       contentEl.innerHTML = '<div style="padding:48px 56px;color:#aaa;font-family:-apple-system,sans-serif;font-size:14px;">Loading…</div>';
       styleEl.textContent = '';
 
@@ -746,6 +777,7 @@
 
     // ── Bookshelf: scale + size window precisely to the shelf ──
     function sizeBookshelf(contentEl) {
+      const isMobile = window.matchMedia('(pointer: coarse), (max-width: 768px)').matches;
       requestAnimationFrame(() => {
         const shelfFlex = contentEl.querySelector('.bookshelf-container > div');
         if (!shelfFlex) return;
@@ -753,15 +785,23 @@
         let maxRight = 0;
         shelfFlex.querySelectorAll('.book-container').forEach(bc => {
           const m = (bc.getAttribute('style') || '').match(/translateX\(([0-9.]+)px\)/);
-          if (m) maxRight = Math.max(maxRight, parseFloat(m[1]) + 40);
+          if (m) maxRight = Math.max(maxRight, parseFloat(m[1]) + 220);
         });
-        const naturalW = (maxRight || 700) + 20;
+        const naturalW = (maxRight || 1200) + 20;
         const naturalH = shelfFlex.offsetHeight;
 
         const WRAP_PAD_H = 64, WRAP_PAD_W = 48, TITLEBAR = 38;
         const maxContentW = (contentEl.clientWidth || window.innerWidth * 0.84) - WRAP_PAD_W;
-        const maxContentH = window.innerHeight * 0.92 - TITLEBAR - WRAP_PAD_H;
-        const scale = Math.min(1, maxContentW / naturalW, maxContentH / naturalH);
+
+        let scale;
+        if (isMobile) {
+          // Mobile: scale by WIDTH only so every book fits horizontally; let
+          // the OS-content area scroll vertically through all 3 rows.
+          scale = Math.min(1, maxContentW / naturalW);
+        } else {
+          const maxContentH = window.innerHeight * 0.92 - TITLEBAR - WRAP_PAD_H;
+          scale = Math.min(1, maxContentW / naturalW, maxContentH / naturalH);
+        }
 
         shelfFlex.style.transformOrigin = 'top left';
         shelfFlex.style.transform = scale < 1 ? `scale(${scale})` : '';
@@ -774,6 +814,8 @@
         });
         shelfFlex.parentNode.insertBefore(sizer, shelfFlex);
         sizer.appendChild(shelfFlex);
+
+        if (isMobile) return; // keep os-content scrollable vertically
 
         requestAnimationFrame(() => {
           const osContent = $('os-content');
@@ -823,13 +865,13 @@
     // ── Decisions terminal game ────────────────────────────────
     function startDecisionsGame() {
       let cancelled = false;
-      const OPTION_COLORS = ['#27c93f','#ffbd2e','#56d3e8','#e06c75','#c678dd','#61afef','#e5c07b'];
-      let outputLines = [], inputResolver = null, isWaitingForInput = false, optionColors = {};
+      const PERSON_COLORS = ['#ffbd2e','#e06c75','#56d3e8','#c678dd','#61afef','#e5c07b','#ff85a1'];
+      let outputLines = [], inputResolver = null, isWaitingForInput = false, personColors = {};
       const MAX_LINES = 20;
 
       const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
       const colored = (t, c) => `<span style="color:${c}">${esc(t)}</span>`;
-      const optionSpan = n => colored(n, optionColors[n] || '#00ff00');
+      const personSpan = n => colored(n, personColors[n] || '#00ff00');
 
       const flushOutput = () => {
         if (cancelled) return;
@@ -883,7 +925,7 @@
 
       async function run() {
         try {
-          clearOutput(); optionColors = {};
+          clearOutput(); personColors = {};
           const numPeople  = await askInt('Enter # of decision makers: ', n => n > 0, 'Please enter a positive number.');
           if (numPeople == null) return;
           const numOptions = await askInt('Enter # of options deciding between: ', n => n > 1, 'Please enter at least 2 options.');
@@ -895,31 +937,28 @@
             if (cancelled) return;
             const name = (await getInput(`Option ${i+1}: `)).trim();
             options.push(name);
-            optionColors[name] = OPTION_COLORS[i % OPTION_COLORS.length];
           }
           const people = shuffle(Array.from({length: numPeople}, (_, i) => `Person ${i+1}`));
-          appendOutput('\n' + '='.repeat(50) + '\n');
-          appendOutput('ELIMINATION PROCESS\n');
-          appendOutput('='.repeat(50) + '\n');
-          appendOutput(`Turn order: ${people.join(' → ')}\n`);
+          people.forEach((p, i) => { personColors[p] = PERSON_COLORS[i % PERSON_COLORS.length]; });
+          appendOutput('\nELIMINATION PROCESS\n');
 
           let round = 1, pi = 0;
           while (options.length > 1) {
             if (cancelled) return;
             appendOutput(`\nRound ${round}\n`);
-            appendHTML(`Remaining: ${options.map(optionSpan).join(', ')}`);
-            appendOutput(`\n${people[pi]}'s turn!\n`);
+            appendOutput(`Remaining: ${options.join(', ')}\n`);
+            appendHTML(`\n${personSpan(people[pi])}'s turn!`);
             appendOutput('Choose the option to ELIMINATE:\n');
-            options.forEach((o, i) => appendHTML(`  ${i+1}. ${optionSpan(o)}`));
+            options.forEach((o, i) => appendOutput(`  ${i+1}. ${o}`));
             const choice = await askInt(`\nEnter number (1-${options.length}): `,
               n => n >= 1 && n <= options.length,
               `Please enter a number between 1 and ${options.length}.`);
             if (choice == null) return;
             const gone = options.splice(choice-1, 1)[0];
-            appendHTML(`\n${colored('✗','#e06c75')} ${optionSpan(gone)} eliminated!\n`);
+            appendHTML(`\n${personSpan(people[pi])} eliminated ${gone}!\n`);
             pi = (pi+1) % numPeople; round++;
           }
-          appendHTML(`\n${colored('★','#ffbd2e')} The group has chosen: ${optionSpan(options[0])}\n`);
+          appendOutput(`\nThe group has chosen: ${options[0]}\n`);
           await new Promise(r => setTimeout(r, 7000));
           if (!cancelled) run();
         } catch(e) { if (!cancelled) appendOutput('\nError: ' + e.message + '\n'); }
@@ -932,6 +971,7 @@
     function closeWindow() {
       if (_windowCleanup) { _windowCleanup(); _windowCleanup = null; }
       $('os-overlay').classList.remove('open');
+      document.body.style.overflow = ''; // restore background scroll
       const win = $('os-window');
       setTimeout(() => {
         $('os-content-inner').innerHTML = '';
@@ -944,6 +984,10 @@
     $('tl-close').addEventListener('click', closeWindow);
     $('os-overlay').addEventListener('click', e => { if (e.target === $('os-overlay')) closeWindow(); });
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeWindow(); });
+    // Back button closes window on mobile
+    window.addEventListener('popstate', e => {
+      if ($('os-overlay').classList.contains('open')) closeWindow();
+    });
 
     // ── Resizable window ───────────────────────────────────────
     let _resize = null;
@@ -995,10 +1039,15 @@
       img.draggable = false;
       wrap.appendChild(img);
       if (item.hoverLabel) {
-        const label = document.createElement('span');
-        label.className = 'item-hover-label';
-        label.textContent = item.hoverLabel;
-        wrap.appendChild(label);
+        // Hide postcard hover label on touch devices (postcard is disabled there)
+        const isTouch = window.matchMedia('(pointer: coarse), (max-width: 900px)').matches;
+        const hideOnTouch = isTouch && item.href && item.href.includes('postcard');
+        if (!hideOnTouch) {
+          const label = document.createElement('span');
+          label.className = 'item-hover-label';
+          label.textContent = item.hoverLabel;
+          wrap.appendChild(label);
+        }
       }
       return wrap;
     }
@@ -1012,11 +1061,16 @@
           makeDraggable(el, saveToLS);
           el.addEventListener('pointerdown', () => selectItem(el));
         } else if (item.href) {
-          el.style.cursor = 'pointer';
-          el.addEventListener('click', () => {
-            if (item.href.startsWith('http')) window.open(item.href, '_blank');
-            else openWindow(item.href, item.windowTitle || item.hoverLabel || item.href);
-          });
+          // Postcard temporarily disabled on touch devices — show static image only
+          const isTouch = window.matchMedia('(pointer: coarse), (max-width: 900px)').matches;
+          const postcardOnTouch = isTouch && item.href.includes('postcard');
+          if (!postcardOnTouch) {
+            el.style.cursor = 'pointer';
+            el.addEventListener('click', () => {
+              if (item.href.startsWith('http')) window.open(item.href, '_blank');
+              else openWindow(item.href, item.windowTitle || item.hoverLabel || item.href);
+            });
+          }
         }
       });
     }

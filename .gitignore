@@ -6,3 +6,6 @@ test.html
 # Nested unrelated project (Ruby bookshelf generator — source not needed for site)
 bookshelf files/bookshelf copy/
 favicon-preview/
+
+# WIP — keep local
+rides/

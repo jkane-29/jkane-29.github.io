@@ -18,11 +18,19 @@
       flex-direction: column;
     }
 
-    .postcard {
-      position: relative;
+    /* Wrapper holds both the card and the action bar;
+       on desktop it's the positioned ancestor for .action-bar */
+    .card-wrapper {
       flex: 1;
       min-height: 0;
+      position: relative;
       width: 100%;
+    }
+
+    .postcard {
+      position: relative;
+      width: 100%;
+      height: 100%;
     }
 
     .postcard-img {
@@ -86,9 +94,10 @@
       resize: none;
       outline: none;
       font-family: 'Trattatello', 'Trattarello', 'Tangerine', cursive;
+      font-weight: 400;
       font-size: clamp(18px, 3vw, 34px);
-      line-height: 1.1;
-      color: #2e2415;
+      line-height: 0.9;
+      color: #4a3a25;
       padding: 4px;
     }
     .message-input::placeholder {
@@ -96,54 +105,74 @@
       font-style: italic;
     }
 
+    /* On desktop, action-bar sits absolutely over the right side of the card
+       FROM + email render as horizontal address lines, Send sits below */
     .action-bar {
       position: absolute;
-      bottom: 7%;
+      top: 70%;
+      transform: translateY(-50%);
       left: 56%;
       right: 6%;
       display: flex;
-      align-items: center;
-      gap: 10px;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 14px;
       z-index: 5;
     }
-    .return-address-input {
-      flex: 1;
-      min-width: 0;
+    .action-row {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .return-address-input,
+    .email-input-optional,
+    .address-line-extra {
+      width: 100%;
+      box-sizing: border-box;
       background: transparent;
-      border: 2px dashed #004B97;
+      border: none;
+      border-bottom: 1.5px solid #1a1a1a;
+      border-radius: 0;
       outline: none;
-      font-family: 'Oswald', 'Arial Narrow', sans-serif;
-      font-weight: 700;
-      font-size: clamp(13px, 1.5vw, 20px);
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: #004B97;
-      padding: 5px 10px;
-      transition: border-color 0.15s, color 0.15s;
+      font-family: 'Trattatello', 'Trattarello', 'Tangerine', cursive;
+      font-weight: 400;
+      font-size: clamp(16px, 2.4vw, 28px);
+      line-height: 0.75;
+      letter-spacing: 0;
+      color: #1a1a1a;
+      padding: 4px 4px 0;
+      transition: border-color 0.15s;
     }
-    .return-address-input::placeholder {
-      color: rgba(0, 75, 151, 0.4);
-      font-style: normal;
+    .return-address-input::placeholder,
+    .email-input-optional::placeholder,
+    .address-line-extra::placeholder {
+      color: rgba(26, 26, 26, 0.35);
+      font-style: italic;
     }
-    .return-address-input:focus {
-      border-color: #004B97;
+    .return-address-input:focus,
+    .email-input-optional:focus,
+    .address-line-extra:focus {
+      border-bottom-color: #000;
     }
     .send-btn {
+      align-self: stretch;
+      width: 100%;
+      margin-top: 30px;
       background: transparent;
-      color: #DA291C;
-      border: 2px dashed #DA291C;
-      font-family: 'Oswald', 'Arial Narrow', sans-serif;
-      font-weight: 700;
-      font-size: clamp(13px, 1.5vw, 20px);
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      padding: 5px 14px;
+      color: #1a1a1a;
+      border: 1.5px dashed #b8893a;
+      font-family: 'Trattatello', 'Trattarello', 'Tangerine', cursive;
+      font-weight: 400;
+      font-size: clamp(18px, 2.4vw, 28px);
+      letter-spacing: 0;
+      text-transform: none;
+      padding: 8px 14px;
       cursor: pointer;
-      transition: color 0.15s, border-color 0.15s;
+      transition: background-color 0.15s, color 0.15s;
     }
     .send-btn:hover {
-      color: #a01c10;
-      border-color: #a01c10;
+      background: #1a1a1a;
+      color: #ffffff;
     }
     .send-icon {
       font-size: 1.6em;
@@ -151,6 +180,93 @@
       line-height: 0;
       position: relative;
       top: -0.3em;
+    }
+
+    /* ── Mobile: card fills width, FROM/Send stay overlaid on the
+       card's bottom-right exactly like desktop ── */
+    @media (max-width: 600px), (pointer: coarse) {
+      body {
+        overflow-y: auto;
+        height: auto;
+        min-height: 100vh;
+        min-height: 100dvh; /* dynamic vh: accounts for iOS toolbar */
+        /* anchor card to the top; centering caused a jump when the
+           keyboard opened on input focus */
+        justify-content: flex-start;
+      }
+
+      /* wrapper hugs the card so the absolute action-bar sits on it */
+      .card-wrapper {
+        flex: none;
+      }
+
+      /* card shrinks to its natural 3:2 aspect ratio */
+      .postcard {
+        height: auto;
+        aspect-ratio: 3 / 2;
+        flex: none;
+      }
+
+      /* keep action-bar overlaid on the card's bottom-right (same as desktop),
+         but stack FROM above Send so they aren't cramped side by side */
+      .action-bar {
+        position: absolute;
+        bottom: 7%;
+        left: 56%;
+        right: 6%;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 6px;
+      }
+      /* Mobile: keep just FROM + Send; hide the new optional email row */
+      .action-row { display: contents; }
+      .email-input-optional { display: none; }
+
+      .return-address-input {
+        flex: none;
+        width: 100%;
+        box-sizing: border-box;
+        font-family: 'Oswald', 'Arial Narrow', sans-serif;
+        font-weight: 700;
+        /* 16px keeps iOS Safari from auto-zooming when the field is focused */
+        font-size: 16px;
+        letter-spacing: 0.12em;
+        padding: 8px 10px;
+        min-height: 42px;
+        border: 2px dashed #004B97;
+        text-align: center;
+      }
+
+      .send-btn {
+        flex: none;
+        width: 100%;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        font-family: 'Oswald', 'Arial Narrow', sans-serif;
+        font-weight: 700;
+        font-size: 16px;
+        letter-spacing: 0.12em;
+        padding: 9px 10px;
+        min-height: 46px;
+        border: 2px dashed #DA291C;
+        white-space: nowrap;
+      }
+      /* keep the envelope inline-centered with the word on mobile */
+      .send-btn .send-icon {
+        position: static;
+        top: 0;
+        font-size: 1.3em;
+        line-height: 1;
+      }
+
+      /* Use Tangerine (Google Font, guaranteed on Android) for the message */
+      .message-input {
+        font-family: 'Tangerine', cursive;
+        font-size: clamp(22px, 6vw, 38px);
+      }
     }
 
     /* ── Stamp picker modal ── */
@@ -271,20 +387,27 @@
 </head>
 <body>
 
-  <div class="postcard" id="postcard">
-    <img class="postcard-img" src="updated postcard.png" alt="Postcard back">
-    <div id="stamp-placeholder" class="stamp-placeholder"></div>
-    <img id="stamp-overlay" class="stamp-overlay" alt="Selected stamp">
-    <textarea
-      id="msg"
-      class="message-input"
-      placeholder="Write a note…"
-      autofocus
-      spellcheck="false"
-    ></textarea>
+  <div class="card-wrapper">
+    <div class="postcard" id="postcard">
+      <img class="postcard-img" src="updated postcard.png" alt="Postcard back">
+      <div id="stamp-placeholder" class="stamp-placeholder"></div>
+      <img id="stamp-overlay" class="stamp-overlay" alt="Selected stamp">
+      <textarea
+        id="msg"
+        class="message-input"
+        placeholder="Write a note…"
+        autofocus
+        spellcheck="false"
+      ></textarea>
+    </div>
+
     <div class="action-bar">
-      <input id="return-email" class="return-address-input" type="email" placeholder="FROM" autocomplete="email" spellcheck="false">
-      <button id="send" class="send-btn">Send <span class="send-icon">✉</span></button>
+      <div class="action-row">
+        <input id="return-email" class="return-address-input" type="text" placeholder="from" autocomplete="name" spellcheck="false">
+        <input id="reply-email" class="email-input-optional" type="email" placeholder="email (optional)" autocomplete="email" spellcheck="false">
+        <input id="address-extra" class="address-line-extra" type="text" placeholder="website (optional)" autocomplete="url" spellcheck="false">
+      </div>
+      <button id="send" class="send-btn">Send</button>
     </div>
   </div>
 
@@ -409,18 +532,24 @@
     btn.addEventListener('click', async () => {
       const body = msg.value.trim();
       if (!body) return;
-      const replyEmail = document.getElementById('return-email').value.trim();
+      const fromName  = document.getElementById('return-email').value.trim();
+      const replyMail = document.getElementById('reply-email').value.trim();
+      const website   = document.getElementById('address-extra').value.trim();
       btn.disabled = true;
       btn.textContent = 'Sending…';
       try {
         const payload = {
           access_key: ACCESS_KEY,
           subject:    'Postcard from your fridge',
-          from_name:  'Fridge Postcard',
+          from_name:  fromName || 'Fridge Postcard',
           message:    body,
-          stamp:      selectedStamp || '(no stamp selected)'
+          stamp:      selectedStamp || '(no stamp selected)',
+          website:    website || '(none)'
         };
-        if (replyEmail) payload.reply_to = replyEmail;
+        // reply_to defaults to the email; if a name is also set, use "Name <email>"
+        if (replyMail) {
+          payload.reply_to = fromName ? `${fromName} <${replyMail}>` : replyMail;
+        }
         const r = await fetch('https://api.web3forms.com/submit', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
@@ -431,6 +560,8 @@
           btn.textContent = 'Sent ✓';
           msg.value = '';
           document.getElementById('return-email').value = '';
+          document.getElementById('reply-email').value = '';
+          document.getElementById('address-extra').value = '';
         } else { btn.textContent = 'Failed'; }
       } catch (e) { btn.textContent = 'Failed'; }
       setTimeout(() => { btn.textContent = originalLabel; btn.disabled = false; }, 2500);

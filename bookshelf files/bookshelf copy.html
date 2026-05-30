@@ -268,22 +268,22 @@
             z-index: 100 !important;
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 768px), (pointer: coarse) {
             .container {
                 grid-template-columns: 1fr;
-                gap: 30px;
-                padding: 30px 20px;
+                gap: 20px;
+                padding: 20px 0;
             }
-            
-            .sidebar {
-                position: static;
-                border-bottom: 1px solid #e5e7eb;
-                padding-bottom: 20px;
+            .sidebar { display: none; }
+            .main-content { padding-top: 0; }
+            .intro { padding: 0 16px; }
+            /* JS-driven scaling fits all books into viewport width
+               and the page handles vertical scroll for all rows. */
+            .bookshelf-container {
+                overflow: visible;
+                padding-bottom: 16px;
             }
-            
-            .name {
-                font-size: 1.8rem;
-            }
+            .bookshelf-info { padding: 0 16px; }
         }
     </style>
 </head>

@@ -9,3 +9,6 @@ favicon-preview/
 
 # WIP — keep local
 rides/
+
+# Original HEIC photos — kept local; web uses converted JPEGs
+*.HEIC

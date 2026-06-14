@@ -6,11 +6,11 @@
   <title>Working As... - Jack Kane</title>
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; background: #f2ede6; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; background: #ffffff; }
 
     .notes-header {
       position: sticky; top: 0; z-index: 10;
-      background: #f2ede6;
+      background: #ffffff;
       border-bottom: 1px solid #d9d3c8;
       padding: 9px 16px 8px;
       display: flex; align-items: center; justify-content: center;
@@ -20,13 +20,13 @@
 
     .note-row { border-bottom: 1px solid #d9d3c8; cursor: pointer; user-select: none; }
     .note-row-header {
-      background: #f2ede6;
-      padding: 10px 16px 9px;
+      background: #ffffff;
+      padding: 15px 16px 14px;
       display: flex; align-items: baseline; gap: 10px;
       transition: background 0.1s;
     }
-    .note-row:hover .note-row-header { background: #e8e2d8; }
-    .note-row.open .note-row-header { background: #f5e472; }
+    .note-row:hover .note-row-header { background: #f0f0f0; }
+    .note-row.open .note-row-header { background: #ffe9a8; }
 
     .note-row-title {
       flex: 1;
@@ -39,7 +39,7 @@
 
     .note-body-wrap {
       display: none;
-      background: #fffef8;
+      background: #ffffff;
       padding: 20px 36px 28px;
       border-top: 1px solid #d9d3c8;
     }
@@ -52,10 +52,6 @@
   </style>
 </head>
 <body>
-  <div class="notes-header">
-    <span class="notes-header-title">Working As…</span>
-    <span class="notes-count" id="notes-count"></span>
-  </div>
   <div id="notes-list"></div>
 
   <script>
@@ -91,9 +87,6 @@
       }
     ];
 
-    document.getElementById('notes-count').textContent =
-      `${NOTES.length} essay${NOTES.length !== 1 ? 's' : ''}`;
-
     const list = document.getElementById('notes-list');
     NOTES.forEach((note, i) => {
       const row = document.createElement('div');
@@ -105,7 +98,6 @@
           <span class="note-row-chevron">›</span>
         </div>
         <div class="note-body-wrap">
-          <div class="note-body-date">${note.date}</div>
           <div class="note-body-title">${note.title}</div>
           <div class="note-body-text">${note.body}</div>
         </div>`;

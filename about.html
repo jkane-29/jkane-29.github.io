@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About Me - Jack Kane</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; background: #ffffff; }
+
+    .note-row { border-bottom: 1px solid #d9d3c8; cursor: pointer; user-select: none; }
+    .note-row-header {
+      background: #ffffff;
+      padding: 15px 16px 14px;
+      display: flex; align-items: baseline; gap: 10px;
+      transition: background 0.1s;
+    }
+    .note-row:hover .note-row-header { background: #f0f0f0; }
+    .note-row.open .note-row-header { background: #ffe9a8; }
+
+    .note-row-title {
+      flex: 1;
+      font-size: 14px; font-weight: 600; color: #1c1c1e;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .note-row-chevron { font-size: 10px; color: #c7c7cc; flex-shrink: 0; transition: transform 0.2s; }
+    .note-row.open .note-row-chevron { transform: rotate(90deg); }
+
+    .note-body-wrap {
+      display: none;
+      background: #ffffff;
+      padding: 20px 36px 28px;
+      border-top: 1px solid #d9d3c8;
+    }
+    .note-row.open .note-body-wrap { display: block; }
+
+    /* Always-visible About Me section (not a collapsible note) */
+    .about-intro { padding: 24px 36px 28px; border-bottom: 1px solid #d9d3c8; }
+    .note-body-title { font-size: 21px; font-weight: 700; color: #1c1c1e; line-height: 1.3; margin-bottom: 14px; }
+
+    .note-body-text { font-size: 15px; line-height: 1.55; color: #1c1c1e; }
+    .note-body-text p { margin: 0 0 14px; }
+    .note-body-text p:last-child { margin-bottom: 0; }
+    .note-body-text h2 {
+      font-size: 16px; font-weight: 700; color: #1c1c1e;
+      line-height: 1.3; margin: 22px 0 8px;
+    }
+    .note-body-text ul { margin: 0; padding-left: 20px; }
+    .note-body-text li { margin-bottom: 6px; }
+    .note-body-text a { color: #1c1c1e; }
+    .note-body-text .coming { color: #9a9a9a; font-style: italic; }
+  </style>
+</head>
+<body>
+  <div class="about-intro">
+    <div class="note-body-title">About Me</div>
+    <div class="note-body-text">
+      <p>Welcome! This site is a repository of things I've made, written, or drawn inspiration from.</p>
+      <h2>What I'm Working On Now</h2>
+      <ul>
+        <li>A transit-style map of Bethpage State Park</li>
+        <li>A website to consolidate Chicagoland's best bike rides in one place</li>
+      </ul>
+      <p>Please feel free to reach out via the postcard. Thanks for visiting!</p>
+    </div>
+  </div>
+
+  <div id="notes-list"></div>
+
+  <script>
+  (function () {
+    const NOTES = [
+      {
+        title: "Projects I Like",
+        body: `<ul>
+<li><a href="https://cannoneyed.com/projects/dog-logic" target="_blank">Dog Logic</a></li>
+<li><a href="https://www.fermiquestions.org/#/2026-02-25" target="_blank">Fermi Question</a></li>
+<li><a href="https://sriramk.com/memos" target="_blank">Corporate Memos</a></li>
+<li><a href="https://musicforprogramming.net/latest/" target="_blank">Music for Programming</a></li>
+<li><a href="https://dr.eamer.dev/datavis/" target="_blank">Data Poems</a></li>
+<li><a href="https://stoney.sb.org/eno/oblique.html" target="_blank">Oblique Strategies</a></li>
+<li><a href="https://calquio.com" target="_blank">Useful calculators</a></li>
+<li><a href="https://busysimulator.com" target="_blank">Busy Simulator</a></li>
+<li><a href="https://emilysneddon.com/fran-sans-essay" target="_blank">Sans Frans</a></li>
+<li><a href="https://walzr.com/papers" target="_blank">Papers</a></li>
+<li><a href="https://pendereckisgarden.pl/en" target="_blank">Penderickis Garden</a></li>
+<li><a href="https://www.edwardtufte.com/sculpture/" target="_blank">Books of Edward Tufte</a></li>
+</ul>`
+      }
+    ];
+
+    const list = document.getElementById('notes-list');
+    NOTES.forEach((note) => {
+      const row = document.createElement('div');
+      row.className = 'note-row';
+      row.innerHTML = `
+        <div class="note-row-header">
+          <span class="note-row-title">${note.title}</span>
+          <span class="note-row-chevron">›</span>
+        </div>
+        <div class="note-body-wrap">
+          <div class="note-body-text">${note.body}</div>
+        </div>`;
+      row.querySelector('.note-row-header').addEventListener('click', () => row.classList.toggle('open'));
+      list.appendChild(row);
+    });
+  })();
+  </script>
+</body>
+</html>

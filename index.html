@@ -105,8 +105,8 @@
       width: min(84vw, 960px); height: 76vh;
       background: #1c1c1e;
       border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.08);
-      box-shadow: 0 50px 120px rgba(0,0,0,0.8), 0 0 0 0.5px rgba(0,0,0,0.5);
+      border: none;
+      box-shadow: 0 50px 120px rgba(0,0,0,0.8);
       display: flex; flex-direction: column;
       overflow: hidden;
       transform: scale(0.97);
@@ -138,11 +138,16 @@
 
     .traffic-lights { display: flex; align-items: center; gap: 8px; z-index: 1; }
     .tl-btn {
-      width: 12px; height: 12px; border-radius: 50%; border: none; cursor: pointer;
+      width: 14px; height: 14px; border-radius: 50%; border: none; cursor: pointer;
       position: relative;
       display: flex; align-items: center; justify-content: center;
       transition: filter 0.1s;
       flex-shrink: 0;
+    }
+    /* Larger invisible hit area so hover/click is easy to land */
+    .tl-btn::before {
+      content: ''; position: absolute;
+      top: -9px; bottom: -9px; left: -5px; right: -5px;
     }
     .tl-btn:hover { filter: brightness(1.15); }
     @media (pointer: coarse) {
@@ -164,13 +169,13 @@
     .tl-close { background: #ff5f57; }
     .tl-min   { background: #febc2e; }
     .tl-max   { background: #28c840; }
-    .tl-btn::after { font-size: 10px; font-weight: 900; color: rgba(0,0,0,0.65); line-height: 1; }
+    .tl-btn::after { font-size: 11px; font-weight: 900; color: rgba(0,0,0,0.65); line-height: 1; transform: translateY(-1px); }
     #os-titlebar:hover .tl-btn::after { content: attr(data-glyph); }
 
     #os-window-title {
       position: absolute; left: 50%; transform: translateX(-50%);
       font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
-      font-size: 13px; font-weight: 500; color: #8a8a8e;
+      font-size: 14.625px; font-weight: 500; color: #8a8a8e;
       letter-spacing: 0.01em; pointer-events: none;
     }
 
@@ -183,7 +188,7 @@
     #os-content-inner { min-height: 100%; }
 
     /* Writing / Apple Notes — warm paper background */
-    #os-content:has(.notes-header) { background: #f2ede6; }
+    #os-content:has(.note-body-wrap) { background: #ffffff; }
 
     /* Decisions terminal — fill window, dark background, hide redundant header */
     #os-content:has(.terminal-container),
@@ -549,22 +554,22 @@
 
     // ── Items config (edit with ?edit + Copy layout) ───────────
     let ITEMS = [
-  { id: "item_1779583589922", src: "items/Bike Business.png", top: 47.454251, left: 27.61084, width: 22, rotate: 0, href: null, hoverLabel: null },
+  { id: "item_1779583589922", src: "items/Bike Business.png", top: 48.060597, left: 28.685163, width: 21.3, rotate: 0, href: "rides.html", hoverLabel: "Rides", windowTitle: "Best Rides" },
   { id: "item_1779583597274", src: "items/california oranges.jpg", top: 9.737723, left: 27.214286, width: 20, rotate: 0, href: "postcard/postcard.html", hoverLabel: "Send a Note", windowTitle: "Send a Note" },
-  { id: "item_1779583606062", src: "items/furniture_web.png", top: 17.584821, left: 25.425223, width: 12, rotate: 0, href: "woodshop/woodshop copy.html", hoverLabel: "Woodshop" },
-  { id: "item_1779583626817", src: "items/good luck dim sum.png", top: 34.484554, left: 55.026723, width: 16, rotate: 0, href: null, hoverLabel: null },
+  { id: "item_1779583606062", src: "items/furniture_web.png", top: 17.415842, left: 25.440828, width: 12, rotate: 0, href: "woodshop/woodshop copy.html", hoverLabel: "Woodshop" },
   { id: "item_1779583634617", src: "items/googly.png", top: 10.620536, left: 63.537388, width: 8, rotate: 0, href: null, hoverLabel: null },
-  { id: "item_1779583643716", src: "items/greeting.png", top: 10.049851, left: 49.011719, width: 13, rotate: 0, href: null, hoverLabel: null },
-  { id: "item_1779583680072", src: "items/michigan2.png", top: 47.698317, left: 51.325787, width: 22, rotate: 0, href: null, hoverLabel: null },
-  { id: "item_1779584269424", src: "items/shopping.png", top: 10.596726, left: 53.606027, width: 2, rotate: 0, href: null, hoverLabel: null },
-  { id: "item_1779584289791", src: "items/shopping.png", top: 35.136283, left: 62.550158, width: 2, rotate: 0, href: null, hoverLabel: null },
+  { id: "item_1779583643716", src: "items/greeting.png", top: 9.908384, left: 49.123, width: 13, rotate: 0, href: null, hoverLabel: null },
   { id: "item_1779584304657", src: "items/shopping.png", top: 10.049851, left: 34.571987, width: 2, rotate: 0, href: null, hoverLabel: null },
   { id: "item_1779586060280", src: "items/tj receipt.jpg", top: 14.15253, left: 63.565848, width: 8, rotate: 0, href: "https://tj-prices.com", hoverLabel: "TJ Prices" },
   { id: "item_1779587617934", src: "items/bookshelf painting.png", top: 19.366443, left: 37.597656, width: 10, rotate: 0, href: "bookshelf files/bookshelf copy.html", hoverLabel: "Bookshelf" },
-  { id: "item_1779587650752", src: "items/shopping.png", top: 19.582217, left: 41.595982, width: 2, rotate: 0, href: null, hoverLabel: null },
-  { id: "item_1779587973438", src: "items/masonic.png", top: 24.74256, left: 49.932478, width: 22, rotate: 0, href: null, hoverLabel: null },
-  { id: "item_1779639122791", src: "items/jobs.png", top: 37.228035, left: 42.391816, width: 10, rotate: 0, href: "writing/writing.html", hoverLabel: "Jobs" },
-  { id: "item_1779639259040", src: "items/decisions.png", top: 36.28463, left: 28.29366, width: 11.8, rotate: 0, href: "decisions/decisions copy.html", hoverLabel: "Decisions" }
+  { id: "item_1779587650752", src: "items/shopping.png", top: 19.560643, left: 41.691313, width: 2, rotate: 0, href: null, hoverLabel: null },
+  { id: "item_1779639122791", src: "items/jobs.png", top: 37.572206, left: 41.26102, width: 10.9, rotate: 0, href: "writing/writing.html", hoverLabel: "Jobs" },
+  { id: "item_1779639259040", src: "items/decisions.png", top: 37.033876, left: 27.703793, width: 11.8, rotate: 0, href: "decisions/decisions copy.html", hoverLabel: "Decisions" },
+  { id: "item_1781388702732", src: "items/about me.png", top: 9.922301, left: 48.593731, width: 13.9, rotate: 0, href: "about.html", hoverLabel: "About Me" },
+  { id: "item_1781392936791", src: "items/better doms.jpg", top: 35.369851, left: 53.684816, width: 16.7, rotate: 0, href: null, hoverLabel: null },
+  { id: "item_1781393158854", src: "items/michigan2.png", top: 50.120165, left: 53.27595, width: 17.2, rotate: 0, href: null, hoverLabel: null },
+  { id: "item_1781393177283", src: "items/shopping.png", top: 36.350949, left: 60.460003, width: 3, rotate: 0, href: null, hoverLabel: null },
+  { id: "item_clockclock24", embed: "/ClockClock24/index.html", aspect: "8 / 3", top: 23.344871, left: 46.157838, width: 29.2, rotate: 0, href: "https://github.com/ArnaudSpanneut/ClockClock24", hoverLabel: "ClockClock 24" }
 ];
 
     // Optional per-item edit-mode overrides — paste from Copy Layout to update
@@ -584,7 +589,18 @@
     }
     function saveToLS() { syncAllPositions(); localStorage.setItem(LS_KEY, JSON.stringify(ITEMS)); }
     function loadFromLS() {
-      try { const s = localStorage.getItem(LS_KEY); if (s) { ITEMS = JSON.parse(s); return true; } } catch(e) {}
+      try {
+        const s = localStorage.getItem(LS_KEY);
+        if (s) {
+          const saved = JSON.parse(s);
+          const savedIds = new Set(saved.map(i => i.id));
+          // Keep saved positions, but append any items added to the file since
+          // (e.g. the clock) so new additions still appear in edit mode.
+          const fileExtras = ITEMS.filter(i => !savedIds.has(i.id));
+          ITEMS = saved.concat(fileExtras);
+          return true;
+        }
+      } catch(e) {}
       return false;
     }
 
@@ -629,6 +645,10 @@
       const contentEl = $('os-content-inner');
       const styleEl   = $('os-injected-style');
       $('os-window-title').textContent = title || 'Jack Kane';
+      // Reset any inline sizing left by a previous window; each window type
+      // (postcard, bookshelf, woodshop) sizes itself after its content loads.
+      $('os-window').style.width = '';
+      $('os-window').style.height = '';
       overlay.classList.add('open');
       document.body.style.overflow = 'hidden'; // lock background scroll while open
       contentEl.innerHTML = '<div style="padding:48px 56px;color:#aaa;font-family:-apple-system,sans-serif;font-size:14px;">Loading…</div>';
@@ -825,21 +845,22 @@
       });
     }
 
-    // ── Postcard: size window to image aspect (1568×1003) ──────
+    // ── Postcard: size window to image aspect (1568×1003) exactly ──
+    // Set BOTH width and height so the content area matches the postcard's
+    // aspect — no letterbox/frame around the card.
     function sizePostcard() {
       requestAnimationFrame(() => {
+        if (window.matchMedia('(pointer: coarse), (max-width: 900px)').matches) return;
         const win = $('os-window');
-        const w = win.getBoundingClientRect().width;
         const TITLEBAR = 38;
-        const targetH = w * (1003 / 1568) + TITLEBAR;
-        const maxH = window.innerHeight * 0.92;
-        if (targetH <= maxH) {
-          win.style.height = targetH + 'px';
-        } else {
-          const h = maxH - TITLEBAR;
-          win.style.height = maxH + 'px';
-          win.style.width  = (h * (1568 / 1003)) + 'px';
-        }
+        const ar = 1568 / 1003;
+        const maxW = Math.min(window.innerWidth * 0.9, 960);
+        const maxContentH = window.innerHeight * 0.9 - TITLEBAR;
+        let w = maxW;
+        let h = w / ar;
+        if (h > maxContentH) { h = maxContentH; w = h * ar; }
+        win.style.width  = Math.round(w) + 'px';
+        win.style.height = Math.round(h + TITLEBAR) + 'px';
         $('os-content').style.overflow = 'hidden';
       });
     }
@@ -850,6 +871,9 @@
       const img = contentEl.querySelector('#ws-img');
       const ctr = contentEl.querySelector('#ws-counter');
       let i = 0;
+      // Fit the window to each image so there's no black letterbox space.
+      img.onload = () => sizeWoodshopToImage(img);
+      if (img.complete && img.naturalWidth) sizeWoodshopToImage(img);
       const show = n => {
         i = (n + srcs.length) % srcs.length;
         img.src = srcs[i];
@@ -860,6 +884,23 @@
       contentEl.querySelector('#ws-slide').onclick = e => {
         if (e.target.tagName !== 'BUTTON') show(i + 1);
       };
+    }
+
+    // Size the OS window to match the current woodshop image's aspect ratio
+    // (desktop only — on touch the window is forced full-screen via CSS).
+    function sizeWoodshopToImage(img) {
+      if (!img || !img.naturalWidth) return;
+      if (window.matchMedia('(pointer: coarse), (max-width: 900px)').matches) return;
+      const win = $('os-window');
+      const TITLEBAR = 38;
+      const ar = img.naturalWidth / img.naturalHeight;
+      const maxW = Math.min(window.innerWidth * 0.9, 1100);
+      const maxContentH = window.innerHeight * 0.9 - TITLEBAR;
+      let w = maxW;
+      let h = w / ar;
+      if (h > maxContentH) { h = maxContentH; w = h * ar; }
+      win.style.width  = Math.round(w) + 'px';
+      win.style.height = Math.round(h + TITLEBAR) + 'px';
     }
 
     // ── Decisions terminal game ────────────────────────────────
@@ -1033,11 +1074,34 @@
         transform: `rotate(${item.rotate || 0}deg)`,
         zIndex: 10
       });
-      const img = document.createElement('img');
-      img.src = encodeURI(item.src);
-      img.loading = 'lazy';
-      img.draggable = false;
-      wrap.appendChild(img);
+      if (item.embed) {
+        // Live embed (e.g. the ClockClock24 clock). The embedded app centers its
+        // content with a roughly constant pixel margin, so render at a large fixed
+        // reference size (where that margin is a tiny fraction) and scale uniformly
+        // to the item's slot — minimal blank space, no fragile per-frame cropping.
+        // pointer-events off so the item stays draggable in edit mode.
+        const ar = item.aspect || '8 / 3';
+        const refW = 1280, refH = 480; // 8:3 reference; app margin ≈ a few % here
+        wrap.style.aspectRatio = ar;
+        wrap.style.overflow = 'hidden';
+        wrap.style.borderRadius = '4px';
+        const frame = document.createElement('iframe');
+        frame.src = item.embed;
+        frame.loading = 'lazy';
+        frame.setAttribute('scrolling', 'no');
+        frame.style.cssText = `width:${refW}px; height:${refH}px; border:none; display:block; pointer-events:none; transform-origin:top left; background:transparent;`;
+        wrap.appendChild(frame);
+        const fit = () => { const w = wrap.clientWidth; if (w) frame.style.transform = `scale(${w / refW})`; };
+        if (window.ResizeObserver) new ResizeObserver(fit).observe(wrap);
+        requestAnimationFrame(fit);
+        frame.addEventListener('load', () => fit());
+      } else {
+        const img = document.createElement('img');
+        img.src = encodeURI(item.src);
+        img.loading = 'lazy';
+        img.draggable = false;
+        wrap.appendChild(img);
+      }
       if (item.hoverLabel) {
         // Hide postcard hover label on touch devices (postcard is disabled there)
         const isTouch = window.matchMedia('(pointer: coarse), (max-width: 900px)').matches;
@@ -1164,9 +1228,15 @@
 
     function copyLayout() {
       syncAllPositions();
-      const lines = ITEMS.map(i =>
-        `  { id: "${i.id}", src: "${i.src}", top: ${i.top}, left: ${i.left}, width: ${i.width}, rotate: ${i.rotate || 0}, href: ${i.href ? `"${i.href}"` : 'null'}, hoverLabel: ${i.hoverLabel ? `"${i.hoverLabel}"` : 'null'} }`
-      );
+      const lines = ITEMS.map(i => {
+        let s = `  { id: "${i.id}", `;
+        s += i.embed ? `embed: "${i.embed}", ` : `src: "${i.src}", `;
+        s += `top: ${i.top}, left: ${i.left}, width: ${i.width}, rotate: ${i.rotate || 0}`;
+        if (i.aspect) s += `, aspect: "${i.aspect}"`;
+        s += `, href: ${i.href ? `"${i.href}"` : 'null'}, hoverLabel: ${i.hoverLabel ? `"${i.hoverLabel}"` : 'null'}`;
+        if (i.windowTitle) s += `, windowTitle: "${i.windowTitle}"`;
+        return s + ' }';
+      });
       navigator.clipboard.writeText(`let ITEMS = [\n${lines.join(',\n')}\n];`).then(() => {
         const btn = $('copy-btn');
         btn.textContent = 'Copied!';

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Favorite Rides - Jack Kane</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; background: #ffffff; }
+
+    .notes-header {
+      position: sticky; top: 0; z-index: 10;
+      background: #ffffff;
+      border-bottom: 1px solid #d9d3c8;
+      padding: 9px 16px 8px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .notes-header-title { font-size: 15px; font-weight: 600; color: #1c1c1e; letter-spacing: -0.01em; }
+    .notes-count { position: absolute; right: 14px; font-size: 11px; color: #8e8e93; }
+
+    .note-row { border-bottom: 1px solid #d9d3c8; cursor: pointer; user-select: none; }
+    .note-row-header {
+      background: #ffffff;
+      padding: 15px 16px 14px;
+      display: flex; align-items: baseline; gap: 10px;
+      transition: background 0.1s;
+    }
+    .note-row:hover .note-row-header { background: #f0f0f0; }
+    .note-row.open .note-row-header { background: #ffe9a8; }
+
+    .note-row-title {
+      flex: 1;
+      font-size: 14px; font-weight: 600; color: #1c1c1e;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .note-row-date { font-size: 11px; color: #8e8e93; flex-shrink: 0; }
+    .note-row-chevron { font-size: 10px; color: #c7c7cc; flex-shrink: 0; transition: transform 0.2s; }
+    .note-row.open .note-row-chevron { transform: rotate(90deg); }
+
+    .note-body-wrap {
+      display: none;
+      background: #ffffff;
+      padding: 20px 36px 28px;
+      border-top: 1px solid #d9d3c8;
+    }
+    .note-row.open .note-body-wrap { display: block; }
+    .note-body-date { font-size: 11px; color: #8e8e93; text-align: center; margin-bottom: 16px; }
+    .note-body-title { font-size: 21px; font-weight: 700; color: #1c1c1e; line-height: 1.3; margin-bottom: 8px; }
+    .note-body-text { font-size: 15px; line-height: 1.45; color: #1c1c1e; }
+    .note-body-text p { margin: 0 0 16px; }
+    .note-body-text p:last-child { margin-bottom: 0; }
+    .note-body-text a { color: #1c1c1e; }
+    .note-body-text ul { margin: 0; padding-left: 18px; }
+    .note-body-text li { margin-bottom: 9px; }
+    .note-body-text li:last-child { margin-bottom: 0; }
+
+    /* Desktop: notes on the left, RWGPS map on the right (50/50).
+       Stretch so the map matches the full height of the left (text) column. */
+    .ride-layout { display: flex; gap: 28px; align-items: stretch; }
+    .ride-notes { flex: 1 1 50%; min-width: 0; }
+    .ride-map   { flex: 1 1 50%; min-width: 0; display: flex; }
+
+    /* Photo carousel under the bullet notes — full text-column width, one at a time.
+       Landscape (4:3) frame: vertical photos show a centered horizontal slice. */
+    .ride-carousel { margin-top: 22px; width: 100%; }
+    .ride-photo-frame {
+      position: relative; width: 100%; aspect-ratio: 4 / 3;
+      border-radius: 8px; overflow: hidden; background: #e3e0d8;
+    }
+    .ride-photo { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .ride-arrow {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      width: 30px; height: 30px; border-radius: 50%; border: none; cursor: pointer;
+      background: rgba(0,0,0,0.45); color: #fff;
+      font-size: 16px; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s;
+    }
+    .ride-arrow.prev { left: 8px; }
+    .ride-arrow.next { right: 8px; }
+    .ride-arrow:hover { background: rgba(0,0,0,0.7); }
+    .ride-photo-count {
+      position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,0.5); color: #fff;
+      font-size: 11px; letter-spacing: 0.04em;
+      padding: 2px 9px; border-radius: 10px; pointer-events: none;
+    }
+    /* Single photo: no arrows / counter */
+    .ride-carousel.single .ride-arrow,
+    .ride-carousel.single .ride-photo-count { display: none; }
+    .ride-embed {
+      flex: 1; min-width: 0; width: 100%;
+      min-height: 460px; border: none;
+      border-radius: 8px;
+      display: block;
+    }
+    /* Mobile: stack map above notes; map back to a fixed height */
+    @media (max-width: 600px), (pointer: coarse) {
+      .ride-layout { flex-direction: column-reverse; gap: 18px; align-items: stretch; }
+      .ride-map { display: block; }
+      .ride-embed { flex: none; height: 320px; min-height: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div id="notes-list"></div>
+
+  <script>
+  (function () {
+    // Each ride:
+    //   title   – ride name
+    //   date    – shown top + right (full date you rode it, e.g. "May 14, 2026")
+    //   rwgps   – optional RideWithGPS embed: { type: 'route'|'trip', id: '12345' }
+    //             (get the id from the route URL, e.g. ridewithgps.com/routes/12345)
+    //   body    – optional HTML description below the map
+    //   photos  – optional array of image paths shown bottom-left under the notes
+
+    // Numbered gray "photo" placeholder (mountain + sun) for the mockup
+    const ph = (n) => "data:image/svg+xml," + encodeURIComponent(
+      "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'>" +
+      "<rect width='100' height='100' fill='#e3e0d8'/>" +
+      "<circle cx='66' cy='30' r='8' fill='#c2bcae'/>" +
+      "<path d='M14 78l22-28 15 18 12-14 23 24z' fill='#c2bcae'/>" +
+      "<text x='50' y='54' font-family='sans-serif' font-size='15' fill='#8a8474' text-anchor='middle'>" + n + "</text></svg>");
+
+    const NOTES = [
+      {
+        title: "1. Alpine Dam + Mt. Tam",
+        date: "March 13, 2026",
+        rwgps: { type: 'route', id: '24331937' },
+        photos: [
+          "rides photos/1. Mt Tam/IMG_1096.jpg",
+          "rides photos/1. Mt Tam/IMG_1102.jpg",
+          "rides photos/1. Mt Tam/IMG_1109.jpg",
+          "rides photos/1. Mt Tam/IMG_1110.jpg",
+          "rides photos/1. Mt Tam/IMG_1112.jpg"
+        ],
+        body: `<ul>
+<li>Classic loop ride with some of the best riding in America and can be started from downtown SF</li>
+<li>Tons of scenery between Golden Gate, Sausalito, Mill Valley, &amp; Mt Tam</li>
+<li>Some grueling climbs but descents through redwoods and ample banked turns make it well worth it</li>
+<li>Originally found this via <a href="https://bestrides.org/mt-tamalpais/" target="_blank">bestrides.org</a>, which is a great resource for cycling on the West coast</li>
+</ul>`
+      },
+      {
+        title: "2. Winona to La Crescent to Winona",
+        date: "June 6, 2026",
+        rwgps: { type: 'trip', id: '388674864' },
+        photos: [
+          "rides photos/2. Winona/IMG_1552.jpg",
+          "rides photos/2. Winona/IMG_1553.jpg",
+          "rides photos/2. Winona/IMG_1554.jpg",
+          "rides photos/2. Winona/IMG_1558.jpg",
+          "rides photos/2. Winona/IMG_1562.jpg"
+        ],
+        body: `<ul>
+<li>Loops through hilly farmland of the driftless area in southeastern Minnesota</li>
+<li>Topography constantly changes from valleys, to plains, to river banks, and the top of bluffs</li>
+<li>Highlights are the view of the Mississippi from La Crescent, red barns, and lots of cows</li>
+<li>Road conditions are generally excellent, and there tend to be very few cars once you get out of La Crosse/Winona</li>
+<li>Other great rides in the area can be found here: <a href="https://driftlesscycling.com/" target="_blank">driftlesscycling.com</a></li>
+</ul>`
+      },
+      {
+        title: "3. Best of Chicago",
+        date: "May 20, 2026",
+        rwgps: { type: 'route', id: '55304767' },
+        photos: [
+          "rides photos/3. Chicago/IMG_1463.jpg",
+          "rides photos/3. Chicago/IMG_1464.jpg",
+          "rides photos/3. Chicago/IMG_1465.jpg",
+          "rides photos/3. Chicago/IMG_1469.jpg",
+          "rides photos/3. Chicago/IMG_1471.jpg"
+        ],
+        body: `<ul>
+<li>Covers the best sections of road riding on Chicago's North Shore</li>
+<li>Highlights include the North Branch Trail, Skokie Lagoons, Chicago Botanical Garden, and the Lakefront Trail</li>
+<li>Loop with Foster Ave as southernmost point, might be preferable as it would exclude the industrial section of Elston Ave</li>
+</ul>`
+      }
+    ];
+
+    // Build the RideWithGPS embed iframe markup (only when a valid id is set).
+    function embedHtml(rwgps) {
+      if (!rwgps || !rwgps.id || rwgps.id === '0') return '';
+      const type = rwgps.type === 'trip' ? 'trip' : 'route';
+      const src = `https://ridewithgps.com/embeds?type=${type}&id=${rwgps.id}&sampleGraph=true`;
+      // Eager-load so all maps warm up in the background as soon as the page opens,
+      // and are already rendered by the time a row is expanded.
+      return `<iframe class="ride-embed" scrolling="no" src="${src}"></iframe>`;
+    }
+
+    // Photo carousel under the bullet notes — shows one photo at a time.
+    function photosHtml(photos) {
+      if (!photos || !photos.length) return '';
+      const single = photos.length < 2 ? ' single' : '';
+      return `<div class="ride-carousel${single}">
+        <div class="ride-photo-frame">
+          <img class="ride-photo" src="${photos[0]}" alt="">
+          <button class="ride-arrow prev" type="button" aria-label="Previous photo">‹</button>
+          <button class="ride-arrow next" type="button" aria-label="Next photo">›</button>
+          <div class="ride-photo-count">1 / ${photos.length}</div>
+        </div>
+      </div>`;
+    }
+
+    // Wire the prev/next arrows for a ride's photo carousel.
+    function wireRidePhotos(row, photos) {
+      if (!photos || photos.length < 2) return;
+      const img = row.querySelector('.ride-photo');
+      const count = row.querySelector('.ride-photo-count');
+      const prev = row.querySelector('.ride-arrow.prev');
+      const next = row.querySelector('.ride-arrow.next');
+      if (!img) return;
+      let i = 0;
+      const show = (n) => {
+        i = (n + photos.length) % photos.length;
+        img.src = photos[i];
+        if (count) count.textContent = (i + 1) + ' / ' + photos.length;
+      };
+      if (next) next.onclick = (e) => { e.stopPropagation(); show(i + 1); };
+      if (prev) prev.onclick = (e) => { e.stopPropagation(); show(i - 1); };
+    }
+
+    const list = document.getElementById('notes-list');
+    NOTES.forEach((note) => {
+      const row = document.createElement('div');
+      row.className = 'note-row';
+      row.innerHTML = `
+        <div class="note-row-header">
+          <span class="note-row-title">${note.title}</span>
+          <span class="note-row-date">${note.date}</span>
+          <span class="note-row-chevron">›</span>
+        </div>
+        <div class="note-body-wrap">
+          <div class="note-body-text">
+            <div class="ride-layout">
+              <div class="ride-notes">
+                <div class="note-body-title">${note.title}</div>
+                ${note.body || ''}${photosHtml(note.photos)}
+              </div>
+              <div class="ride-map">${embedHtml(note.rwgps)}</div>
+            </div>
+          </div>
+        </div>`;
+      row.querySelector('.note-row-header').addEventListener('click', () => row.classList.toggle('open'));
+      list.appendChild(row);
+      wireRidePhotos(row, note.photos);
+    });
+  })();
+  </script>
+</body>
+</html>

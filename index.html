@@ -569,7 +569,7 @@
   { id: "item_1781392936791", src: "items/better doms.jpg", top: 35.369851, left: 53.684816, width: 16.7, rotate: 0, href: null, hoverLabel: null },
   { id: "item_1781393158854", src: "items/michigan2.png", top: 50.120165, left: 53.27595, width: 17.2, rotate: 0, href: null, hoverLabel: null },
   { id: "item_1781393177283", src: "items/shopping.png", top: 36.350949, left: 60.460003, width: 3, rotate: 0, href: null, hoverLabel: null },
-  { id: "item_clockclock24", embed: "/ClockClock24/index.html", aspect: "8 / 3", top: 23.344871, left: 46.157838, width: 29.2, rotate: 0, href: "https://github.com/ArnaudSpanneut/ClockClock24", hoverLabel: null }
+  { id: "item_clockclock24", embed: "/ClockClock24/index.html?v=3", aspect: "8 / 3", top: 23.344871, left: 46.157838, width: 29.2, rotate: 0, href: "https://github.com/ArnaudSpanneut/ClockClock24", hoverLabel: null }
 ];
 
     // Optional per-item edit-mode overrides — paste from Copy Layout to update
@@ -1085,11 +1085,14 @@
         wrap.style.aspectRatio = ar;
         wrap.style.overflow = 'hidden';
         wrap.style.borderRadius = '4px';
+        wrap.style.position = 'absolute'; // containing block for the iframe (already abs on fridge)
         const frame = document.createElement('iframe');
         frame.src = item.embed;
         frame.loading = 'lazy';
         frame.setAttribute('scrolling', 'no');
-        frame.style.cssText = `width:${refW}px; height:${refH}px; border:none; display:block; pointer-events:none; transform-origin:top left; background:transparent;`;
+        // position:absolute keeps the iframe's 480px layout height out of flow, so
+        // the item box is only as tall as its aspect-ratio (no oversized hit area).
+        frame.style.cssText = `position:absolute; top:0; left:0; width:${refW}px; height:${refH}px; border:none; display:block; pointer-events:none; transform-origin:top left; background:transparent;`;
         wrap.appendChild(frame);
         const fit = () => { const w = wrap.clientWidth; if (w) frame.style.transform = `scale(${w / refW})`; };
         if (window.ResizeObserver) new ResizeObserver(fit).observe(wrap);
@@ -1464,20 +1467,7 @@
       document.querySelectorAll('.nudge-btn').forEach(b => b.addEventListener('click', applyNudge));
     }
 
-    // Fetch saved positions BEFORE rendering so letters appear in place (no jump)
-    db.ref('letters').once('value').then(snap => {
-      renderLetters(snap.val() || {});
-      // Now wire up the live listener for future updates from other visitors
-      db.ref('letters').on('value', snap => {
-        const positions = snap.val() || {};
-        LETTER_SET.forEach(letter => {
-          if (activeDrags.has(letter.id)) return; // don't interrupt local drag
-          const el = document.querySelector(`.letter[data-id="${letter.id}"]`);
-          const pos = positions[letter.id];
-          if (el && pos) { el.style.left = pos.left + '%'; el.style.top = pos.top + '%'; }
-        });
-      });
-    });
+    // Colored letter magnets removed.
 
     // ── Mobile/touch: center the scroll on the fridge after it lays out ──
     if (window.matchMedia('(pointer: coarse), (max-width: 900px)').matches

@@ -480,6 +480,10 @@
     const isEditMode = new URLSearchParams(location.search).has('edit');
     if (isEditMode) document.body.classList.add('edit-mode');
 
+    const isPostcardOnTouch = item =>
+      window.matchMedia('(pointer: coarse), (max-width: 900px)').matches
+      && !!item.href && item.href.includes('postcard');
+
     // ── Drag system ────────────────────────────────────────────
     let maxZ = 100, letterMaxZ = 500;
     function makeDraggable(el, onDrop, isLetter = false) {
@@ -512,7 +516,7 @@
 
     async function openWindow(href, title) {
       if (_windowCleanup) { _windowCleanup(); _windowCleanup = null; }
-      if (href.startsWith('http')) { window.open(href, '_blank'); return; }
+      if (href.startsWith('http')) { window.open(href, '_blank', 'noopener,noreferrer'); return; }
       // On touch: push history state so back button closes the overlay
       if (_isTouch) history.pushState({ fridgeWindow: true }, '', '');
 
@@ -567,24 +571,32 @@
         styleEl.textContent = css.replace(/\bbody\s*{/g, '#os-content-inner {');
 
         // Build body content per page type
-        let bodyContent, wsSrcs = null;
+        let wsSrcs = null;
+        // Snapshot scripts before any adoption (adoptNode moves nodes out of doc)
+        const docScripts = Array.from(doc.querySelectorAll('script'));
         if (type === 'decisions') {
           const terminal = doc.querySelector('.terminal-container');
-          bodyContent = terminal
-            ? `<div style="padding:20px;box-sizing:border-box;">${terminal.outerHTML}</div>`
-            : doc.body.innerHTML;
+          contentEl.innerHTML = '';
+          const wrap = document.createElement('div');
+          wrap.style.cssText = 'padding:20px;box-sizing:border-box;';
+          if (terminal) {
+            wrap.appendChild(document.adoptNode(terminal));
+          } else {
+            Array.from(doc.body.childNodes).forEach(n => wrap.appendChild(document.adoptNode(n)));
+          }
+          contentEl.appendChild(wrap);
         } else if (type === 'woodshop') {
           wsSrcs = Array.from(doc.querySelectorAll('img.project-image')).map(img => img.getAttribute('src'));
-          bodyContent = `<div id="ws-slide">
+          contentEl.innerHTML = `<div id="ws-slide">
   <img id="ws-img" src="${wsSrcs[0]}">
   <div id="ws-counter">1 / ${wsSrcs.length}</div>
   <button id="ws-prev" class="ws-nav prev" title="Previous">◀</button>
   <button id="ws-next" class="ws-nav next" title="Next">▶</button>
 </div>`;
         } else {
-          bodyContent = doc.body.innerHTML;
+          contentEl.innerHTML = '';
+          Array.from(doc.body.childNodes).forEach(n => contentEl.appendChild(document.adoptNode(n)));
         }
-        contentEl.innerHTML = bodyContent;
 
         if (type === 'woodshop') wireWoodshop(contentEl, wsSrcs);
         if (type === 'decisions') _windowCleanup = startDecisionsGame();
@@ -592,7 +604,7 @@
 
         // Re-execute inline scripts (decisions handles its own logic above)
         if (type !== 'decisions') {
-          doc.querySelectorAll('script').forEach(oldScript => {
+          docScripts.forEach(oldScript => {
             const s = document.createElement('script');
             if (oldScript.src) s.src = oldScript.src;
             else s.textContent = oldScript.textContent;
@@ -867,16 +879,11 @@
         img.draggable = false;
         wrap.appendChild(img);
       }
-      if (item.hoverLabel) {
-        // Hide postcard hover label on touch devices (postcard is disabled there)
-        const isTouch = window.matchMedia('(pointer: coarse), (max-width: 900px)').matches;
-        const hideOnTouch = isTouch && item.href && item.href.includes('postcard');
-        if (!hideOnTouch) {
-          const label = document.createElement('span');
-          label.className = 'item-hover-label';
-          label.textContent = item.hoverLabel;
-          wrap.appendChild(label);
-        }
+      if (item.hoverLabel && !isPostcardOnTouch(item)) {
+        const label = document.createElement('span');
+        label.className = 'item-hover-label';
+        label.textContent = item.hoverLabel;
+        wrap.appendChild(label);
       }
       return wrap;
     }
@@ -886,17 +893,9 @@
       ITEMS.forEach(item => {
         const el = createItemEl(item);
         fridge.appendChild(el);
-        if (item.href) {
-          // Postcard temporarily disabled on touch devices — show static image only
-          const isTouch = window.matchMedia('(pointer: coarse), (max-width: 900px)').matches;
-          const postcardOnTouch = isTouch && item.href.includes('postcard');
-          if (!postcardOnTouch) {
-            el.style.cursor = 'pointer';
-            el.addEventListener('click', () => {
-              if (item.href.startsWith('http')) window.open(item.href, '_blank');
-              else openWindow(item.href, item.windowTitle || item.hoverLabel || item.href);
-            });
-          }
+        if (item.href && !isPostcardOnTouch(item)) {
+          el.style.cursor = 'pointer';
+          el.addEventListener('click', () => openWindow(item.href, item.windowTitle || item.hoverLabel || item.href));
         }
       });
     }
@@ -1294,7 +1293,7 @@
     if (window.matchMedia('(pointer: coarse), (max-width: 900px)').matches
         && !window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
       const centerScroll = () => {
-        const f = document.getElementById('fridge');
+        const f = $('fridge');
         const r = f.getBoundingClientRect();
         const fcx = r.left + window.scrollX + r.width  / 2;
         const fcy = r.top  + window.scrollY + r.height / 2;

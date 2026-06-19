@@ -1125,7 +1125,7 @@
     // Each visitor plays as whoever's turn it is and makes one move; after a
     // move they're locked until someone else moves (lastMoveBy guard). Board
     // clears on win/draw; X-vs-O win totals persist in the scoreboard.
-    const TTT_POS = { top: 18.424263, left: 37.390861, width: 10.13512 };
+    const TTT_POS = { top: 19.0, left: 37.390861, width: 10.13512 };
     function initTicTacToe() {
       const PATH = 'letters/tictactoe'; // under the read/write-permitted node
       const LINES = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
@@ -1151,32 +1151,13 @@
       // Build DOM
       const el = document.createElement('div');
       el.id = 'ttt';
-      let savedTTT = null;
-      try { savedTTT = JSON.parse(localStorage.getItem('tttPos') || 'null'); } catch(e) {}
-      el.style.top   = (savedTTT ? savedTTT.top   : TTT_POS.top)   + '%';
-      el.style.left  = (savedTTT ? savedTTT.left  : TTT_POS.left)  + '%';
-      el.style.width = (savedTTT ? savedTTT.width : TTT_POS.width) + '%';
+      el.style.top   = TTT_POS.top   + '%';
+      el.style.left  = TTT_POS.left  + '%';
+      el.style.width = TTT_POS.width + '%';
       el.innerHTML = '<div id="ttt-status"></div><div class="ttt-board-wrap"><div id="ttt-grid"></div><div id="ttt-scoreboard"></div></div>';
       $('fridge').appendChild(el);
       const statusEl = el.querySelector('#ttt-status');
       const sbEl = el.querySelector('#ttt-scoreboard');
-
-      // Drag to reposition via status bar
-      const saveTTTPos = () => { try { localStorage.setItem('tttPos', JSON.stringify({ top: parseFloat(el.style.top), left: parseFloat(el.style.left), width: parseFloat(el.style.width) })); } catch(e) {} };
-      statusEl.style.cursor = 'move';
-      statusEl.addEventListener('pointerdown', e => {
-        e.preventDefault();
-        statusEl.setPointerCapture(e.pointerId);
-        const fr = $('fridge').getBoundingClientRect(), er = el.getBoundingClientRect();
-        const ox = e.clientX - er.left, oy = e.clientY - er.top;
-        const onMove = e => {
-          el.style.left = Math.max(0, Math.min(95,  (e.clientX - fr.left - ox) / fr.width  * 100)) + '%';
-          el.style.top  = Math.max(0, Math.min(110, (e.clientY - fr.top  - oy) / fr.height * 100)) + '%';
-        };
-        const onUp = () => { statusEl.removeEventListener('pointermove', onMove); statusEl.removeEventListener('pointerup', onUp); saveTTTPos(); };
-        statusEl.addEventListener('pointermove', onMove);
-        statusEl.addEventListener('pointerup', onUp);
-      });
 
       const grid = el.querySelector('#ttt-grid');
       const boardWrap = el.querySelector('.ttt-board-wrap');

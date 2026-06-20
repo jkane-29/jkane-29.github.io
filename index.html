@@ -260,6 +260,9 @@
     @media (hover: hover) and (pointer: fine) {
       #ttt:hover #ttt-status { opacity: 1; }
     }
+    @media (pointer: coarse) {
+      #ttt-status { opacity: 1; font-size: 8px; }
+    }
     .ttt-board-wrap { position: relative; width: 100%; aspect-ratio: 1/1; }
     #ttt-grid {
       display: grid; grid-template-columns: repeat(3, 1fr); gap: 0;

@@ -223,9 +223,9 @@
     }
 
     const list = document.getElementById('notes-list');
-    NOTES.forEach((note) => {
+    NOTES.forEach((note, i) => {
       const row = document.createElement('div');
-      row.className = 'note-row';
+      row.className = i === 0 ? 'note-row open' : 'note-row';
       row.innerHTML = `
         <div class="note-row-header">
           <span class="note-row-title">${note.title}</span>

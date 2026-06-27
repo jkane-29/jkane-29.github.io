@@ -431,7 +431,7 @@
     const pageType = href => {
       const h = href.toLowerCase();
       return h.includes('decisions') ? 'decisions'
-           : h.includes('woodshop')  ? 'woodshop'
+           : h.includes('woodshop') || h.includes('bethtrain') ? 'woodshop'
            : h.includes('postcard')  ? 'postcard'
            : 'generic';
     };

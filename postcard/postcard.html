@@ -267,29 +267,10 @@
         resize: vertical;
       }
 
-      /* Stamp chooser as a full-width tappable control */
-      .stamp-placeholder {
-        position: static;
-        width: 100%;
-        height: auto;
-        min-height: 54px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: 1.5px dashed #b8893a;
-        border-radius: 8px;
-        color: #6e5630;
-        font-family: 'Special Elite', 'Courier New', monospace;
-        font-size: 15px;
-        letter-spacing: 0.02em;
-      }
-      .stamp-placeholder::after { content: '＋  Add a stamp'; }
-      .stamp-overlay {
-        position: static;
-        width: 96px;
-        height: auto;
-        align-self: flex-start;
-      }
+      /* No stamp on mobile */
+      .stamp-placeholder,
+      .stamp-overlay,
+      .stamp-overlay.visible { display: none; }
 
       /* Action bar → normal stacked fields */
       .action-bar {

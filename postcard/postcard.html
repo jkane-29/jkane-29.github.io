@@ -182,91 +182,152 @@
       top: -0.3em;
     }
 
-    /* ── Mobile: card fills width, FROM/Send stay overlaid on the
-       card's bottom-right exactly like desktop ── */
+    /* Mobile-only heading; hidden on desktop where the OS window has a title bar */
+    .mobile-form-title { display: none; }
+
+    /* ── Mobile: drop the scaled postcard image + overlaid inputs, which never
+       sized reliably. Render the same fields as a plain stacked web form. ── */
     @media (max-width: 600px), (pointer: coarse) {
       body {
         overflow-y: auto;
         height: auto;
         min-height: 100vh;
         min-height: 100dvh; /* dynamic vh: accounts for iOS toolbar */
-        /* anchor card to the top; centering caused a jump when the
-           keyboard opened on input focus */
         justify-content: flex-start;
+        background: #fbf8f2;
+        padding: 18px 16px 36px;
       }
 
-      /* wrapper hugs the card so the absolute action-bar sits on it */
       .card-wrapper {
         flex: none;
-      }
-
-      /* card shrinks to its natural 3:2 aspect ratio */
-      .postcard {
-        height: auto;
-        aspect-ratio: 3 / 2;
-        flex: none;
-      }
-
-      /* keep action-bar overlaid on the card's bottom-right (same as desktop),
-         but stack FROM above Send so they aren't cramped side by side */
-      .action-bar {
-        position: absolute;
-        bottom: 7%;
-        left: 56%;
-        right: 6%;
+        width: 100%;
+        display: flex;
         flex-direction: column;
-        align-items: stretch;
-        gap: 6px;
+        gap: 14px;
       }
-      /* Mobile: keep just FROM + Send; hide the new optional email row */
-      .action-row { display: contents; }
-      .email-input-optional { display: none; }
 
-      .return-address-input {
+      .mobile-form-title {
+        display: block;
+        font-family: 'Special Elite', 'Courier New', monospace;
+        font-size: 21px;
+        letter-spacing: 0.03em;
+        color: #2e2415;
+      }
+
+      /* No postcard image on mobile — just stack the fields */
+      .postcard-img { display: none; }
+      .postcard {
+        position: static;
+        height: auto;
+        aspect-ratio: auto;
         flex: none;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+
+      /* Shared field styling */
+      .message-input,
+      .return-address-input,
+      .email-input-optional,
+      .address-line-extra {
+        position: static;
         width: 100%;
         box-sizing: border-box;
-        font-family: 'Oswald', 'Arial Narrow', sans-serif;
-        font-weight: 700;
-        /* 16px keeps iOS Safari from auto-zooming when the field is focused */
+        font-family: 'Special Elite', 'Courier New', monospace;
+        font-weight: 400;
+        /* 16px keeps iOS Safari from auto-zooming on focus */
         font-size: 16px;
-        letter-spacing: 0.12em;
-        padding: 8px 10px;
-        min-height: 42px;
-        border: 2px dashed #004B97;
-        text-align: center;
+        line-height: 1.4;
+        letter-spacing: 0;
+        color: #2b2b2b;
+        background: #ffffff;
+        border: 1.5px solid #d3c9b6;
+        border-radius: 8px;
+        padding: 12px;
+        text-align: left;
+      }
+      .message-input::placeholder,
+      .return-address-input::placeholder,
+      .email-input-optional::placeholder,
+      .address-line-extra::placeholder {
+        color: #a79f8c;
+        font-style: normal;
+      }
+      .message-input:focus,
+      .return-address-input:focus,
+      .email-input-optional:focus,
+      .address-line-extra:focus { border-color: #b8893a; }
+
+      /* Message goes first, then the stamp control (see order below) */
+      .message-input {
+        order: -1;
+        height: auto;
+        min-height: 150px;
+        resize: vertical;
       }
 
-      .send-btn {
-        flex: none;
+      /* Stamp chooser as a full-width tappable control */
+      .stamp-placeholder {
+        position: static;
         width: 100%;
+        height: auto;
+        min-height: 54px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1.5px dashed #b8893a;
+        border-radius: 8px;
+        color: #6e5630;
+        font-family: 'Special Elite', 'Courier New', monospace;
+        font-size: 15px;
+        letter-spacing: 0.02em;
+      }
+      .stamp-placeholder::after { content: '＋  Add a stamp'; }
+      .stamp-overlay {
+        position: static;
+        width: 96px;
+        height: auto;
+        align-self: flex-start;
+      }
+
+      /* Action bar → normal stacked fields */
+      .action-bar {
+        position: static;
+        transform: none;
+        top: auto; right: auto; bottom: auto; left: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+      }
+      .action-row { display: flex; flex-direction: column; gap: 12px; }
+      /* Show all optional fields on mobile now that there's room */
+      .email-input-optional { display: block; }
+
+      .send-btn {
+        width: 100%;
+        margin-top: 2px;
         box-sizing: border-box;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 6px;
-        font-family: 'Oswald', 'Arial Narrow', sans-serif;
-        font-weight: 700;
-        font-size: 16px;
-        letter-spacing: 0.12em;
-        padding: 9px 10px;
-        min-height: 46px;
-        border: 2px dashed #DA291C;
+        gap: 8px;
+        font-family: 'Special Elite', 'Courier New', monospace;
+        font-weight: 400;
+        font-size: 17px;
+        letter-spacing: 0.02em;
+        text-transform: none;
+        color: #ffffff;
+        background: #1a1a1a;
+        border: 1.5px solid #1a1a1a;
+        border-radius: 8px;
+        padding: 13px;
+        min-height: 50px;
         white-space: nowrap;
       }
-      /* keep the envelope inline-centered with the word on mobile */
-      .send-btn .send-icon {
-        position: static;
-        top: 0;
-        font-size: 1.3em;
-        line-height: 1;
-      }
-
-      /* Use Tangerine (Google Font, guaranteed on Android) for the message */
-      .message-input {
-        font-family: 'Tangerine', cursive;
-        font-size: clamp(22px, 6vw, 38px);
-      }
+      .send-btn:hover { background: #1a1a1a; color: #ffffff; }
+      .send-btn .send-icon { position: static; top: 0; font-size: 1.2em; line-height: 1; }
     }
 
     /* ── Stamp picker modal ── */
@@ -388,6 +449,7 @@
 <body>
 
   <div class="card-wrapper">
+    <div class="mobile-form-title">Send a note</div>
     <div class="postcard" id="postcard">
       <img class="postcard-img" src="updated-postcard.webp" alt="Postcard back">
       <div id="stamp-placeholder" class="stamp-placeholder"></div>

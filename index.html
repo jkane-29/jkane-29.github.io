@@ -379,43 +379,6 @@
       /* Webring hidden on mobile — desktop only */
       #ring-wrap { display: none !important; }
     }
-
-    /* Visit readout — same LED/CRT treatment as the tic-tac-toe scoreboard.
-       Mobile only; font-size is set in JS from the box width so it scales
-       with the fridge, and everything inside sizes in em. */
-    #visits {
-      position: absolute;
-      /* Desktop: sits just above the webring */
-      top: 70%; left: 40%; width: 20%;
-      z-index: 6;
-      display: flex;
-      align-items: center; justify-content: center;
-      padding: 0.42em 0;
-      background: #040101;
-      border-radius: 3px;
-      overflow: hidden;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.5);
-    }
-    /* Mobile: webring is hidden, so it can sit lower and run wider */
-    @media (max-width: 900px), (pointer: coarse) {
-      #visits { top: 72%; left: 34%; width: 32%; }
-    }
-    #visits::before {
-      content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none;
-      background: repeating-linear-gradient(0deg, transparent 0px, transparent 3px, rgba(0,0,0,0.22) 3px, rgba(0,0,0,0.22) 4px);
-    }
-    #visits::after {
-      content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none;
-      box-shadow: inset 0 0 40% rgba(160,0,0,0.18);
-    }
-    #visits-digits {
-      position: relative; z-index: 2;
-      font-family: 'Courier New', monospace;
-      font-weight: 700; font-size: 1em; line-height: 1;
-      letter-spacing: 0.14em;
-      color: #d62828;
-      text-shadow: 0 0 5px #d62828, 0 0 16px rgba(214,40,40,0.7), 0 0 32px rgba(214,40,40,0.35);
-    }
   </style>
   <style id="os-injected-style"></style>
 </head>
@@ -431,7 +394,6 @@
                 title="overengineeRING embed"
                 loading="lazy"></iframe>
       </div>
-      <div id="visits"><span id="visits-digits">00000</span></div>
     </div>
   </div>
 
@@ -1319,43 +1281,6 @@
       db.ref(PATH).transaction(cur => cur || fresh()); // seed initial state once
     }
     if (!isEditMode) initTicTacToe();
-
-    // ── Visit readout ──────────────────────────────────────────
-    function initVisits() {
-      const el = $('visits');
-      const digits = $('visits-digits');
-      if (!el || !digits) return;
-      const ref = db.ref('stats/visits');
-
-      // Scale the digits with the box (same approach as the TTT board)
-      const sizeVisits = () => {
-        const w = el.clientWidth;
-        if (w) el.style.fontSize = (w * 0.19) + 'px';
-      };
-      sizeVisits();
-      window.addEventListener('resize', sizeVisits);
-
-      const render = n => {
-        const v = Math.max(0, Math.floor(Number(n) || 0));
-        digits.textContent = String(Math.min(v, 99999)).padStart(5, '0');
-      };
-
-      // Count once per browser session, then just watch the value
-      let counted = false;
-      try { counted = sessionStorage.getItem('visitCounted') === '1'; } catch (e) {}
-      if (!counted) {
-        ref.transaction(cur => (Number(cur) || 0) + 1, () => {
-          try { sessionStorage.setItem('visitCounted', '1'); } catch (e) {}
-        });
-      }
-      // If the read is refused (e.g. DB rules not yet updated), hide the
-      // readout rather than leaving a stuck 00000 on the door.
-      ref.on('value',
-        snap => render(snap.val()),
-        () => { el.style.display = 'none'; }
-      );
-    }
-    if (!isEditMode) initVisits();
 
     // ── Mobile/touch: center the scroll on the fridge after it lays out ──
     if (window.matchMedia('(pointer: coarse), (max-width: 900px)').matches

@@ -374,10 +374,24 @@
       border: none;
       background: transparent;
     }
-    /* Mobile / touch: scale border/shadow + hardcode webring position */
+    /* Mobile / touch: webring in the lower door — narrower, no border/box,
+       and the embed rendered at native scale so the text is larger. */
     @media (max-width: 900px), (pointer: coarse) {
-      /* Webring hidden on mobile — desktop only */
-      #ring-wrap { display: none !important; }
+      #ring-wrap {
+        top: 71%; left: 24%; width: 52%; height: 9%;
+        background: transparent;
+        border: none;
+        outline: none;
+        box-shadow: none;
+        border-radius: 0;
+      }
+      #ring-embed {
+        width: 100%; height: 100%;
+        transform: none;
+        /* Embed text is black (for the desktop white box); invert to white
+           so it reads on the dark fridge now that the box is gone. */
+        filter: invert(1);
+      }
     }
   </style>
   <style id="os-injected-style"></style>

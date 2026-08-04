@@ -374,11 +374,10 @@
       border: none;
       background: transparent;
     }
-    /* Mobile / touch: webring moves to the empty lower door. Width/height are
-       sized so the box lands at ~the same pixel size as desktop (291×45), so
-       the fixed-font embed lays out identically instead of wrapping. */
+    /* Mobile / touch: scale border/shadow + hardcode webring position */
     @media (max-width: 900px), (pointer: coarse) {
-      #ring-wrap { top: 70%; left: 13%; width: 74%; height: 7.6%; }
+      /* Webring hidden on mobile — desktop only */
+      #ring-wrap { display: none !important; }
     }
   </style>
   <style id="os-injected-style"></style>

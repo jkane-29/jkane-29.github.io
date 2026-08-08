@@ -1242,25 +1242,8 @@
         else if (s.lastMoveBy === cid) { statusEl.textContent = 'Waiting for ' + s.turn + '…'; locked = true; }
         else { statusEl.textContent = s.turn + ' to move'; locked = false; }
         el.classList.toggle('locked', locked);
-        el.classList.toggle('game-over', !!win);
-        if (win) {
-          // State is communal (anyone can write to Firebase), so never trust its
-          // shape: coerce the winner to X/O/draw and scores to bounded integers
-          // before building markup, so a crafted value can't inject HTML.
-          const sc = s.scores || {};
-          const digit = v => String(Math.max(0, Math.min(99, Math.floor(Number(v)) || 0))).padStart(2, '0');
-          const safeWin = win === 'X' || win === 'O' ? win : 'draw';
-          const headline = safeWin === 'draw' ? 'DRAW' : safeWin + '  WINS';
-          sbEl.innerHTML =
-            '<div class="sb-headline">' + headline + '</div>' +
-            '<div class="sb-scores-row">' +
-              '<div class="sb-digit dx">' + digit(sc.X) + '</div>' +
-              '<span class="sb-label stx">X</span>' +
-              '<div class="sb-sep-led"></div>' +
-              '<div class="sb-digit do">' + digit(sc.O) + '</div>' +
-              '<span class="sb-label sto">O</span>' +
-            '</div>';
-        }
+        // Score readout removed — keep the finished board (with the winning
+        // line highlighted) on screen briefly, then reset. No scoreboard.
         if (win && !resetTimer) resetTimer = setTimeout(() => { resetTimer = null; reset(); }, 3500);
       }
 

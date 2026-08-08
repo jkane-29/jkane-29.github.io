@@ -480,21 +480,23 @@
 
     // ── Items config (edit with ?edit + Copy layout) ───────────
     let ITEMS = [
-  { id: "item_1779583589922", src: "items/Bike Business.png", top: 48.060597, left: 28.685163, width: 21.3, rotate: 0, href: "rides.html", hoverLabel: "Rides", windowTitle: "Best Rides" },
-  { id: "item_1779583597274", src: "items/california oranges.jpg", top: 9.737723, left: 27.214286, width: 20, rotate: 0, href: "postcard/postcard.html", hoverLabel: "Send a Note", windowTitle: "Send a Note" },
-  { id: "item_1779583606062", src: "items/furniture_web.png", top: 17.415842, left: 25.440828, width: 12, rotate: 0, href: "woodshop/woodshop copy.html", hoverLabel: "Woodshop" },
-  { id: "item_1779583634617", src: "items/googly.png", top: 10.620536, left: 63.537388, width: 8, rotate: 0, href: null, hoverLabel: null },
-  { id: "item_1779583643716", src: "items/greeting.png", top: 9.908384, left: 49.123, width: 13, rotate: 0, href: null, hoverLabel: null },
-  { id: "item_1779584304657", src: "items/shopping.png", top: 10.049851, left: 34.571987, width: 2, rotate: 0, href: null, hoverLabel: null },
-  { id: "item_1779586060280", src: "items/tj receipt.jpg", top: 14.15253, left: 63.565848, width: 8, rotate: 0, href: "https://tj-prices.com", hoverLabel: "TJ Prices" },
-  { id: "item_1779639122791", src: "items/jobs.png", top: 37.572206, left: 41.26102, width: 10.9, rotate: 0, href: "writing/writing.html", hoverLabel: "Jobs" },
-  { id: "item_1779639259040", src: "items/decisions.png", top: 37.033876, left: 27.703793, width: 11.8, rotate: 0, href: "decisions/decisions copy.html", hoverLabel: "Decisions" },
-  { id: "item_1781388702732", src: "items/about me.png", top: 9.922301, left: 48.593731, width: 13.9, rotate: 0, href: "about.html", hoverLabel: "About Me" },
-  { id: "item_1781392936791", src: "items/better doms.jpg", top: 35.369851, left: 53.684816, width: 16.7, rotate: 0, href: null, hoverLabel: null },
-  { id: "item_1781393158854", src: "items/michigan2.png", top: 50.120165, left: 53.27595, width: 17.2, rotate: 0, href: null, hoverLabel: null },
-  { id: "item_1781393177283", src: "items/shopping.png", top: 36.350949, left: 60.460003, width: 3, rotate: 0, href: null, hoverLabel: null },
-  { id: "item_clockclock24", embed: "/ClockClock24/index.html?v=3", aspect: "8 / 3", top: 23.344871, left: 46.157838, width: 29.2, rotate: 0, href: "https://github.com/ArnaudSpanneut/ClockClock24", hoverLabel: null }
+  { id: "item_1779583589922", src: "items/Bike Business.png", top: 38.234, left: 30.477, width: 20.3, rotate: 0, href: "rides.html", hoverLabel: "Rides", windowTitle: "Best Rides" },
+  { id: "item_1779583597274", src: "items/california oranges.jpg", top: 9.738, left: 27.214, width: 20, rotate: 0, href: "postcard/postcard.html", hoverLabel: "Send a Note", windowTitle: "Send a Note" },
+  { id: "item_1779583606062", src: "items/furniture_web.png", top: 17.956, left: 26.073, width: 11, rotate: 0, href: "woodshop/woodshop copy.html", hoverLabel: "Woodshop" },
+  { id: "item_1779583643716", src: "items/greeting.png", top: 9.908, left: 49.123, width: 13, rotate: 0, href: null, hoverLabel: null },
+  { id: "item_1779584304657", src: "items/shopping.png", top: 10.05, left: 34.572, width: 2, rotate: 0, href: null, hoverLabel: null },
+  { id: "item_1779586060280", src: "items/tj receipt.jpg", top: 10.299, left: 63.313, width: 9, rotate: 0, href: "https://tj-prices.com", hoverLabel: "TJ Prices" },
+  { id: "item_1779639259040", src: "items/decisions.png", top: 46.977, left: 41.922, width: 10.8, rotate: 0, href: "decisions/decisions copy.html", hoverLabel: "Decisions" },
+  { id: "item_1781388702732", src: "items/about me.png", top: 9.922, left: 48.594, width: 13.9, rotate: 0, href: "about.html", hoverLabel: "About Me" },
+  { id: "item_1781392936791", src: "items/better doms.jpg", top: 37.44, left: 53.952, width: 18.2, rotate: 0, href: null, hoverLabel: null },
+  { id: "item_1781393158854", src: "items/michigan2.png", top: 48.148, left: 26.34, width: 16.7, rotate: 0, href: null, hoverLabel: null },
+  { id: "item_1781393177283", src: "items/shopping.png", top: 38.725, left: 61.544, width: 2.5, rotate: 0, href: null, hoverLabel: null },
+  { id: "item_1786000000001", src: "items/writing.png", top: 20.514, left: 61.953, width: 11.5, rotate: 0, href: "writing/writing.html", hoverLabel: "Writing" },
+  { id: "item_clockclock24", embed: "/ClockClock24/index.html?v=3", aspect: "8 / 3", top: 23.345, left: 46.158, width: 29.2, rotate: 0, href: "https://github.com/ArnaudSpanneut/ClockClock24", hoverLabel: null }
 ];
+
+    // Tic-tac-toe board position (draggable in edit mode).
+    const TTT_POS = { top: 19.545, left: 37.545, width: 10.135 };
 
     // Optional per-item edit-mode overrides — paste from Copy Layout to update
     // positions/widths; href/hoverLabel/windowTitle stay set above.
@@ -916,7 +918,10 @@
       ITEMS.forEach(item => {
         const el = createItemEl(item);
         fridge.appendChild(el);
-        if (item.href && !isPostcardOnTouch(item)) {
+        if (isEditMode) {
+          el.style.cursor = 'move';
+          makeDraggable(el);
+        } else if (item.href && !isPostcardOnTouch(item)) {
           el.style.cursor = 'pointer';
           el.addEventListener('click', () => openWindow(item.href, item.windowTitle || item.hoverLabel || item.href));
         }
@@ -1011,6 +1016,93 @@
     }
 
     if (isEditMode) {
+      // Layout editor: drag to move, click an item to select, then resize
+      // (−/+) or delete it. "Copy layout" exports the arrangement.
+      const _meta = Object.fromEntries(ITEMS.map(it => [it.id, it]));
+      let _sel = null;
+      const selectItem = el => {
+        if (_sel) _sel.style.outline = '';
+        _sel = el || null;
+        if (_sel) _sel.style.outline = '2px solid #f6d400';
+        _bar.style.display = _sel ? 'flex' : 'none';
+      };
+      const resize = d => { if (_sel) _sel.style.width = Math.max(2, (parseFloat(_sel.style.width) || 10) + d) + '%'; };
+      const del = () => { if (_sel) { _sel.remove(); selectItem(null); } };
+      const _bar = document.createElement('div');
+      _bar.style.cssText = 'position:fixed;bottom:60px;right:16px;z-index:100000;display:none;gap:6px';
+      const _mk = (t, fn, bg) => { const b = document.createElement('button'); b.textContent = t; b.style.cssText = 'padding:10px 13px;background:' + (bg || '#333') + ';color:#fff;border:none;border-radius:6px;font:600 15px -apple-system,sans-serif;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4)'; b.onclick = fn; _bar.appendChild(b); };
+      _mk('−', () => resize(-0.5));
+      _mk('+', () => resize(0.5));
+      _mk('Delete', del, '#c0392b');
+      document.body.appendChild(_bar);
+      // Editable tic-tac-toe board placeholder (the live game is off in edit mode)
+      const _ttt = document.createElement('div');
+      _ttt.className = 'item';
+      _ttt.dataset.id = 'ttt-board';
+      _ttt.dataset.ttt = '1';
+      Object.assign(_ttt.style, { position: 'absolute', top: TTT_POS.top + '%', left: TTT_POS.left + '%', width: TTT_POS.width + '%', aspectRatio: '1 / 1', zIndex: 12, cursor: 'move', boxSizing: 'border-box' });
+      _ttt.style.backgroundImage = 'linear-gradient(#fff,#fff),linear-gradient(#fff,#fff),linear-gradient(#fff,#fff),linear-gradient(#fff,#fff)';
+      _ttt.style.backgroundSize = '2px 100%,2px 100%,100% 2px,100% 2px';
+      _ttt.style.backgroundPosition = '33.33% 0,66.66% 0,0 33.33%,0 66.66%';
+      _ttt.style.backgroundRepeat = 'no-repeat';
+      $('fridge').appendChild(_ttt);
+      makeDraggable(_ttt);
+      document.querySelectorAll('.item').forEach(el => el.addEventListener('pointerdown', () => selectItem(el)));
+      document.addEventListener('keydown', e => {
+        if (!_sel) return;
+        if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); del(); }
+        else if (e.key === '+' || e.key === '=') resize(0.5);
+        else if (e.key === '-' || e.key === '_') resize(-0.5);
+      });
+      const _btn = document.createElement('button');
+      _btn.textContent = 'Copy layout';
+      _btn.style.cssText = 'position:fixed;bottom:16px;right:16px;z-index:100000;padding:12px 16px;background:#f6d400;color:#111;border:none;border-radius:6px;font:600 14px -apple-system,sans-serif;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4)';
+      document.body.appendChild(_btn);
+      _btn.addEventListener('click', () => {
+        const updated = [...document.querySelectorAll('.item')].map(el => {
+          const base = _meta[el.dataset.id]; if (!base) return null;
+          const rot = (el.style.transform.match(/rotate\(([-0-9.]+)deg\)/) || [])[1];
+          return Object.assign({}, base, {
+            top:   +parseFloat(el.style.top).toFixed(3),
+            left:  +parseFloat(el.style.left).toFixed(3),
+            width: +parseFloat(el.style.width).toFixed(3),
+            rotate: rot ? +rot : (base.rotate || 0)
+          });
+        }).filter(Boolean);
+        let json = 'let ITEMS = [\n' + updated.map(it => '  ' + JSON.stringify(it)).join(',\n') + '\n];';
+        const _tt = document.querySelector('[data-ttt]');
+        if (_tt) json += '\n\nconst TTT_POS = { top: ' + (+parseFloat(_tt.style.top).toFixed(3)) + ', left: ' + (+parseFloat(_tt.style.left).toFixed(3)) + ', width: ' + (+parseFloat(_tt.style.width).toFixed(3)) + ' };';
+        const ov = document.createElement('div');
+        ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:100001;display:flex;flex-direction:column;padding:16px;gap:8px';
+        const st = document.createElement('div');
+        st.textContent = 'Copy this and paste it back to Claude.';
+        st.style.cssText = 'color:#f6d400;font:12px -apple-system,sans-serif';
+        const ta = document.createElement('textarea');
+        ta.value = json;
+        ta.style.cssText = 'flex:1;width:100%;font-family:"Courier New",monospace;font-size:11px;padding:10px;background:#111;color:#0f0;border:1px solid #333;resize:none';
+        const rw = document.createElement('div');
+        rw.style.cssText = 'display:flex;gap:8px';
+        const cp = document.createElement('button');
+        cp.textContent = 'Copy';
+        cp.style.cssText = 'flex:1;padding:14px;background:#f6d400;color:#111;border:none;font-size:14px;font-weight:bold;border-radius:4px';
+        const cl = document.createElement('button');
+        cl.textContent = 'Close';
+        cl.style.cssText = 'flex:1;padding:14px;background:#333;color:#fff;border:none;font-size:14px;border-radius:4px';
+        rw.appendChild(cp); rw.appendChild(cl);
+        ov.appendChild(st); ov.appendChild(ta); ov.appendChild(rw);
+        document.body.appendChild(ov);
+        cp.onclick = () => {
+          ta.focus(); ta.setSelectionRange(0, ta.value.length);
+          let ok = false; try { ok = document.execCommand('copy'); } catch (e) {}
+          if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(json).then(() => st.textContent = '✓ Copied').catch(() => {});
+          else st.textContent = ok ? '✓ Copied' : 'Long-press the text → Select All → Copy';
+        };
+        cl.onclick = () => ov.remove();
+        setTimeout(() => { ta.focus(); ta.setSelectionRange(0, ta.value.length); }, 50);
+      });
+    }
+
+    if (false) {
       $('edit-panel').style.display = 'flex';
       // On touch devices, start collapsed (only Copy state shows). Append
       // `&full` to the URL to start fully expanded for layout work.
@@ -1148,7 +1240,7 @@
     // Each visitor plays as whoever's turn it is and makes one move; after a
     // move they're locked until someone else moves (lastMoveBy guard). Board
     // clears on win/draw; X-vs-O win totals persist in the scoreboard.
-    const TTT_POS = { top: 19.0, left: 37.390861, width: 10.13512 };
+    // TTT_POS is declared up near ITEMS so edit mode can position the board.
     function initTicTacToe() {
       const PATH = 'letters/tictactoe'; // under the read/write-permitted node
       const LINES = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];

@@ -164,7 +164,12 @@
     .tl-close { background: #ff5f57; }
     .tl-min   { background: #febc2e; }
     .tl-max   { background: #28c840; }
-    .tl-btn::after { font-size: 11px; font-weight: 900; color: rgba(0,0,0,0.65); line-height: 1; transform: translateY(-1px); }
+    .tl-btn::after {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+      font-size: 10px; font-weight: 700; line-height: 1;
+      color: rgba(0,0,0,0.82);
+    }
     #os-titlebar:hover .tl-btn::after { content: attr(data-glyph); }
 
     #os-window-title {

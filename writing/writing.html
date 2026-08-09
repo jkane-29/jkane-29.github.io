@@ -3,63 +3,96 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Working As... - Jack Kane</title>
+  <title>Writing - Jack Kane</title>
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; background: #ffffff; }
-
-    .notes-header {
-      position: sticky; top: 0; z-index: 10;
-      background: #ffffff;
-      border-bottom: 1px solid #d9d3c8;
-      padding: 9px 16px 8px;
-      display: flex; align-items: center; justify-content: center;
+    html { height: 100%; }
+    body {
+      height: 100%; margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+      background: #ffffff; color: #1c1c1e;
     }
-    .notes-header-title { font-size: 15px; font-weight: 600; color: #1c1c1e; letter-spacing: -0.01em; }
-    .notes-count { position: absolute; right: 14px; font-size: 11px; color: #8e8e93; }
 
-    .note-row { border-bottom: 1px solid #d9d3c8; cursor: pointer; user-select: none; }
-    .note-row-header {
-      background: #ffffff;
-      padding: 15px 16px 14px;
-      display: flex; align-items: baseline; gap: 10px;
-      transition: background 0.1s;
+    /* Two-pane Notes layout (desktop) */
+    .nx-app { display: flex; height: 100%; }
+
+    .nx-sidebar {
+      width: 260px; flex-shrink: 0;
+      background: #faf9f7;
+      border-right: 0.5px solid #d9d3c8;
+      display: flex; flex-direction: column;
     }
-    .note-row:hover .note-row-header { background: #f0f0f0; }
-    .note-row.open .note-row-header { background: #ffe9a8; }
-
-    .note-row-title {
-      flex: 1;
+    .nx-side-header {
+      padding: 12px 16px 6px;
+      display: flex; align-items: baseline; justify-content: space-between;
+    }
+    .nx-side-title { font-size: 16px; font-weight: 600; color: #1c1c1e; }
+    .nx-count { font-size: 11px; color: #a0998c; }
+    .nx-list { flex: 1; overflow: auto; padding: 2px 8px 14px; }
+    .nx-group { font-size: 12px; font-weight: 600; color: #8a8478; padding: 10px 6px 4px; }
+    .nx-row { padding: 9px 10px; border-radius: 8px; cursor: pointer; }
+    .nx-row:hover { background: #f0ede6; }
+    .nx-row.active, .nx-row.active:hover { background: #f7e39c; }
+    .nx-row-title {
       font-size: 14px; font-weight: 600; color: #1c1c1e;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    .note-row-date { font-size: 11px; color: #8e8e93; flex-shrink: 0; }
-    .note-row-chevron { font-size: 10px; color: #c7c7cc; flex-shrink: 0; transition: transform 0.2s; }
-    .note-row.open .note-row-chevron { transform: rotate(90deg); }
-
-    .note-body-wrap {
-      display: none;
-      background: #ffffff;
-      padding: 20px 36px 28px;
-      border-top: 1px solid #d9d3c8;
+    .nx-row-sub {
+      font-size: 12px; color: #a0998c; margin-top: 2px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    .note-row.open .note-body-wrap { display: block; }
-    .note-body-date { font-size: 11px; color: #8e8e93; text-align: center; margin-bottom: 16px; }
-    .note-body-title { font-size: 21px; font-weight: 700; color: #1c1c1e; line-height: 1.3; margin-bottom: 8px; }
-    .note-body-text { font-size: 15px; line-height: 28px; color: #1c1c1e; }
-    .note-body-text p { margin: 0 0 16px; }
-    .note-body-text p:last-child { margin-bottom: 0; }
+    .nx-row.active .nx-row-sub { color: #7a7468; }
+
+    .nx-pane { flex: 1; overflow: auto; padding: 18px 40px 44px; }
+    .nx-back {
+      display: none;
+      background: none; border: none; cursor: pointer;
+      font-size: 15px; color: #d1a000; padding: 0; margin-bottom: 12px;
+      align-items: center; gap: 2px;
+    }
+    .nx-date { text-align: center; font-size: 11px; color: #b0a99c; margin-bottom: 18px; }
+    .nx-title { font-size: 22px; font-weight: 700; color: #1c1c1e; line-height: 1.3; margin-bottom: 12px; }
+    .nx-body { font-size: 15px; line-height: 1.65; color: #1c1c1e; }
+    .nx-body p { margin: 0 0 16px; }
+    .nx-body p:last-child { margin-bottom: 0; }
+    .nx-body a { color: #1c1c1e; }
+
+    /* Mobile: single column, drill down into a note with a back button */
+    @media (max-width: 600px), (pointer: coarse) {
+      .nx-app { display: block; height: auto; }
+      .nx-sidebar { width: auto; border-right: none; }
+      .nx-list { overflow: visible; }
+      .nx-row { border-bottom: 0.5px solid #e7e2d8; border-radius: 0; padding: 12px 10px; }
+      .nx-row.active, .nx-row.active:hover, .nx-row:hover { background: none; }
+      .nx-pane { display: none; padding: 14px 20px 40px; }
+      .nx-back { display: flex; }
+      .nx-app.reading .nx-sidebar { display: none; }
+      .nx-app.reading .nx-pane { display: block; }
+    }
   </style>
 </head>
 <body>
-  <div id="notes-list"></div>
+  <div class="nx-app" id="nx-app">
+    <div class="nx-sidebar">
+      <div class="nx-side-header">
+        <span class="nx-side-title">Writing</span>
+        <span class="nx-count" id="nx-count"></span>
+      </div>
+      <div class="nx-list" id="nx-list"></div>
+    </div>
+    <div class="nx-pane" id="nx-pane">
+      <button class="nx-back" id="nx-back">‹ Writing</button>
+      <div id="nx-content"></div>
+    </div>
+  </div>
 
   <script>
   (function () {
+    // date: ISO datetime — PLACEHOLDERS, replace with the real dates.
     const NOTES = [
       {
         title: "Working as a Sound Designer",
-        date: "May 2026",
+        date: "2026-05-14T15:20:00",
         body: `<p>The most objectively creative job I had was as a sound design intern for an animation studio. This was in the second semester of junior year, when most of my college friends were in the depths of recruiting for internships and jobs after college. Instead, I was an unpaid intern for a 3 person animation studio, making jingles on Ableton for a Children's television show, a realtors association, and an Avengers inspired short film (the details escape me).</p>
 <p>Those were my halcyon days. I'd spring out of some economics class to meet with the creative director who'd reference some increasingly <a href="https://en.wikipedia.org/wiki/Ecco_the_Dolphin" target="_blank" style="color:#1c1c1e;">obscure</a> video game soundtrack as we talked through my latest rough cut. Later, I'd take his feedback on the low end of a bass line or the phrasing of a melody and hammer it out in the university's math atrium.</p>
 <p>The hardest part of the internship was explaining it to others. For the more career oriented in my circle, there was no path between an economics degree and a brassy synth roll. To grasp for control, I'd revert to a spiel on my future life as an IP lawyer. It was as convenient a truth as any.</p>
@@ -69,7 +102,7 @@
       },
       {
         title: "Working as a Cook",
-        date: "May 2026",
+        date: "2026-05-09T11:00:00",
         body: `<p>Cooking and working in kitchens taught me many surprising things, not necessarily in the Bourdain style of "my god the bread is dirty!", but rather that cooking can require very different skillsets. Baking is a game of calculations, where a small variance leads to huge differences. A good baker is as much of a nightcrawler as they are an alchemist of yeast. For all the attention to detail there's a separate artistry required. Shaping dough/bread is the opposite of technical, more like learning the footwork to a choreographed dance that takes many repetitions to feel natural.</p>
 <p>I also learned how fun it is to work in a flow state and optimize with constraints. Given 30 tasks as a prep cook, how can I optimize across my 6 burners, 5 oven racks, and industrial mixing bowl. It was an incredibly fun game of chess with people shouting, 500 degree ovens, tight spaces, and hard deadlines. Getting finished with my prep list 4 hours early on my last day is an enduring moment of pride.</p>
 <p>The cooks I worked with tended to pride themselves in being resourceful. Mario, the cook I worked directly under exemplified this. He'd order the line cooks to make us chilaquiles at the start of our 5am shift, cut plastic bags so that you could tie them shut with a twist, and stock up on the best hardware likely to be lost to the dishpit in a midday rush.</p>
@@ -78,7 +111,7 @@
       },
       {
         title: "Working as a Caddie",
-        date: "May 2026",
+        date: "2026-05-02T18:30:00",
         body: `<p>Working as a golf caddie taught me to become a close study of emotions and to adapt my advice with them in mind. On meeting someone you'd bluntly assess: are they talkative, somber, open to reaching decisions collectively? Everything after would be a priori, incrementing off a shrug or smile given a suggestion. It's a pure service job, and I became a chameleon, adapting to hundreds of players.</p>
 <p>In that way, the role taught me to be exceptionally perceptive. It was my job to know and see the things that weren't immediately obvious and be trusted for that insight. In more advanced matches you'd see risk and defend against it towards the middle of a green or short of a hazard. Any advice was never purely based on external conditions, but also the emotions gleaned from the player beside me.</p>
 <p>In the best matches I felt I was verbalizing the next shot. Instructions to draw a 4 iron off the chimney of the white house would be followed by the ball arching beautifully in that direction. This narrow gap between advice and results was extremely rewarding. That direct feedback is something I deeply miss.</p>
@@ -87,23 +120,76 @@
       }
     ];
 
-    const list = document.getElementById('notes-list');
+    const fmtFull = d => d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) +
+      ' at ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    const fmtShort = d => {
+      const now = new Date();
+      if (d.toDateString() === now.toDateString()) return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+      return (d.getMonth() + 1) + '/' + d.getDate() + '/' + String(d.getFullYear()).slice(-2);
+    };
+    const groupLabel = d => {
+      const now = new Date();
+      const DAY = 864e5;
+      const startOf = x => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+      const diff = startOf(now) - startOf(d);
+      if (diff === 0) return 'Today';
+      if (diff === DAY) return 'Yesterday';
+      if (diff <= 7 * DAY) return 'Previous 7 Days';
+      if (diff <= 30 * DAY) return 'Previous 30 Days';
+      if (d.getFullYear() === now.getFullYear()) return d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+      return String(d.getFullYear());
+    };
+    const preview = html => {
+      const t = document.createElement('div');
+      t.innerHTML = html;
+      return (t.textContent || '').replace(/\s+/g, ' ').trim();
+    };
+
+    NOTES.forEach(n => n._d = new Date(n.date));
+    NOTES.sort((a, b) => b._d - a._d);
+
+    const app = document.getElementById('nx-app');
+    const list = document.getElementById('nx-list');
+    const content = document.getElementById('nx-content');
+    document.getElementById('nx-count').textContent = NOTES.length + (NOTES.length === 1 ? ' note' : ' notes');
+
+    let lastGroup = '';
+    const rows = [];
     NOTES.forEach((note, i) => {
+      const g = groupLabel(note._d);
+      if (g !== lastGroup) {
+        const gh = document.createElement('div');
+        gh.className = 'nx-group';
+        gh.textContent = g;
+        list.appendChild(gh);
+        lastGroup = g;
+      }
       const row = document.createElement('div');
-      row.className = 'note-row';
-      row.innerHTML = `
-        <div class="note-row-header">
-          <span class="note-row-title">${note.title}</span>
-          <span class="note-row-date">${note.date}</span>
-          <span class="note-row-chevron">›</span>
-        </div>
-        <div class="note-body-wrap">
-          <div class="note-body-title">${note.title}</div>
-          <div class="note-body-text">${note.body}</div>
-        </div>`;
-      row.querySelector('.note-row-header').addEventListener('click', () => row.classList.toggle('open'));
+      row.className = 'nx-row';
+      row.innerHTML = '<div class="nx-row-title"></div><div class="nx-row-sub"></div>';
+      row.querySelector('.nx-row-title').textContent = note.title;
+      row.querySelector('.nx-row-sub').textContent = fmtShort(note._d) + '  ' + preview(note.body);
+      row.addEventListener('click', () => select(i));
       list.appendChild(row);
+      rows.push(row);
     });
+
+    function select(i) {
+      const note = NOTES[i];
+      rows.forEach((r, j) => r.classList.toggle('active', j === i));
+      content.innerHTML =
+        '<div class="nx-date"></div><div class="nx-title"></div><div class="nx-body"></div>';
+      content.querySelector('.nx-date').textContent = fmtFull(note._d);
+      content.querySelector('.nx-title').textContent = note.title;
+      content.querySelector('.nx-body').innerHTML = note.body;
+      app.classList.add('reading');           // mobile: show the note view
+      document.getElementById('nx-pane').scrollTop = 0;
+    }
+
+    document.getElementById('nx-back').addEventListener('click', () => app.classList.remove('reading'));
+
+    if (NOTES.length) select(0);               // desktop: first note open by default
+    app.classList.remove('reading');           // mobile still starts on the list
   })();
   </script>
 </body>

@@ -23,12 +23,6 @@
       border-right: 0.5px solid #d9d3c8;
       display: flex; flex-direction: column;
     }
-    .nx-side-header {
-      padding: 12px 16px 6px;
-      display: flex; align-items: baseline; justify-content: space-between;
-    }
-    .nx-side-title { font-size: 16px; font-weight: 600; color: #1c1c1e; }
-    .nx-count { font-size: 11px; color: #a0998c; }
     .nx-list { flex: 1; overflow: auto; padding: 2px 8px 14px; }
     .nx-group { font-size: 12px; font-weight: 600; color: #8a8478; padding: 10px 6px 4px; }
     .nx-row { padding: 9px 10px; border-radius: 8px; cursor: pointer; }
@@ -52,7 +46,7 @@
       align-items: center; gap: 2px;
     }
     .nx-date { text-align: center; font-size: 11px; color: #b0a99c; margin-bottom: 18px; }
-    .nx-title { font-size: 22px; font-weight: 700; color: #1c1c1e; line-height: 1.3; margin-bottom: 12px; }
+    .nx-title { display: none; }
     .nx-body { font-size: 15px; line-height: 1.55; color: #1c1c1e; }
     .nx-body p { margin: 0 0 16px; }
     .nx-body p:last-child { margin-bottom: 0; }
@@ -75,10 +69,6 @@
 <body>
   <div class="nx-app" id="nx-app">
     <div class="nx-sidebar">
-      <div class="nx-side-header">
-        <span class="nx-side-title">Writing</span>
-        <span class="nx-count" id="nx-count"></span>
-      </div>
       <div class="nx-list" id="nx-list"></div>
     </div>
     <div class="nx-pane" id="nx-pane">
@@ -93,7 +83,7 @@
     const NOTES = [
       {
         title: "Working as a Sound Designer",
-        date: "2026-05-14T15:20:00",
+        date: "2026-01-12T15:20:00",
         body: `<p>The most objectively creative job I had was as a sound design intern for an animation studio. This was in the second semester of junior year, when most of my college friends were in the depths of recruiting for internships and jobs after college. Instead, I was an unpaid intern for a 3 person animation studio, making jingles on Ableton for a Children's television show, a realtors association, and an Avengers inspired short film (the details escape me).</p>
 <p>Those were my halcyon days. I'd spring out of some economics class to meet with the creative director who'd reference some increasingly <a href="https://en.wikipedia.org/wiki/Ecco_the_Dolphin" target="_blank" style="color:#1c1c1e;">obscure</a> video game soundtrack as we talked through my latest rough cut. Later, I'd take his feedback on the low end of a bass line or the phrasing of a melody and hammer it out in the university's math atrium.</p>
 <p>The hardest part of the internship was explaining it to others. For the more career oriented in my circle, there was no path between an economics degree and a brassy synth roll. To grasp for control, I'd revert to a spiel on my future life as an IP lawyer. It was as convenient a truth as any.</p>
@@ -103,7 +93,7 @@
       },
       {
         title: "Working as a Cook",
-        date: "2026-05-09T11:00:00",
+        date: "2026-03-04T11:00:00",
         body: `<p>Cooking and working in kitchens taught me many surprising things, not necessarily in the Bourdain style of "my god the bread is dirty!", but rather that cooking can require very different skillsets. Baking is a game of calculations, where a small variance leads to huge differences. A good baker is as much of a nightcrawler as they are an alchemist of yeast. For all the attention to detail there's a separate artistry required. Shaping dough/bread is the opposite of technical, more like learning the footwork to a choreographed dance that takes many repetitions to feel natural.</p>
 <p>I also learned how fun it is to work in a flow state and optimize with constraints. Given 30 tasks as a prep cook, how can I optimize across my 6 burners, 5 oven racks, and industrial mixing bowl. It was an incredibly fun game of chess with people shouting, 500 degree ovens, tight spaces, and hard deadlines. Getting finished with my prep list 4 hours early on my last day is an enduring moment of pride.</p>
 <p>The cooks I worked with tended to pride themselves in being resourceful. Mario, the cook I worked directly under exemplified this. He'd order the line cooks to make us chilaquiles at the start of our 5am shift, cut plastic bags so that you could tie them shut with a twist, and stock up on the best hardware likely to be lost to the dishpit in a midday rush.</p>
@@ -112,12 +102,20 @@
       },
       {
         title: "Working as a Caddie",
-        date: "2026-05-02T18:30:00",
+        date: "2026-04-30T18:30:00",
         body: `<p>Working as a golf caddie taught me to become a close study of emotions and to adapt my advice with them in mind. On meeting someone you'd bluntly assess: are they talkative, somber, open to reaching decisions collectively? Everything after would be a priori, incrementing off a shrug or smile given a suggestion. It's a pure service job, and I became a chameleon, adapting to hundreds of players.</p>
 <p>In that way, the role taught me to be exceptionally perceptive. It was my job to know and see the things that weren't immediately obvious and be trusted for that insight. In more advanced matches you'd see risk and defend against it towards the middle of a green or short of a hazard. Any advice was never purely based on external conditions, but also the emotions gleaned from the player beside me.</p>
 <p>In the best matches I felt I was verbalizing the next shot. Instructions to draw a 4 iron off the chimney of the white house would be followed by the ball arching beautifully in that direction. This narrow gap between advice and results was extremely rewarding. That direct feedback is something I deeply miss.</p>
 <p>I also noticed that the people I instructed best, and who often performed the best, seemed to share a language with me. We looked at risks and opportunities similarly; my idea of how aggressively they would hit a shot was in line with how aggressively they actually did. Skill was a precursor for this, but the players who were most successful at executing were usually the most perceptive as well.</p>
 <p>If there is some hard earned insight to this, it's that details are personal. Some trivial fact could be prized by a championship golfer. What might seem useless, the grain of the grass, the idiosyncratic schedules of the grounds crew, and the height of a creek can be conquered, dictated, and determine the fortunes of competition.</p>`
+      },
+      {
+        title: "Mt. Tam",
+        date: "2026-08-09T14:00:00",
+        body: `<p>I'm always thinking of Mt. Tam. Of rushing through the Marina to cross the bridge. Camino Alto from Sausalito. The vaulted coffee shop with bad sandwiches. Crashing on Fairfax-Bolinas trying to clip-in.</p>
+<p>Then summiting the golf course, catching glimpses of the conical hills and horses behind rusted fences. White-knuckling the handlebars zooming down to Alpine Dam. That exhausting climb around the neck of the lake before seven sisters on Ridgecrest.</p>
+<p>And coming up to East Peak in the clouds. The spit of Stinson Beach jumping out of towering Redwood groves. Rows of sloping waves fade into the cloud layer, the bay hiding behind a hill to my left.</p>
+<p>Then, laying off the pedals to the sound of the freehub and a headwind. The wheels captive to gravity and the dividing line.</p>`
       }
     ];
 
@@ -152,7 +150,6 @@
     const app = document.getElementById('nx-app');
     const list = document.getElementById('nx-list');
     const content = document.getElementById('nx-content');
-    document.getElementById('nx-count').textContent = NOTES.length + (NOTES.length === 1 ? ' note' : ' notes');
 
     let lastGroup = '';
     const rows = [];

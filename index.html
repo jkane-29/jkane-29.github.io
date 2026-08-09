@@ -442,9 +442,12 @@
     </div>
   </div>
 
-  <!-- Firebase realtime DB for shared letter positions -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <!-- Firebase realtime DB (tic-tac-toe only) — deferred so it never blocks
+       the fridge's first paint. Preconnect warms the TLS handshake early. -->
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://fridge-b5a68-default-rtdb.firebaseio.com" crossorigin>
+  <script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 
   <script>
     // Kill native browser drag-ghost on any image (capture phase, all elements)
@@ -465,16 +468,24 @@
     // These values are a public client identifier, not a secret — Firebase is
     // designed to expose them. Access is controlled by database security rules,
     // which restrict writes to the letters/tictactoe nodes.
-    firebase.initializeApp({
-      apiKey: "AIzaSyBNcJ4SXzzcTKH8edt1cqt9Rm30aN6CFuo",
-      authDomain: "fridge-b5a68.firebaseapp.com",
-      databaseURL: "https://fridge-b5a68-default-rtdb.firebaseio.com",
-      projectId: "fridge-b5a68",
-      storageBucket: "fridge-b5a68.firebasestorage.app",
-      messagingSenderId: "813069686196",
-      appId: "1:813069686196:web:54550c3883d20850f04ee1"
-    });
-    const db = firebase.database();
+    // Firebase powers the communal tic-tac-toe only. It loads via deferred
+    // <script> tags (see head), so the fridge renders without waiting on it;
+    // startFirebase() runs once the SDK is ready (before DOMContentLoaded).
+    let db = null;
+    function startFirebase() {
+      if (typeof firebase === 'undefined') return;   // blocked/offline: skip the game
+      firebase.initializeApp({
+        apiKey: "AIzaSyBNcJ4SXzzcTKH8edt1cqt9Rm30aN6CFuo",
+        authDomain: "fridge-b5a68.firebaseapp.com",
+        databaseURL: "https://fridge-b5a68-default-rtdb.firebaseio.com",
+        projectId: "fridge-b5a68",
+        storageBucket: "fridge-b5a68.firebasestorage.app",
+        messagingSenderId: "813069686196",
+        appId: "1:813069686196:web:54550c3883d20850f04ee1"
+      });
+      db = firebase.database();
+      if (!isEditMode) initTicTacToe();
+    }
 
     // ── Letter set (magnets) ───────────────────────────────────
     const PALETTE = ['#e63946','#f6d400','#3a86ff','#2dc653','#ff6b35','#9b5de5','#ff85a1','#ffffff'];
@@ -894,7 +905,12 @@
         wrap.style.borderRadius = '4px';
         wrap.style.position = 'absolute'; // containing block for the iframe (already abs on fridge)
         const frame = document.createElement('iframe');
-        frame.src = item.embed;
+        // Load the embed (a ~150KB React app) after first paint so it doesn't
+        // compete with the fridge's own images for the initial bandwidth.
+        const _embedSrc = item.embed;
+        const _loadEmbed = () => { if (!frame.src) frame.src = _embedSrc; };
+        if ('requestIdleCallback' in window) requestIdleCallback(_loadEmbed, { timeout: 1500 });
+        else setTimeout(_loadEmbed, 600);
         frame.loading = 'lazy';
         frame.setAttribute('scrolling', 'no');
         // position:absolute keeps the iframe's 480px layout height out of flow, so
@@ -1380,7 +1396,9 @@
       db.ref(PATH).on('value', snap => { state = snap.val(); render(); });
       db.ref(PATH).transaction(cur => cur || fresh()); // seed initial state once
     }
-    if (!isEditMode) initTicTacToe();
+    // Start Firebase + tic-tac-toe once the deferred SDK has executed.
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', startFirebase);
+    else startFirebase();
 
     // ── Mobile/touch: center the scroll on the fridge after it lays out ──
     if (window.matchMedia('(pointer: coarse), (max-width: 900px)').matches

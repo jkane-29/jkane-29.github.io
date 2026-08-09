@@ -22,7 +22,30 @@
       background: #faf9f7;
       border-right: 0.5px solid #d9d3c8;
       display: flex; flex-direction: column;
+      transition: width 0.2s ease;
     }
+    .nx-sidebar.collapsed { width: 0; border-right: none; overflow: hidden; }
+    .nx-sidebar-header {
+      padding: 12px 10px; display: flex; align-items: center;
+      justify-content: space-between; border-bottom: 0.5px solid #d9d3c8;
+    }
+    .nx-sidebar-title { font-size: 13px; font-weight: 600; color: #1c1c1e; }
+    .nx-hide-btn {
+      background: none; border: none; cursor: pointer; padding: 4px;
+      font-size: 16px; color: #8a8478; display: flex; align-items: center;
+      justify-content: center; min-width: 28px; min-height: 28px;
+      transition: color 0.2s; border-radius: 4px;
+    }
+    .nx-hide-btn:hover { color: #1c1c1e; background: #f0ede6; }
+    .nx-show-btn {
+      position: fixed; left: 14px; top: 16px;
+      background: none; border: none; cursor: pointer; padding: 4px;
+      font-size: 16px; color: #8a8478; z-index: 100;
+      min-width: 28px; min-height: 28px; border-radius: 4px;
+      transition: color 0.2s; opacity: 0; pointer-events: none;
+    }
+    .nx-sidebar.collapsed ~ .nx-pane .nx-show-btn { opacity: 1; pointer-events: auto; }
+    .nx-show-btn:hover { color: #1c1c1e; background: #f0ede6; }
     .nx-list { flex: 1; overflow: auto; padding: 2px 8px 14px; }
     .nx-group { font-size: 12px; font-weight: 600; color: #8a8478; padding: 10px 6px 4px; }
     .nx-row { padding: 9px 10px; border-radius: 8px; cursor: pointer; }
@@ -68,10 +91,15 @@
 </head>
 <body>
   <div class="nx-app" id="nx-app">
-    <div class="nx-sidebar">
+    <div class="nx-sidebar" id="nx-sidebar">
+      <div class="nx-sidebar-header">
+        <div class="nx-sidebar-title">Writing</div>
+        <button class="nx-hide-btn" id="nx-hide-btn" title="Hide sidebar">‹</button>
+      </div>
       <div class="nx-list" id="nx-list"></div>
     </div>
     <div class="nx-pane" id="nx-pane">
+      <button class="nx-show-btn" id="nx-show-btn" title="Show sidebar">›</button>
       <button class="nx-back" id="nx-back">‹ Writing</button>
       <div id="nx-content"></div>
     </div>
@@ -185,6 +213,20 @@
     }
 
     document.getElementById('nx-back').addEventListener('click', () => app.classList.remove('reading'));
+
+    const sidebar = document.getElementById('nx-sidebar');
+    const hideBtn = document.getElementById('nx-hide-btn');
+    const showBtn = document.getElementById('nx-show-btn');
+    hideBtn.addEventListener('click', () => {
+      sidebar.classList.add('collapsed');
+      showBtn.style.opacity = '1';
+      showBtn.style.pointerEvents = 'auto';
+    });
+    showBtn.addEventListener('click', () => {
+      sidebar.classList.remove('collapsed');
+      showBtn.style.opacity = '0';
+      showBtn.style.pointerEvents = 'none';
+    });
 
     if (NOTES.length) select(0);               // desktop: first note open by default
     app.classList.remove('reading');           // mobile still starts on the list

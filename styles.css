@@ -1,0 +1,395 @@
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* ── Mobile (default) ── */
+body {
+  background: #fff;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 0 60px;
+}
+.fridge-viewport { width: 100%; display: flex; justify-content: center; }
+.fridge { position: relative; width: min(700px, 92vw); user-select: none; }
+
+/* Mobile / touch: enter zoomed-in so just the center of the fridge fills the screen */
+@media (max-width: 900px), (pointer: coarse) {
+  body { align-items: flex-start; }
+  .fridge-viewport { width: max-content; justify-content: flex-start; }
+  .fridge { width: 130vw; }
+}
+
+/* ── Desktop: zoom/pan canvas ── */
+@media (hover: hover) and (pointer: fine) {
+  body { overflow: hidden; height: 100vh; width: 100vw; display: block; padding: 0; }
+  .fridge-viewport {
+    position: fixed; inset: 0; overflow: hidden;
+    cursor: grab; display: block; width: auto; justify-content: unset;
+  }
+  .fridge-viewport.panning { cursor: grabbing; }
+  .fridge { position: absolute; top: 0; left: 0; width: 900px; transform-origin: 0 0; }
+}
+
+.fridge > img.fridge-bg { width: 100%; height: auto; display: block; pointer-events: none; }
+
+/* Block native browser drag-ghost on every image */
+* { -webkit-tap-highlight-color: transparent; }
+body {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+/* Re-enable selection inside actual text inputs / editable content */
+input, textarea, [contenteditable="true"] {
+  -webkit-user-select: text;
+  user-select: text;
+}
+img {
+  -webkit-user-drag: none;
+  user-drag: none;
+  -webkit-touch-callout: none;
+}
+
+/* ── Decorative items ── */
+.item { position: absolute; transform-origin: center center; user-select: none; }
+.item img { width: 100%; height: auto; display: block; pointer-events: none; }
+
+.item-hover-label {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #111;
+  color: #fff;
+  font-family: 'Microgramma D Extended Bold', 'Microgramma', 'Eurostile Extended', sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 4px 8px;
+  border-radius: 2px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+body:not(.edit-mode) .item:hover .item-hover-label { display: block; }
+
+/* ── Fridge OS Window ── */
+#os-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 900;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+#os-overlay.open { opacity: 1; pointer-events: all; }
+
+#os-window {
+  width: min(84vw, 960px); height: 76vh;
+  background: #1c1c1e;
+  border-radius: 12px;
+  border: none;
+  box-shadow: 0 50px 120px rgba(0,0,0,0.8);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  transform: scale(0.97);
+  transition: transform 0.2s cubic-bezier(.34,1.2,.64,1);
+}
+#os-overlay.open #os-window { transform: scale(1); }
+
+#os-titlebar {
+  height: 38px; min-height: 38px;
+  background: #2a2a2c;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  display: flex; align-items: center;
+  padding: 0 14px;
+  position: relative;
+  user-select: none;
+}
+
+/* Window edge resize handles — transparent zones */
+#os-window .resize-handle {
+  position: absolute; z-index: 10;
+  background: transparent; border: none; border-radius: 0;
+  bottom: auto; right: auto; width: auto; height: auto;
+}
+#os-window .resize-e  { right: 0;  top: 8px; bottom: 8px; width: 6px; cursor: ew-resize; }
+#os-window .resize-s  { bottom: 0; left: 8px; right: 8px; height: 6px; cursor: ns-resize; }
+#os-window .resize-w  { left: 0;   top: 8px; bottom: 8px; width: 6px; cursor: ew-resize; }
+#os-window .resize-se { right: 0;  bottom: 0; width: 14px; height: 14px; cursor: nwse-resize; }
+#os-window .resize-sw { left: 0;   bottom: 0; width: 14px; height: 14px; cursor: nesw-resize; }
+
+.traffic-lights { display: flex; align-items: center; gap: 8px; z-index: 1; }
+.tl-btn {
+  width: 14px; height: 14px; border-radius: 50%; border: none; cursor: pointer;
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+  transition: filter 0.1s;
+  flex-shrink: 0;
+}
+/* Larger invisible hit area so hover/click is easy to land */
+.tl-btn::before {
+  content: ''; position: absolute;
+  top: -9px; bottom: -9px; left: -5px; right: -5px;
+}
+.tl-btn:hover { filter: brightness(1.15); }
+@media (pointer: coarse) {
+  /* Full-screen OS window, no titlebar on touch */
+  #os-titlebar { display: none; }
+  #os-window {
+    width: 100vw !important;
+    height: 100vh !important;
+    height: 100dvh !important; /* dynamic vh: accounts for iOS toolbar */
+    max-width: 100vw !important;
+    border-radius: 0;
+    border: none;
+  }
+  #os-overlay {
+    padding: 0;
+    align-items: flex-start;
+  }
+}
+.tl-close { background: #ff5f57; }
+.tl-min   { background: #febc2e; }
+.tl-max   { background: #28c840; }
+.tl-btn::after {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  font-family: -apple-system, BlinkMacSystemFont, system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-size: 10px; font-weight: 700; line-height: 1;
+  color: rgba(0,0,0,0.82);
+}
+#os-titlebar:hover .tl-btn::after { content: attr(data-glyph); }
+
+#os-window-title {
+  position: absolute; left: 50%; transform: translateX(-50%);
+  font-family: -apple-system, BlinkMacSystemFont, system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-size: 14.625px; font-weight: 500; color: #8a8a8e;
+  letter-spacing: 0.01em; pointer-events: none;
+}
+
+/* Content */
+#os-content {
+  flex: 1; overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  background: #fff; position: relative;
+}
+#os-content-inner { min-height: 100%; }
+
+/* Writing / Apple Notes — warm paper background */
+#os-content:has(.note-body-wrap) { background: #ffffff; }
+/* Notes two-pane app — fill the window; the panes scroll independently */
+#os-content:has(.nx-app) { overflow: hidden; }
+#os-content-inner:has(.nx-app) { height: 100%; }
+
+/* Decisions terminal — fill window, dark background, hide redundant header */
+#os-content:has(.terminal-container),
+#os-content-inner:has(.terminal-container),
+#os-content-inner:has(.terminal-container) > div {
+  display: flex; flex-direction: column;
+}
+#os-content:has(.terminal-container) { background: #0c0c0c; overflow: hidden; }
+#os-content-inner:has(.terminal-container),
+#os-content-inner:has(.terminal-container) > div { flex: 1; min-height: 0; }
+#os-content-inner .terminal-container { flex: 1; min-height: 0 !important; max-height: none !important; }
+#os-content-inner .terminal-header { display: none; }
+
+/* Postcard — fills window, no scroll. Inner page uses its own flex layout. */
+#os-content:has(.postcard) { overflow: hidden; }
+#os-content-inner:has(.postcard) {
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Woodshop slideshow */
+#os-content:has(#ws-slide) { overflow: hidden; background: #000; }
+#os-content-inner:has(#ws-slide) { height: 100%; overflow: hidden; }
+#ws-slide {
+  position: relative; width: 100%; height: 100%;
+  background: #000;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+#ws-img { max-width: 100%; max-height: 100%; object-fit: contain; display: block; }
+#ws-counter {
+  position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%);
+  font: 12px -apple-system, sans-serif;
+  color: rgba(255,255,255,0.5);
+  letter-spacing: 0.1em;
+  pointer-events: none;
+}
+.ws-nav {
+  position: absolute; bottom: 12px;
+  background: none; border: none; cursor: pointer;
+  font-size: 22px; line-height: 1; padding: 4px 8px;
+  color: rgba(255,255,255,0.7);
+}
+.ws-nav.prev { left: 16px; }
+.ws-nav.next { right: 16px; }
+/* Larger tap targets on touch (Apple HIG ≥44px) */
+@media (pointer: coarse) {
+  .ws-nav {
+    font-size: 28px;
+    min-width: 44px; min-height: 44px;
+    display: flex; align-items: center; justify-content: center;
+  }
+}
+
+/* Generic injected-page overrides */
+#os-content-inner .container { grid-template-columns: 1fr !important; max-width: 100%; gap: 0 !important; }
+
+/* Tic-tac-toe — communal live game. Base font-size is set in JS from the
+   board's pixel width; everything sizes in em so it scales with the board. */
+#ttt {
+  position: absolute; z-index: 12; box-sizing: border-box;
+  background: transparent; padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1; user-select: none; -webkit-user-select: none;
+}
+#ttt-status {
+  text-align: center; font-size: 0.9em; font-weight: 600;
+  color: #f0f0f0; line-height: 1.1; margin-bottom: 0.4em; min-height: 1em;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.55);
+  opacity: 0; transition: opacity 0.15s;
+}
+@media (hover: hover) and (pointer: fine) {
+  #ttt:hover #ttt-status { opacity: 1; }
+}
+@media (pointer: coarse) {
+  #ttt-status { opacity: 1; font-size: 8px; }
+}
+.ttt-board-wrap { position: relative; width: 100%; aspect-ratio: 1/1; }
+#ttt-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 0;
+  background: transparent;
+  position: absolute; inset: 0;
+}
+#ttt.game-over #ttt-grid { display: none; }
+#ttt.game-over .ttt-line { display: none; }
+#ttt.game-over #ttt-status { opacity: 0; }
+.ttt-cell {
+  background: transparent; border: 0;
+  display: flex; align-items: center; justify-content: center;
+  position: relative; overflow: hidden;
+  font-size: 1.7em; font-weight: 800; line-height: 1; cursor: pointer;
+  transition: background 0.1s;
+}
+.ttt-line {
+  position: absolute; background: rgba(255,255,255,0.92); z-index: 2; pointer-events: none;
+}
+.ttt-line.v { width: 0.22em; top: 0; bottom: 0; }
+.ttt-line.h { height: 0.22em; left: 0; right: 0; }
+.ttt-line.v1 { left: 33.333%; transform: translateX(-50%); }
+.ttt-line.v2 { left: 66.666%; transform: translateX(-50%); }
+.ttt-line.h1 { top: 33.333%; transform: translateY(-50%); }
+.ttt-line.h2 { top: 66.666%; transform: translateY(-50%); }
+#ttt:not(.locked) .ttt-cell.empty:hover { background: rgba(255,255,255,0.08); }
+#ttt.locked .ttt-cell { cursor: default; }
+.ttt-px {
+  display: grid; grid-template-columns: repeat(8, 1fr);
+  position: absolute; inset: 0;
+}
+.ttt-bit { opacity: 0; transition: opacity 0.13s ease; }
+.ttt-px.reveal .ttt-bit { opacity: 1; }
+.ttt-cell.win { box-shadow: 0 0 0 0.05em #ffd166, 0 0 0.35em rgba(255,209,102,0.6); }
+/* LED scoreboard overlay — shown after each game ends */
+#ttt-scoreboard {
+  position: absolute; inset: 0; display: none;
+  flex-direction: column; align-items: center; justify-content: center;
+  background: #040101; gap: 0.2em; overflow: hidden;
+}
+#ttt-scoreboard::before {
+  content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background: repeating-linear-gradient(0deg, transparent 0px, transparent 3px, rgba(0,0,0,0.22) 3px, rgba(0,0,0,0.22) 4px);
+}
+#ttt-scoreboard::after {
+  content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  box-shadow: inset 0 0 40% rgba(160,0,0,0.18);
+}
+#ttt.game-over #ttt-scoreboard { display: flex; }
+.sb-headline {
+  font-family: 'Courier New', monospace; font-size: 0.7em; font-weight: 700;
+  letter-spacing: 0.22em; color: #e0e0e0;
+  text-shadow: 0 0 4px rgba(255,255,255,0.6);
+  position: relative; z-index: 2;
+}
+.sb-scores-row {
+  display: flex; align-items: center; gap: 0.2em;
+  position: relative; z-index: 2;
+}
+.sb-digit {
+  font-family: 'Courier New', monospace; font-size: 2.8em; font-weight: 700;
+  line-height: 1; min-width: 1.5ch; text-align: center;
+}
+.sb-digit.dx {
+  color: #d62828;
+  text-shadow: 0 0 5px #d62828, 0 0 16px rgba(214,40,40,0.7), 0 0 32px rgba(214,40,40,0.35);
+}
+.sb-digit.do {
+  color: #1f6feb;
+  text-shadow: 0 0 5px #1f6feb, 0 0 16px rgba(31,111,235,0.7), 0 0 32px rgba(31,111,235,0.35);
+}
+.sb-sep-led {
+  width: 0.12em; align-self: stretch;
+  background: rgba(255,255,255,0.55);
+  margin: 0.1em 0.2em;
+  position: relative; z-index: 2;
+}
+.sb-label {
+  font-family: 'Courier New', monospace; font-size: 0.9em; font-weight: 700;
+  letter-spacing: 0.05em; line-height: 1; align-self: flex-end; padding-bottom: 0.1em;
+  position: relative; z-index: 2;
+}
+.sb-label.stx { color: rgba(214,40,40,0.7); text-shadow: 0 0 4px rgba(214,40,40,0.5); }
+.sb-label.sto { color: rgba(31,111,235,0.7); text-shadow: 0 0 4px rgba(31,111,235,0.5); }
+
+/* overengineeRING webring — bumper-sticker style: rounded rect, double border, drop shadow */
+#ring-wrap {
+  position: absolute;
+  top: 79%;
+  left: 26.9%;
+  width: 46.2%;
+  height: 4.8%;
+  z-index: 4;
+  background: #ffffff;
+  border: 1.5px solid #1a1a1a;
+  border-radius: 6px;
+  outline: 1.5px solid #1a1a1a;
+  outline-offset: 3px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.25);
+  box-sizing: border-box;
+}
+#ring-embed {
+  /* Render at 1.5× the wrapper dimensions then scale back down so the
+     iframe sees enough horizontal room to lay out on a single row. */
+  width: 150%;
+  height: 150%;
+  transform: scale(0.6667);
+  transform-origin: top left;
+  border: none;
+  background: transparent;
+}
+/* Mobile / touch: webring in the lower door — narrower, no border/box,
+   and the embed rendered at native scale so the text is larger. */
+@media (max-width: 900px), (pointer: coarse) {
+  #ring-wrap {
+    top: 77%; left: 24%; width: 52%; height: 9%;
+    background: transparent;
+    border: none;
+    outline: none;
+    box-shadow: none;
+    border-radius: 0;
+  }
+  #ring-embed {
+    /* Render at 1.4× the box then scale back: smaller text + more layout
+       room so the embed doesn't squish at this width. */
+    width: 140%; height: 140%;
+    transform: scale(0.7143);
+    transform-origin: top left;
+    /* Embed text is black (for the desktop white box); invert to white
+       so it reads on the dark fridge now that the box is gone. */
+    filter: invert(1);
+  }
+}

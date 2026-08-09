@@ -189,6 +189,9 @@
 
     /* Writing / Apple Notes — warm paper background */
     #os-content:has(.note-body-wrap) { background: #ffffff; }
+    /* Notes two-pane app — fill the window; the panes scroll independently */
+    #os-content:has(.nx-app) { overflow: hidden; }
+    #os-content-inner:has(.nx-app) { height: 100%; }
 
     /* Decisions terminal — fill window, dark background, hide redundant header */
     #os-content:has(.terminal-container),

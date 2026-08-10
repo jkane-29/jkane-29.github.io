@@ -181,6 +181,12 @@ body:not(.edit-mode) .item:hover .item-hover-label { display: block; }
 /* Notes two-pane app — fill the window; the panes scroll independently */
 #os-content:has(.nx-app) { overflow: hidden; }
 #os-content-inner:has(.nx-app) { height: 100%; }
+/* On touch the notes app is a single scrolling column (no independent panes),
+   so let the window content scroll normally instead of clipping to its height. */
+@media (pointer: coarse) {
+  #os-content:has(.nx-app) { overflow: auto; -webkit-overflow-scrolling: touch; }
+  #os-content-inner:has(.nx-app) { height: auto; min-height: 100%; }
+}
 
 /* Decisions terminal — fill window, dark background, hide redundant header */
 #os-content:has(.terminal-container),

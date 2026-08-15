@@ -114,11 +114,12 @@
 
   <script>
   (function () {
-    // date: ISO datetime — PLACEHOLDERS, replace with the real dates.
-    const NOTES = [
+    // date: ISO datetime. Set `hidden: true` on a note to keep it unpublished.
+    const ALL_NOTES = [
       {
         title: "Etudes",
         date: "2026-03-29T10:00:00",
+        hidden: true,   // set to false (or remove) to publish
         body: `<p>Etudes are an evolving study in experience. Definitionally, a rote mode of practice for classical pianists. They ask the aspiring pianist how far their capabilities will go mechanically, in assigning melodies to be produced to shape rather than sound.</p>
 <p>This industrial and self-serious music is rather bleak from this perspective. The respite is no lack of spartan practice, but to write these lessons for yourself, directly aimed at your limitations. To build your body of work on the back of weaknesses for particular scales, repetitions, and pacing. This doesn't only force improvement, but a degree of personal style, who else could share your distinctive mistakes?</p>
 <p>This as Josef Lhevinne (a 19th century pianist) said was the ultimate goal of practice, not to become a machine, but to free yourself from mechanics. This freedom inevitably takes time, though with experience some enduringly difficult piece can come shockingly easy. You may need revisions or new routines but you will still have a work that triumphs your personal experience and style.</p>
@@ -187,6 +188,7 @@
       return (t.textContent || '').replace(/\s+/g, ' ').trim();
     };
 
+    const NOTES = ALL_NOTES.filter(n => !n.hidden);
     NOTES.forEach(n => n._d = new Date(n.date));
     NOTES.sort((a, b) => b._d - a._d);
 

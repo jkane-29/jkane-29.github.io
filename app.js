@@ -106,11 +106,27 @@ function makeDraggable(el, onDrop, isLetter = false) {
 const _injectedFonts = new Set();
 let _windowCleanup = null;
 
+// A full-screen OS window on touch should stay pinned to the screen. Pinch-zoom
+// would shrink that "full screen" window and reveal the fridge behind it, so we
+// lock zoom while a window is open (and release it after, leaving the fridge
+// itself zoomable). user-scalable=no is ignored by iOS Safari, so we also block
+// its pinch gesture events directly.
+const _viewportMeta  = document.querySelector('meta[name="viewport"]');
+const _VIEWPORT_FREE   = 'width=device-width, initial-scale=1.0';
+const _VIEWPORT_LOCKED = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+const _blockGesture = e => e.preventDefault();
+function lockZoom(on) {
+  if (_viewportMeta) _viewportMeta.setAttribute('content', on ? _VIEWPORT_LOCKED : _VIEWPORT_FREE);
+  const method = on ? 'addEventListener' : 'removeEventListener';
+  document[method]('gesturestart', _blockGesture, { passive: false });
+  document[method]('gesturechange', _blockGesture, { passive: false });
+}
+
 async function openWindow(href, title) {
   if (_windowCleanup) { _windowCleanup(); _windowCleanup = null; }
   if (href.startsWith('http')) { window.open(href, '_blank', 'noopener,noreferrer'); return; }
   // On touch: push history state so back button closes the overlay
-  if (_isTouch) history.pushState({ fridgeWindow: true }, '', '');
+  if (_isTouch) { history.pushState({ fridgeWindow: true }, '', ''); lockZoom(true); }
 
   const overlay   = $('os-overlay');
   const contentEl = $('os-content-inner');
@@ -377,6 +393,7 @@ function startDecisionsGame() {
 
 function closeWindow() {
   if (_windowCleanup) { _windowCleanup(); _windowCleanup = null; }
+  lockZoom(false);
   $('os-overlay').classList.remove('open');
   document.body.style.overflow = ''; // restore background scroll
   const win = $('os-window');

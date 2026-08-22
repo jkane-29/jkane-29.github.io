@@ -351,7 +351,8 @@ body:not(.edit-mode) .item:hover .item-hover-label { display: block; }
 .sb-label.stx { color: rgba(214,40,40,0.7); text-shadow: 0 0 4px rgba(214,40,40,0.5); }
 .sb-label.sto { color: rgba(31,111,235,0.7); text-shadow: 0 0 4px rgba(31,111,235,0.5); }
 
-/* overengineeRING webring — bumper-sticker style: rounded rect, double border, drop shadow */
+/* overengineeRING webring — no box; the embed's text inverts to white so it
+   reads directly on the dark fridge door (same treatment as mobile). */
 #ring-wrap {
   position: absolute;
   top: 79%;
@@ -359,12 +360,7 @@ body:not(.edit-mode) .item:hover .item-hover-label { display: block; }
   width: 46.2%;
   height: 4.8%;
   z-index: 4;
-  background: #ffffff;
-  border: 1.5px solid #1a1a1a;
-  border-radius: 6px;
-  outline: 1.5px solid #1a1a1a;
-  outline-offset: 3px;
-  box-shadow: 0 3px 8px rgba(0,0,0,0.25);
+  background: transparent;
   box-sizing: border-box;
 }
 #ring-embed {
@@ -376,26 +372,17 @@ body:not(.edit-mode) .item:hover .item-hover-label { display: block; }
   transform-origin: top left;
   border: none;
   background: transparent;
+  /* Embed text is black (authored for a white box); invert to white. */
+  filter: invert(1);
 }
-/* Mobile / touch: webring in the lower door — narrower, no border/box,
-   and the embed rendered at native scale so the text is larger. */
+/* Mobile / touch: webring sits lower and wider in the door. */
 @media (max-width: 900px), (pointer: coarse) {
-  #ring-wrap {
-    top: 77%; left: 24%; width: 52%; height: 9%;
-    background: transparent;
-    border: none;
-    outline: none;
-    box-shadow: none;
-    border-radius: 0;
-  }
+  #ring-wrap { top: 77%; left: 24%; width: 52%; height: 9%; }
   #ring-embed {
     /* Render at 1.4× the box then scale back: smaller text + more layout
        room so the embed doesn't squish at this width. */
     width: 140%; height: 140%;
     transform: scale(0.7143);
     transform-origin: top left;
-    /* Embed text is black (for the desktop white box); invert to white
-       so it reads on the dark fridge now that the box is gone. */
-    filter: invert(1);
   }
 }

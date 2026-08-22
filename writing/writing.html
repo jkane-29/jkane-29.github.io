@@ -72,8 +72,10 @@
 
     /* Mobile: single column, drill down into a note with a back button */
     @media (max-width: 600px), (pointer: coarse) {
+      /* Warm off-white across the whole page (matches the list background) */
+      body { background: #faf9f7; }
       .nx-app { display: block; height: auto; }
-      .nx-sidebar { width: auto; border-right: none; }
+      .nx-sidebar { width: auto; border-right: none; background: #faf9f7; }
       /* Mobile drills down instead of collapsing a sidebar */
       .nx-sidebar-header, .nx-hide-btn, .nx-show-btn { display: none; }
       .nx-list { overflow: visible; }

@@ -538,6 +538,22 @@
     msg.addEventListener('input', autoGrow);
     requestAnimationFrame(autoGrow);
 
+    // Keep the Send button reachable above the on-screen keyboard: pad the form
+    // by however much the keyboard covers so it can scroll clear. The padding
+    // lives on the postcard's own wrapper (removed when the window closes) so it
+    // never leaks into the fridge shell.
+    const cardWrap = document.querySelector('.card-wrapper');
+    const vv = window.visualViewport;
+    if (vv && cardWrap) {
+      const syncKeyboardInset = () => {
+        if (!mobileMQ.matches || !cardWrap.isConnected) { cardWrap.style.paddingBottom = ''; return; }
+        const covered = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+        cardWrap.style.paddingBottom = covered ? covered + 'px' : '';
+      };
+      vv.addEventListener('resize', syncKeyboardInset);
+      vv.addEventListener('scroll', syncKeyboardInset);
+    }
+
     let selectedStamp = null;
 
     function openPicker()  { backdrop.classList.add('open'); }

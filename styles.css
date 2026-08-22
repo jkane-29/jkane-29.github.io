@@ -144,7 +144,15 @@ body:not(.edit-mode) .item:hover .item-hover-label { display: block; }
     max-width: 100vw !important;
     border-radius: 0;
     border: none;
+    /* The window fills the screen with no chrome, so its own background is what
+       shows in the status-bar strip at the very top. Default to white and match
+       it to each page below so the page colour reaches the top edge. */
+    background: #ffffff;
   }
+  #os-window:has(.nx-app) { background: #faf9f7; }          /* Writing notes — warm off-white */
+  #os-window:has(.terminal-container) { background: #0c0c0c; } /* Decisions terminal — dark */
+  /* Match the scroll container too, so an overscroll bounce doesn't flash white */
+  #os-content:has(.nx-app) { background: #faf9f7; }
   #os-overlay {
     padding: 0;
     align-items: flex-start;
@@ -207,6 +215,12 @@ body:not(.edit-mode) .item:hover .item-hover-label { display: block; }
   overflow: hidden;
   display: flex;
   flex-direction: column;
+}
+/* On touch the postcard becomes a scrolling Apple-note form, so let it scroll
+   (the desktop card is a fixed, non-scrolling image). */
+@media (pointer: coarse) {
+  #os-content:has(.postcard) { overflow: auto; -webkit-overflow-scrolling: touch; }
+  #os-content-inner:has(.postcard) { height: auto; min-height: 100%; overflow: visible; }
 }
 
 /* Woodshop slideshow */
@@ -364,25 +378,18 @@ body:not(.edit-mode) .item:hover .item-hover-label { display: block; }
   box-sizing: border-box;
 }
 #ring-embed {
-  /* Render at 1.5× the wrapper dimensions then scale back down so the
-     iframe sees enough horizontal room to lay out on a single row. */
-  width: 150%;
-  height: 150%;
-  transform: scale(0.6667);
+  /* Render at 1.4× the wrapper then scale back down: enough horizontal room to
+     lay out on a single row, while keeping the text at the larger mobile size. */
+  width: 140%;
+  height: 140%;
+  transform: scale(0.7143);
   transform-origin: top left;
   border: none;
   background: transparent;
   /* Embed text is black (authored for a white box); invert to white. */
   filter: invert(1);
 }
-/* Mobile / touch: webring sits lower and wider in the door. */
+/* Mobile / touch: webring sits lower and wider in the door (same embed scale). */
 @media (max-width: 900px), (pointer: coarse) {
   #ring-wrap { top: 77%; left: 24%; width: 52%; height: 9%; }
-  #ring-embed {
-    /* Render at 1.4× the box then scale back: smaller text + more layout
-       room so the embed doesn't squish at this width. */
-    width: 140%; height: 140%;
-    transform: scale(0.7143);
-    transform-origin: top left;
-  }
 }

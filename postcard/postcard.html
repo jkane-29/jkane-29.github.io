@@ -182,11 +182,12 @@
       top: -0.3em;
     }
 
-    /* Mobile-only heading; hidden on desktop where the OS window has a title bar */
+    /* Mobile-only heading + date; hidden on desktop where the postcard shows */
     .mobile-form-title { display: none; }
+    .note-date { display: none; }
 
-    /* ── Mobile: drop the scaled postcard image + overlaid inputs, which never
-       sized reliably. Render the same fields as a plain stacked web form. ── */
+    /* ── Mobile: drop the postcard and render the compose form as an Apple Note —
+       white paper, system font, centered date, bold title, borderless body. ── */
     @media (max-width: 600px), (pointer: coarse) {
       body {
         overflow-y: auto;
@@ -194,8 +195,11 @@
         min-height: 100vh;
         min-height: 100dvh; /* dynamic vh: accounts for iOS toolbar */
         justify-content: flex-start;
-        background: #fbf8f2;
-        padding: 18px 16px 36px;
+        background: #ffffff;
+        color: #1c1c1e;
+        font-family: -apple-system, BlinkMacSystemFont, system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        padding: 16px 20px 40px;
       }
 
       .card-wrapper {
@@ -203,18 +207,27 @@
         width: 100%;
         display: flex;
         flex-direction: column;
-        gap: 14px;
+        gap: 0;
       }
 
+      .note-date {
+        display: block;
+        text-align: center;
+        font-size: 11px;
+        color: #b0a99c;
+        margin-bottom: 14px;
+      }
       .mobile-form-title {
         display: block;
-        font-family: 'Special Elite', 'Courier New', monospace;
-        font-size: 21px;
-        letter-spacing: 0.03em;
-        color: #2e2415;
+        font-family: inherit;
+        font-size: 22px;
+        font-weight: 700;
+        letter-spacing: 0;
+        color: #1c1c1e;
+        margin-bottom: 4px;
       }
 
-      /* No postcard image on mobile — just stack the fields */
+      /* No postcard image on mobile — just stack the note */
       .postcard-img { display: none; }
       .postcard {
         position: static;
@@ -223,48 +236,7 @@
         flex: none;
         display: flex;
         flex-direction: column;
-        gap: 14px;
-      }
-
-      /* Shared field styling */
-      .message-input,
-      .return-address-input,
-      .email-input-optional,
-      .address-line-extra {
-        position: static;
-        width: 100%;
-        box-sizing: border-box;
-        font-family: 'Special Elite', 'Courier New', monospace;
-        font-weight: 400;
-        /* 16px keeps iOS Safari from auto-zooming on focus */
-        font-size: 16px;
-        line-height: 1.4;
-        letter-spacing: 0;
-        color: #2b2b2b;
-        background: #ffffff;
-        border: 1.5px solid #d3c9b6;
-        border-radius: 8px;
-        padding: 12px;
-        text-align: left;
-      }
-      .message-input::placeholder,
-      .return-address-input::placeholder,
-      .email-input-optional::placeholder,
-      .address-line-extra::placeholder {
-        color: #a79f8c;
-        font-style: normal;
-      }
-      .message-input:focus,
-      .return-address-input:focus,
-      .email-input-optional:focus,
-      .address-line-extra:focus { border-color: #b8893a; }
-
-      /* Message goes first, then the stamp control (see order below) */
-      .message-input {
-        order: -1;
-        height: auto;
-        min-height: 150px;
-        resize: vertical;
+        gap: 0;
       }
 
       /* No stamp on mobile */
@@ -272,7 +244,30 @@
       .stamp-overlay,
       .stamp-overlay.visible { display: none; }
 
-      /* Action bar → normal stacked fields */
+      /* Message = the note body: borderless text on white */
+      .message-input {
+        position: static;
+        width: 100%;
+        box-sizing: border-box;
+        font-family: inherit;
+        font-weight: 400;
+        font-size: 16px;         /* 16px keeps iOS Safari from auto-zooming on focus */
+        line-height: 1.55;
+        letter-spacing: 0;
+        color: #1c1c1e;
+        background: transparent;
+        border: none;
+        border-radius: 0;
+        padding: 4px 0 0;
+        text-align: left;
+        height: auto;
+        min-height: 170px;
+        resize: none;
+        overflow: hidden;
+      }
+      .message-input::placeholder { color: #c2bcae; font-style: normal; }
+
+      /* Metadata rows below a hairline — clean, borderless with a light rule */
       .action-bar {
         position: static;
         transform: none;
@@ -280,34 +275,64 @@
         display: flex;
         flex-direction: column;
         align-items: stretch;
-        gap: 12px;
+        gap: 0;
+        margin-top: 16px;
+        padding-top: 4px;
+        border-top: 0.5px solid #e5e0d5;
       }
-      .action-row { display: flex; flex-direction: column; gap: 12px; }
-      /* Show all optional fields on mobile now that there's room */
+      .action-row { display: flex; flex-direction: column; gap: 0; }
       .email-input-optional { display: block; }
 
+      .return-address-input,
+      .email-input-optional,
+      .address-line-extra {
+        position: static;
+        width: 100%;
+        box-sizing: border-box;
+        font-family: inherit;
+        font-weight: 400;
+        font-size: 16px;
+        line-height: 1.4;
+        letter-spacing: 0;
+        color: #1c1c1e;
+        background: transparent;
+        border: none;
+        border-bottom: 0.5px solid #ece7dc;
+        border-radius: 0;
+        padding: 13px 2px;
+        text-align: left;
+      }
+      .address-line-extra { border-bottom: none; }
+      .return-address-input::placeholder,
+      .email-input-optional::placeholder,
+      .address-line-extra::placeholder { color: #a79f8c; font-style: normal; }
+      .return-address-input:focus,
+      .email-input-optional:focus,
+      .address-line-extra:focus { border-bottom-color: #d1a000; }
+
+      /* iOS-style filled send button */
       .send-btn {
         width: 100%;
-        margin-top: 2px;
+        margin-top: 22px;
         box-sizing: border-box;
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 8px;
-        font-family: 'Special Elite', 'Courier New', monospace;
-        font-weight: 400;
-        font-size: 17px;
-        letter-spacing: 0.02em;
+        font-family: inherit;
+        font-weight: 600;
+        font-size: 16px;
+        letter-spacing: 0;
         text-transform: none;
         color: #ffffff;
-        background: #1a1a1a;
-        border: 1.5px solid #1a1a1a;
-        border-radius: 8px;
-        padding: 13px;
+        background: #1c1c1e;
+        border: none;
+        border-radius: 10px;
+        padding: 14px;
         min-height: 50px;
         white-space: nowrap;
       }
-      .send-btn:hover { background: #1a1a1a; color: #ffffff; }
+      .send-btn:hover { background: #1c1c1e; color: #ffffff; }
       .send-btn .send-icon { position: static; top: 0; font-size: 1.2em; line-height: 1; }
     }
 
@@ -430,6 +455,7 @@
 <body>
 
   <div class="card-wrapper">
+    <div class="note-date" id="note-date"></div>
     <div class="mobile-form-title">Send a note</div>
     <div class="postcard" id="postcard">
       <img class="postcard-img" src="updated-postcard.webp" alt="Postcard back">
@@ -491,6 +517,26 @@
 
     // Clear any stale edit-mode localStorage values from earlier testing
     try { localStorage.removeItem('stampBoxPos'); } catch (e) {}
+
+    // Mobile Apple-note date stamp (hidden on desktop)
+    const noteDate = document.getElementById('note-date');
+    if (noteDate) {
+      const d = new Date();
+      noteDate.textContent =
+        d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) +
+        ' at ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    }
+
+    // Mobile only: grow the note body with its content, like Apple Notes.
+    // (Desktop keeps its fixed absolutely-positioned textarea.)
+    const mobileMQ = window.matchMedia('(max-width: 600px), (pointer: coarse)');
+    function autoGrow() {
+      if (!mobileMQ.matches) return;
+      msg.style.height = 'auto';
+      msg.style.height = msg.scrollHeight + 'px';
+    }
+    msg.addEventListener('input', autoGrow);
+    requestAnimationFrame(autoGrow);
 
     let selectedStamp = null;
 

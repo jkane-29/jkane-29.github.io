@@ -527,13 +527,20 @@ function createItemEl(item) {
     wrap.style.borderRadius = '4px';
     wrap.style.position = 'absolute'; // containing block for the iframe (already abs on fridge)
     const frame = document.createElement('iframe');
-    // Load the embed (a ~150KB React app) after first paint so it doesn't
-    // compete with the fridge's own images for the initial bandwidth.
     const _embedSrc = item.embed;
     const _loadEmbed = () => { if (!frame.src) frame.src = _embedSrc; };
-    if ('requestIdleCallback' in window) requestIdleCallback(_loadEmbed, { timeout: 1500 });
-    else setTimeout(_loadEmbed, 600);
-    frame.loading = 'lazy';
+    if (fluid) {
+      // The map is a prominent magnet: fetch it right away, in parallel with
+      // the fridge's own images, so it doesn't pop in seconds later.
+      frame.loading = 'eager';
+      _loadEmbed();
+    } else {
+      // Heavier embeds (the clock's ~150KB React app) wait for the browser to
+      // go idle so they don't compete for the initial bandwidth.
+      frame.loading = 'lazy';
+      if ('requestIdleCallback' in window) requestIdleCallback(_loadEmbed, { timeout: 1500 });
+      else setTimeout(_loadEmbed, 600);
+    }
     frame.setAttribute('scrolling', 'no');
     // position:absolute keeps the iframe's 480px layout height out of flow, so
     // the item box is only as tall as its aspect-ratio (no oversized hit area).

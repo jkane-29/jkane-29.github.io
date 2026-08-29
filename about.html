@@ -64,6 +64,16 @@
         <li>A website to consolidate Chicagoland's best bike rides in one place</li>
         <li>Building furniture for basement re-design</li>
       </ul>
+      <h2>Site Directory</h2>
+      <ul>
+        <li><a href="writing/writing.html" class="internal-link" data-title="Writing" style="color:#1c1c1e;">Writing</a> — short essays</li>
+        <li><a href="rides.html" class="internal-link" data-title="Best Rides" style="color:#1c1c1e;">Rides</a> — a few of my favorite bike rides</li>
+        <li><a href="woodshop/woodshop copy.html" class="internal-link" data-title="Woodshop" style="color:#1c1c1e;">Woodshop</a> — furniture I've built</li>
+        <li><a href="decisions/decisions copy.html" class="internal-link" data-title="Decisions" style="color:#1c1c1e;">Decisions</a> — a game for making group decisions</li>
+        <li><a href="amtrak/map.html" class="internal-link" data-embed="/amtrak/map.html?v=2" data-title="Live Amtrak" data-aspect="50 / 33" style="color:#1c1c1e;">Live Amtrak</a> — a pixel-art map of the US Amtrak system overlaid with live trains</li>
+        <li><a href="https://github.com/ArnaudSpanneut/ClockClock24" target="_blank" rel="noopener" style="color:#1c1c1e;">ClockClock24</a> — a digital embed of the Humans Since 1982 clock</li>
+        <li><a href="https://tj-prices.com" target="_blank" rel="noopener" style="color:#1c1c1e;">TJ Prices</a> — ~2 years of scraping price data from Trader Joe's</li>
+      </ul>
     </div>
   </div>
 
@@ -74,9 +84,15 @@
     // Wire internal links to open in the fridge OS window when available
     document.querySelectorAll('.internal-link').forEach(a => {
       a.addEventListener('click', e => {
-        if (typeof openWindow === 'function') {
+        const title = a.dataset.title || a.textContent.trim();
+        // A whole-app page (the Amtrak map) opens in its own iframe window;
+        // the essay/content pages inject into the shared OS window.
+        if (a.dataset.embed && typeof openEmbedWindow === 'function') {
           e.preventDefault();
-          openWindow(a.getAttribute('href'), a.dataset.title || a.textContent.trim());
+          openEmbedWindow(a.dataset.embed, title, a.dataset.aspect);
+        } else if (typeof openWindow === 'function') {
+          e.preventDefault();
+          openWindow(a.getAttribute('href'), title);
         }
       });
     });

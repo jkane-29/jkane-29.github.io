@@ -47,19 +47,17 @@ const letterDefaultPos = i => ({
 
 // ── Items config (edit with ?edit + Copy layout) ───────────
 let ITEMS = [
-  { id: "item_1779583589922", src: "items/Bike Business.webp", top: 38.234, left: 30.477, width: 20.3, rotate: 0, href: "rides.html", hoverLabel: "Rides", windowTitle: "Best Rides" },
-  { id: "item_1779583597274", src: "items/california oranges.webp", top: 9.738, left: 27.214, width: 20, rotate: 0, href: "postcard/postcard.html", hoverLabel: "Send a Note", windowTitle: "Send a Note" },
+  { id: "item_1779583589922", src: "items/Bike Business.webp", top: 37.548, left: 29.04, width: 21.8, rotate: 0, href: "rides.html", hoverLabel: "Rides", windowTitle: "Best Rides" },
   { id: "item_1779583606062", src: "items/furniture_web.webp", top: 17.956, left: 26.073, width: 11, rotate: 0, href: "woodshop/woodshop copy.html", hoverLabel: "Woodshop" },
   { id: "item_1779583643716", src: "items/greeting.webp", top: 9.908, left: 49.123, width: 13, rotate: 0, href: null, hoverLabel: null },
-  { id: "item_1779584304657", src: "items/shopping.png", top: 10.05, left: 34.572, width: 2, rotate: 0, href: null, hoverLabel: null },
   { id: "item_1779586060280", src: "items/tj receipt.webp", top: 10.299, left: 63.313, width: 9, rotate: 0, href: "https://tj-prices.com", hoverLabel: "TJ Prices" },
-  { id: "item_1779639259040", src: "items/decisions.webp", top: 46.977, left: 41.922, width: 10.8, rotate: 0, href: "decisions/decisions copy.html", hoverLabel: "Decisions" },
   { id: "item_1781388702732", src: "items/about me.png", top: 9.922, left: 48.594, width: 13.9, rotate: 0, href: "about.html", hoverLabel: null, windowTitle: "About Me" },
-  { id: "item_1781392936791", src: "items/better doms.webp", top: 37.44, left: 53.952, width: 18.2, rotate: 0, href: null, hoverLabel: null },
-  { id: "item_1781393158854", src: "items/michigan2.png", top: 48.148, left: 26.34, width: 16.7, rotate: 0, href: null, hoverLabel: null },
-  { id: "item_1781393177283", src: "items/shopping.png", top: 38.725, left: 61.544, width: 2.5, rotate: 0, href: null, hoverLabel: null },
+  { id: "item_1781392936791", src: "items/better doms.webp", top: 35.286, left: 53.122, width: 18.7, rotate: 0, href: null, hoverLabel: null },
+  { id: "item_amtrak", embed: "/amtrak/map.html?embed=1&v=2", fluid: true, aspect: "50 / 33", top: 9.76, left: 26.07, width: 23, rotate: 0, windowEmbed: "/amtrak/map.html?v=2", windowTitle: "Live Amtrak", hoverLabel: "Trains" },
+  { id: "item_1781393177283", src: "items/shopping.png", top: 38.006, left: 37.651, width: 2.5, rotate: 0, href: null, hoverLabel: null },
   { id: "item_1786000000001", src: "items/writing.png", top: 20.514, left: 61.953, width: 11.5, rotate: 0, href: "writing/writing.html", hoverLabel: null, windowTitle: "Writing" },
-  { id: "item_clockclock24", embed: "/ClockClock24/index.html?v=3", aspect: "8 / 3", top: 23.345, left: 46.158, width: 29.2, rotate: 0, href: "https://github.com/ArnaudSpanneut/ClockClock24", hoverLabel: null }
+  { id: "item_clockclock24", embed: "/ClockClock24/index.html?v=3", aspect: "8 / 3", top: 23.345, left: 46.158, width: 29.2, rotate: 0, href: "https://github.com/ArnaudSpanneut/ClockClock24", hoverLabel: null },
+  { id: "item_1788007465835", src: "items/shopping.png", top: 35.879, left: 61.621, width: 2.5, rotate: 0, href: null, hoverLabel: null }
 ];
 
 // Tic-tac-toe board position (draggable in edit mode).
@@ -225,6 +223,62 @@ async function openWindow(href, title) {
     contentEl.innerHTML = `<div style="padding:48px 56px;color:#e63946;font-family:-apple-system,sans-serif;font-size:13px;">Could not load page.<br><br><code>${err.message}</code></div>`;
     console.error('openWindow:', err);
   }
+}
+
+// ── Embedded window (iframe) ───────────────────────────────
+// Some pages are whole self-contained apps (the Amtrak map: its own pixel
+// font, canvas and 60s data loop). Those open in their own document instead
+// of being inlined like the essay pages — no id or style collisions with the
+// fridge, and re-opening costs nothing because the file is already cached.
+function openEmbedWindow(src, title, aspect) {
+  if (_windowCleanup) { _windowCleanup(); _windowCleanup = null; }
+  if (_isTouch) { history.pushState({ fridgeWindow: true }, '', ''); lockZoom(true); }
+
+  $('os-window-title').textContent = title || 'Jack Kane';
+  $('os-window').style.width = '';
+  $('os-window').style.height = '';
+  $('os-injected-style').textContent = '';
+  $('os-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  const frame = document.createElement('iframe');
+  frame.className = 'os-embed-frame';
+  frame.src = src;
+  const inner = $('os-content-inner');
+  inner.innerHTML = '';
+  inner.appendChild(frame);
+  if (aspect) sizeEmbedWindow(frame, aspect);
+  _windowCleanup = () => { frame.src = 'about:blank'; };   // stop its timers on close
+}
+
+// Fit the embed window to its content's aspect ratio plus whatever slim footer
+// the page keeps, so it wraps tightly like the postcard/woodshop windows
+// instead of floating in the default 84vw × 76vh box.
+function sizeEmbedWindow(frame, aspect) {
+  if (window.matchMedia('(pointer: coarse)').matches) return; // window is full-screen on touch only
+  const win = $('os-window');
+  // Deterministic fit: window = map (at `aspect`) + a fixed allowance for the
+  // page's wrap padding and slim footer. Measuring the iframe's footer across
+  // frames raced the map's own script (before it hid the tall "how it's made"
+  // details) and oversized the window, so we size to a constant instead.
+  const TITLEBAR = 38, HPAD = 8, VCHROME = 53; // wrap padding (4·2 / 6+8) + slim 2-line footer (+margin)
+  const [aw, ah] = aspect.split('/').map(parseFloat);
+  const ar = aw / ah;
+  requestAnimationFrame(() => {
+    const maxW = Math.min(window.innerWidth * 0.9, 900);
+    const maxContentH = window.innerHeight * 0.9 - TITLEBAR;
+    let w = maxW;
+    let mapH = (w - HPAD) / ar;
+    let contentH = mapH + VCHROME;
+    if (contentH > maxContentH) {          // very short screen: fit to height instead
+      contentH = maxContentH;
+      mapH = contentH - VCHROME;
+      w = mapH * ar + HPAD;
+    }
+    win.style.width  = Math.round(w) + 'px';
+    win.style.height = Math.round(contentH + TITLEBAR) + 'px';
+    $('os-content').style.overflow = 'hidden';
+  });
 }
 
 // ── Postcard: size window to image aspect (1568×1003) exactly ──
@@ -466,6 +520,9 @@ function createItemEl(item) {
     const ar = item.aspect || '8 / 3';
     const refW = 1280, refH = 480; // 8:3 reference; app margin ≈ a few % here
     wrap.style.aspectRatio = ar;
+    // A "fluid" embed lays itself out to whatever box it is given (the Amtrak
+    // map's canvas is width:100%), so it needs no reference-size scaling.
+    const fluid = !!item.fluid;
     wrap.style.overflow = 'hidden';
     wrap.style.borderRadius = '4px';
     wrap.style.position = 'absolute'; // containing block for the iframe (already abs on fridge)
@@ -480,12 +537,16 @@ function createItemEl(item) {
     frame.setAttribute('scrolling', 'no');
     // position:absolute keeps the iframe's 480px layout height out of flow, so
     // the item box is only as tall as its aspect-ratio (no oversized hit area).
-    frame.style.cssText = `position:absolute; top:0; left:0; width:${refW}px; height:${refH}px; border:none; display:block; pointer-events:none; transform-origin:top left; background:transparent;`;
+    frame.style.cssText = fluid
+      ? 'position:absolute; top:0; left:0; width:100%; height:100%; border:none; display:block; pointer-events:none; background:transparent;'
+      : `position:absolute; top:0; left:0; width:${refW}px; height:${refH}px; border:none; display:block; pointer-events:none; transform-origin:top left; background:transparent;`;
     wrap.appendChild(frame);
-    const fit = () => { const w = wrap.clientWidth; if (w) frame.style.transform = `scale(${w / refW})`; };
-    if (window.ResizeObserver) new ResizeObserver(fit).observe(wrap);
-    requestAnimationFrame(fit);
-    frame.addEventListener('load', () => fit());
+    if (!fluid) {
+      const fit = () => { const w = wrap.clientWidth; if (w) frame.style.transform = `scale(${w / refW})`; };
+      if (window.ResizeObserver) new ResizeObserver(fit).observe(wrap);
+      requestAnimationFrame(fit);
+      frame.addEventListener('load', () => fit());
+    }
   } else {
     const img = document.createElement('img');
     img.src = encodeURI(item.src);
@@ -510,6 +571,9 @@ function renderItems() {
     if (isEditMode) {
       el.style.cursor = 'move';
       makeDraggable(el);
+    } else if (item.windowEmbed) {
+      el.style.cursor = 'pointer';
+      el.addEventListener('click', () => openEmbedWindow(item.windowEmbed, item.windowTitle || item.hoverLabel, item.aspect));
     } else if (item.href && !isPostcardOnTouch(item)) {
       el.style.cursor = 'pointer';
       el.addEventListener('click', () => openWindow(item.href, item.windowTitle || item.hoverLabel || item.href));
@@ -617,11 +681,32 @@ if (isEditMode) {
   };
   const resize = d => { if (_sel) _sel.style.width = Math.max(2, (parseFloat(_sel.style.width) || 10) + d) + '%'; };
   const del = () => { if (_sel) { _sel.remove(); selectItem(null); } };
+  // Clone the selected magnet: same image, a new id, nudged so it's visible.
+  // Registering it in _meta means Copy layout exports it like any other item.
+  const dup = () => {
+    if (!_sel) return;
+    const base = _meta[_sel.dataset.id];
+    if (!base || base.embed) return;   // duplicate image magnets, not the live embeds/board
+    const clone = Object.assign({}, base, {
+      id: 'item_' + Date.now(),
+      top:   +(parseFloat(_sel.style.top)  + 4).toFixed(3),
+      left:  +(parseFloat(_sel.style.left) + 4).toFixed(3),
+      width: +(parseFloat(_sel.style.width) || base.width).toFixed(3)
+    });
+    _meta[clone.id] = clone;
+    const el = createItemEl(clone);
+    $('fridge').appendChild(el);
+    el.style.cursor = 'move';
+    makeDraggable(el);
+    el.addEventListener('pointerdown', () => selectItem(el));
+    selectItem(el);
+  };
   const _bar = document.createElement('div');
   _bar.style.cssText = 'position:fixed;bottom:60px;right:16px;z-index:100000;display:none;gap:6px';
   const _mk = (t, fn, bg) => { const b = document.createElement('button'); b.textContent = t; b.style.cssText = 'padding:10px 13px;background:' + (bg || '#333') + ';color:#fff;border:none;border-radius:6px;font:600 15px -apple-system,sans-serif;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4)'; b.onclick = fn; _bar.appendChild(b); };
   _mk('−', () => resize(-0.5));
   _mk('+', () => resize(0.5));
+  _mk('Duplicate', dup, '#2d7d46');
   _mk('Delete', del, '#c0392b');
   document.body.appendChild(_bar);
   // Editable tic-tac-toe board placeholder (the live game is off in edit mode)
@@ -640,6 +725,7 @@ if (isEditMode) {
   document.addEventListener('keydown', e => {
     if (!_sel) return;
     if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); del(); }
+    else if (e.key === 'd' || e.key === 'D') dup();
     else if (e.key === '+' || e.key === '=') resize(0.5);
     else if (e.key === '-' || e.key === '_') resize(-0.5);
   });

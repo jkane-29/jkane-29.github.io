@@ -105,7 +105,13 @@
   body.framed #status,
   body.framed .legend,
   body.framed footer details { display:none; }
-  body.framed footer { margin-top:6px; font-size:10px; opacity:.7; }
+  /* The pixel font is unreadable at this size; the credit is functional text,
+     so give it a crisp anti-aliased system font while keeping it small/dim. */
+  body.framed footer {
+    margin-top:6px; font-size:11px; line-height:1.45; opacity:.85;
+    font-family:-apple-system, BlinkMacSystemFont, system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing:antialiased; font-smooth:auto;
+  }
   body.night { color-scheme:dark; }   /* dark scrollbars/controls */
 
   /* Embed rules come last: on the fridge door nothing is drawn behind the

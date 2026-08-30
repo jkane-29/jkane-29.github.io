@@ -45,6 +45,12 @@ input, textarea, [contenteditable="true"] {
   -webkit-user-select: text;
   user-select: text;
 }
+/* The OS window holds readable pages (essays, notes, descriptions) — let their
+   text be selected and copied, even though the draggable fridge stays locked. */
+#os-content-inner, #os-content-inner * {
+  -webkit-user-select: text;
+  user-select: text;
+}
 img {
   -webkit-user-drag: none;
   user-drag: none;

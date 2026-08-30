@@ -48,7 +48,7 @@ const letterDefaultPos = i => ({
 // ── Items config (edit with ?edit + Copy layout) ───────────
 let ITEMS = [
   { id: "item_1779583589922", src: "items/Bike Business.webp", top: 37.548, left: 29.04, width: 21.8, rotate: 0, href: "rides.html", hoverLabel: "Rides", windowTitle: "Best Rides" },
-  { id: "item_1779583606062", src: "items/furniture_web.webp", top: 17.956, left: 26.073, width: 11, rotate: 0, href: "woodshop/woodshop copy.html", hoverLabel: "Woodshop" },
+  { id: "item_1779583606062", src: "items/furniture_web.webp?v=2", top: 19.91, left: 26.77, width: 9.442, rotate: 0, href: "woodshop/woodshop copy.html", hoverLabel: "Woodshop" },
   { id: "item_1779583643716", src: "items/greeting.webp", top: 9.908, left: 49.123, width: 13, rotate: 0, href: null, hoverLabel: null },
   { id: "item_1779586060280", src: "items/tj receipt.webp", top: 10.299, left: 63.313, width: 9, rotate: 0, href: "https://tj-prices.com", hoverLabel: "TJ Prices" },
   { id: "item_1781388702732", src: "items/about me.png", top: 9.922, left: 48.594, width: 13.9, rotate: 0, href: "about.html", hoverLabel: null, windowTitle: "About Me" },

@@ -125,7 +125,7 @@
 
     const NOTES = [
       {
-        title: "1. Alpine Dam + Mt. Tam",
+        title: "Alpine Dam + Mt. Tam",
         date: "March 13, 2026",
         rwgps: { type: 'route', id: '24331937' },
         photos: [
@@ -143,7 +143,7 @@
 </ul>`
       },
       {
-        title: "2. Winona to La Crescent to Winona",
+        title: "Winona to La Crescent to Winona",
         date: "June 6, 2026",
         rwgps: { type: 'trip', id: '388674864' },
         photos: [
@@ -162,7 +162,7 @@
 </ul>`
       },
       {
-        title: "3. Best of Chicago",
+        title: "Best of Chicago",
         date: "May 20, 2026",
         rwgps: { type: 'route', id: '55304767' },
         photos: [
@@ -179,7 +179,7 @@
 </ul>`
       },
       {
-        title: "4. Manhattan Perimeter (Tour de Bridge)",
+        title: "Manhattan Perimeter (Tour de Bridge)",
         date: "July 25, 2026",
         rwgps: { type: 'trip', id: '400364377' },
         photos: [
@@ -239,6 +239,10 @@
       if (next) next.onclick = (e) => { e.stopPropagation(); show(i + 1); };
       if (prev) prev.onclick = (e) => { e.stopPropagation(); show(i - 1); };
     }
+
+    // Newest ride first, by the date you rode it (like the Writing notes).
+    NOTES.forEach(n => n._d = new Date(n.date));
+    NOTES.sort((a, b) => b._d - a._d);
 
     const list = document.getElementById('notes-list');
     NOTES.forEach((note, i) => {

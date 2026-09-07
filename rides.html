@@ -34,6 +34,9 @@
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .note-row-date { font-size: 11px; color: #8e8e93; flex-shrink: 0; }
+    .note-row-stars { font-size: 12px; letter-spacing: 1.5px; line-height: 1; flex-shrink: 0; white-space: nowrap; }
+    .note-row-stars .on { color: #6b6459; }
+    .note-row-stars .off { color: #dcd6ca; }
     .note-row-chevron { font-size: 10px; color: #c7c7cc; flex-shrink: 0; transition: transform 0.2s; }
     .note-row.open .note-row-chevron { transform: rotate(90deg); }
 
@@ -127,6 +130,7 @@
       {
         title: "Alpine Dam + Mt. Tam",
         date: "March 13, 2026",
+        rating: 5,
         rwgps: { type: 'route', id: '24331937' },
         photos: [
           "rides photos/1. Mt Tam/IMG_1096.jpg",
@@ -145,6 +149,7 @@
       {
         title: "Winona to La Crescent to Winona",
         date: "June 6, 2026",
+        rating: 4,
         rwgps: { type: 'trip', id: '388674864' },
         photos: [
           "rides photos/2. Winona/IMG_1552.jpg",
@@ -164,6 +169,7 @@
       {
         title: "Best of Chicago",
         date: "May 20, 2026",
+        rating: 3,
         rwgps: { type: 'route', id: '55304767' },
         photos: [
           "rides photos/3. Chicago/IMG_1463.jpg",
@@ -181,6 +187,7 @@
       {
         title: "Manhattan Perimeter (Tour de Bridge)",
         date: "July 25, 2026",
+        rating: 2,
         rwgps: { type: 'trip', id: '400364377' },
         photos: [
           "rides photos/4. Manhattan/IMG_1882.jpg",
@@ -240,9 +247,11 @@
       if (prev) prev.onclick = (e) => { e.stopPropagation(); show(i - 1); };
     }
 
-    // Newest ride first, by the date you rode it (like the Writing notes).
+    // Highest-rated ride first; ties broken by most recent date.
+    const stars = r => '<span class="on">' + '★'.repeat(r) + '</span>' +
+                       '<span class="off">' + '★'.repeat(5 - r) + '</span>';
     NOTES.forEach(n => n._d = new Date(n.date));
-    NOTES.sort((a, b) => b._d - a._d);
+    NOTES.sort((a, b) => (b.rating - a.rating) || (b._d - a._d));
 
     const list = document.getElementById('notes-list');
     NOTES.forEach((note, i) => {
@@ -251,6 +260,7 @@
       row.innerHTML = `
         <div class="note-row-header">
           <span class="note-row-title">${note.title}</span>
+          <span class="note-row-stars" aria-label="${note.rating} out of 5 stars">${stars(note.rating)}</span>
           <span class="note-row-date">${note.date}</span>
           <span class="note-row-chevron">›</span>
         </div>

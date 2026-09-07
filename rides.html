@@ -202,6 +202,50 @@
 <li>A great concept of a bike ride but would recommend limiting to an out and back up the west side avoiding the cross trekking up the east side</li>
 <li>That said, was surprised to the positive by Inwood Park (although cycling is not allowed), the Cloisters, and Saint Nicholas Park</li>
 </ul>`
+      },
+      {
+        title: "Chicago to the Dunes",
+        date: "May 17, 2026",
+        rating: 3,
+        rwgps: { type: 'route', id: '57051986' },
+        photos: ["rides photos/5. Dunes/dunes.jpg"],
+        body: `<ul>
+<li>Slashes through a mix of standalone trails to arrive at the US' latest national park.</li>
+<li>Riding is pretty boring and flat past a series of grassy commuter suburbs.</li>
+<li>Route intentionally avoids the industrial badlands of Gary for much safer riding conditions.</li>
+<li>If you don't feel like cycling 60 miles back, you can hop on the South Shore Line for a direct trip back to Chicago.</li>
+</ul>`
+      },
+      {
+        title: "Chicago Perimeter",
+        date: "September 14, 2025",
+        rating: 2,
+        rwgps: { type: 'route', id: '57052098' },
+        photos: ["rides photos/6. Chicago Perimeter/perimeter.jpg"],
+        body: `<ul>
+<li>An inadvisable bike ride that roughly spans the perimeter of Chicago's city limits.</li>
+<li>Partially a route-planning issue, but very dangerous shoulder riding heading north.</li>
+<li>Ride would get better at a larger scale (~100 miles) with north/south endpoints closer to 125th and Lake Forest.</li>
+</ul>`
+      },
+      {
+        title: "Root River Loop",
+        date: "August 25, 2026",
+        rating: 4,
+        rwgps: { type: 'route', id: '57052270' },
+        photos: [
+          "rides photos/7. Root River/IMG_2041.jpg",
+          "rides photos/7. Root River/IMG_2043.jpg",
+          "rides photos/7. Root River/IMG_2045.jpg",
+          "rides photos/7. Root River/IMG_2050.jpg",
+          "rides photos/7. Root River/IMG_2051.jpg"
+        ],
+        body: `<ul>
+<li>A loose loop ride I did on my second visit to the Driftless area.</li>
+<li>Tschumpeter Hill Road is a grueling 13% max-grade climb straddling the ridgeline above the river, dumping you out on a hilltop covered with apple orchard.</li>
+<li>Otherwise, this is mostly a flat ride along the bluff top, with a steep drop once you turn onto County Road 11.</li>
+<li>Would be fun to do this again with a gravel bike, crossing between the roads that cut into the bluffs (County Road 25, Chicken Ridge Road).</li>
+</ul>`
       }
     ];
 
@@ -250,7 +294,7 @@
     // Highest-rated ride first; ties broken by most recent date.
     const stars = r => '<span class="on">' + '★'.repeat(r) + '</span>' +
                        '<span class="off">' + '★'.repeat(5 - r) + '</span>';
-    NOTES.forEach(n => n._d = new Date(n.date));
+    NOTES.forEach(n => { const d = new Date(n.date); n._d = isNaN(d) ? new Date(0) : d; });
     NOTES.sort((a, b) => (b.rating - a.rating) || (b._d - a._d));
 
     const list = document.getElementById('notes-list');

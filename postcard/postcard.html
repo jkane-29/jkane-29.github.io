@@ -336,120 +336,6 @@
       .send-btn .send-icon { position: static; top: 0; font-size: 1.2em; line-height: 1; }
     }
 
-    /* ── Stamp picker modal ── */
-    .picker-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.72);
-      z-index: 100;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-    }
-    .picker-backdrop.open { display: flex; }
-
-    .picker {
-      background: #ffffff;
-      border: 1.5px solid #1a1a1a;
-      border-radius: 6px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
-      width: min(560px, 100%);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-    .picker-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 16px;
-      border-bottom: 1px solid rgba(0, 0, 0, 0.15);
-      background: #ffffff;
-    }
-    .picker-title {
-      font-family: 'Cinzel', serif;
-      font-size: 13px;
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
-      color: #2e2415;
-    }
-    .picker-close {
-      background: transparent;
-      border: none;
-      font-size: 22px;
-      color: #6e5630;
-      cursor: pointer;
-      line-height: 1;
-      padding: 4px 8px;
-    }
-    .picker-close:hover { color: #2e2415; }
-
-    /* Paginated row of 3 stamps */
-    .picker-body {
-      padding: 24px 14px 10px;
-    }
-    .picker-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 14px;
-    }
-    .picker-footer {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 8px 20% 16px;
-    }
-    .picker-nav {
-      background: transparent;
-      border: none;
-      cursor: pointer;
-      font-size: 28px;
-      color: #6e5630;
-      padding: 8px 6px;
-      line-height: 1;
-      transition: color 0.15s, transform 0.15s;
-    }
-    .picker-nav:hover { color: #2e2415; transform: scale(1.15); }
-    .picker-nav:disabled { color: #c9b48a; cursor: default; transform: none; }
-    .stamp-option {
-      width: 100%;
-      height: 130px;
-      background: #ffffff;
-      padding: 6px;
-      border: 1.5px dashed #6e5630;
-      cursor: pointer;
-      object-fit: contain;
-      transition: transform 0.12s, border-color 0.12s, box-shadow 0.12s;
-      display: block;
-    }
-    .stamp-option:hover {
-      transform: scale(1.04);
-      border-color: #a8804a;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-    }
-    .stamp-option.selected {
-      border-color: #f6d400;
-      border-style: solid;
-      box-shadow: 0 0 0 2px rgba(246, 212, 0, 0.5);
-    }
-    .picker-empty {
-      grid-column: 1 / -1;
-      text-align: center;
-      color: #6e5630;
-      font-family: 'Cinzel', serif;
-      font-size: 11px;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-    }
-    .picker-pageinfo {
-      text-align: center;
-      font-family: 'Cinzel', serif;
-      font-size: 10px;
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
-      color: #6e5630;
-    }
   </style>
 </head>
 <body>
@@ -480,24 +366,6 @@
     </div>
   </div>
 
-  <!-- Stamp picker modal -->
-  <div class="picker-backdrop" id="picker-backdrop">
-    <div class="picker" role="dialog" aria-label="Choose a stamp">
-      <div class="picker-header">
-        <span class="picker-title">Choose a stamp</span>
-        <button class="picker-close" id="picker-close" aria-label="Close">×</button>
-      </div>
-      <div class="picker-body">
-        <div class="picker-grid" id="picker-grid"></div>
-      </div>
-      <div class="picker-footer">
-        <button class="picker-nav" id="picker-prev" aria-label="Previous">‹</button>
-        <div class="picker-pageinfo" id="picker-pageinfo"></div>
-        <button class="picker-nav" id="picker-next" aria-label="Next">›</button>
-      </div>
-    </div>
-  </div>
-
   <script>
   (function () {
     const ACCESS_KEY = '798f7e5e-4b89-4fa6-8b1c-1bb7631cec37';
@@ -510,9 +378,6 @@
     const btn         = document.getElementById('send');
     const overlay     = document.getElementById('stamp-overlay');
     const placeholder = document.getElementById('stamp-placeholder');
-    const backdrop    = document.getElementById('picker-backdrop');
-    const grid        = document.getElementById('picker-grid');
-    const closeBtn    = document.getElementById('picker-close');
     const originalLabel = btn.textContent;
 
     // Clear any stale edit-mode localStorage values from earlier testing
@@ -555,17 +420,9 @@
     }
 
     let selectedStamp = null;
+    let allStamps = [];
 
-    function openPicker()  { backdrop.classList.add('open'); }
-    function closePicker() { backdrop.classList.remove('open'); }
-
-    placeholder.addEventListener('click', openPicker);
-    overlay.addEventListener('click', openPicker);
-    closeBtn.addEventListener('click', closePicker);
-    backdrop.addEventListener('click', e => { if (e.target === backdrop) closePicker(); });
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') closePicker(); });
-
-    function selectStamp(src, animate = true) {
+    function placeStamp(src, animate = true) {
       selectedStamp = src;
       overlay.src = src;
       overlay.classList.add('visible');
@@ -575,64 +432,29 @@
         void overlay.offsetWidth;
         overlay.classList.add('snap-in');
       }
-      grid.querySelectorAll('.stamp-option').forEach(el => {
-        el.classList.toggle('selected', el.dataset.src === src);
-      });
-      try { localStorage.setItem(STAMP_KEY, src); } catch (e) {}
-      closePicker();
     }
 
-    // ── Paginated stamp picker (3 per page) ────────────────────
-    const PAGE_SIZE = 3;
-    let allStamps  = [];
-    let pageIndex  = 0;
-
-    const prevBtn  = document.getElementById('picker-prev');
-    const nextBtn  = document.getElementById('picker-next');
-    const pageInfo = document.getElementById('picker-pageinfo');
-
-    function renderPage() {
-      const pages = Math.max(1, Math.ceil(allStamps.length / PAGE_SIZE));
-      pageIndex = Math.max(0, Math.min(pageIndex, pages - 1));
-      const start = pageIndex * PAGE_SIZE;
-      const slice = allStamps.slice(start, start + PAGE_SIZE);
-
-      grid.innerHTML = '';
-      if (!slice.length) {
-        grid.innerHTML = '<div class="picker-empty">No stamps available</div>';
-      } else {
-        slice.forEach(src => {
-          const img = document.createElement('img');
-          img.className   = 'stamp-option';
-          img.src         = src;
-          img.dataset.src = src;
-          img.addEventListener('click', () => selectStamp(src));
-          if (src === selectedStamp) img.classList.add('selected');
-          grid.appendChild(img);
-        });
-      }
-
-      prevBtn.disabled = pageIndex === 0;
-      nextBtn.disabled = pageIndex >= pages - 1;
-      pageInfo.textContent = `${pageIndex + 1} / ${pages}`;
+    // No picker — a stamp is chosen at random. Click it to shuffle to another.
+    function randomStamp() {
+      if (!allStamps.length) return;
+      let pick;
+      do { pick = allStamps[Math.floor(Math.random() * allStamps.length)]; }
+      while (allStamps.length > 1 && pick === selectedStamp);
+      placeStamp(pick);
     }
 
-    prevBtn.addEventListener('click', () => { pageIndex--; renderPage(); });
-    nextBtn.addEventListener('click', () => { pageIndex++; renderPage(); });
+    placeholder.addEventListener('click', randomStamp);
+    overlay.addEventListener('click', randomStamp);
 
     fetch(STAMPS_DIR + 'stamps.json', { cache: 'no-store' })
       .then(r => r.ok ? r.json() : [])
       .then(stamps => {
-        const real = (stamps || []).filter(name => name && !name.startsWith('_'));
-        allStamps = real.map(n => STAMPS_DIR + n);
-        renderPage();
-
-        try {
-          const saved = localStorage.getItem(STAMP_KEY);
-          if (saved && allStamps.includes(saved)) selectStamp(saved, false);
-        } catch (e) {}
+        allStamps = (stamps || [])
+          .filter(name => name && !name.startsWith('_'))
+          .map(n => STAMPS_DIR + n);
+        randomStamp();   // drop a random stamp on the card
       })
-      .catch(() => renderPage());
+      .catch(() => {});
 
     btn.addEventListener('click', async () => {
       const body = msg.value.trim();

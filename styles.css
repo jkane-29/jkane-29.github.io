@@ -386,9 +386,9 @@ body:not(.edit-mode) .item:hover .item-hover-label { display: block; }
 #ring-embed {
   /* Render larger than the wrapper then scale back down: enough horizontal room
      to lay out on a single row. Higher width% + lower scale = smaller text. */
-  width: 158%;
-  height: 158%;
-  transform: scale(0.633);
+  width: 116%;
+  height: 116%;
+  transform: scale(0.8621);
   transform-origin: top left;
   border: none;
   background: transparent;

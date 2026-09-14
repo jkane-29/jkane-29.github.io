@@ -55,7 +55,8 @@ let ITEMS = [
   { id: "item_1781392936791", src: "items/better doms.webp", top: 35.286, left: 53.122, width: 18.7, rotate: 0, href: null, hoverLabel: null },
   { id: "item_amtrak", embed: "/amtrak/map.html?embed=1&v=3", fluid: true, aspect: "50 / 33", top: 9.76, left: 26.07, width: 23, rotate: 0, windowEmbed: "/amtrak/map.html?v=3", windowTitle: "Live Amtrak", hoverLabel: "Trains" },
   { id: "item_1781393177283", src: "items/shopping.png", top: 38.006, left: 37.651, width: 2.5, rotate: 0, href: null, hoverLabel: null },
-  { id: "item_1786000000001", src: "items/writing.png", top: 20.514, left: 61.953, width: 11.5, rotate: 0, href: "writing/writing.html", hoverLabel: null, windowTitle: "Writing" },
+  // Temporarily hidden — uncomment to bring the Writing magnet back.
+  // { id: "item_1786000000001", src: "items/writing.png", top: 20.514, left: 61.953, width: 11.5, rotate: 0, href: "writing/writing.html", hoverLabel: null, windowTitle: "Writing" },
   { id: "item_clockclock24", embed: "/ClockClock24/index.html?v=3", aspect: "8 / 3", top: 23.345, left: 46.158, width: 29.2, rotate: 0, href: "https://github.com/ArnaudSpanneut/ClockClock24", hoverLabel: null },
   { id: "item_1788007465835", src: "items/shopping.png", top: 35.879, left: 61.621, width: 2.5, rotate: 0, href: null, hoverLabel: null }
 ];

@@ -402,17 +402,20 @@ body:not(.edit-mode) .item:hover .item-hover-label { display: block; }
 }
 
 /* Page-views sticky note — a small Post-it magnet on the lower door.
-   Sizes scale with the fridge via container-query units (see .fridge). */
+   Its overall size is driven by one knob: the container font-size (in cqw, so
+   it scales with the fridge). Everything inside is in em, so edit-mode resize
+   just changes font-size. */
 #views-magnet {
   position: absolute;
   top: 61%;
   left: 26%;
   z-index: 4;
+  font-size: 1.3cqw;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.3cqw;
-  padding: 1.5cqw 2.2cqw;
+  gap: 0.15em;
+  padding: 0.7em 1em;
   background: #f2da84;
   color: #4a3a25;
   font-family: 'Caveat', 'Segoe Script', 'Bradley Hand', cursive;
@@ -420,11 +423,11 @@ body:not(.edit-mode) .item:hover .item-hover-label { display: block; }
   text-align: center;
   border-radius: 2px;
   transform: rotate(-4deg);
-  box-shadow: 0 0.4cqw 1cqw rgba(0, 0, 0, 0.4);
+  box-shadow: 0 0.2em 0.5em rgba(0, 0, 0, 0.4);
   cursor: default;
 }
-#views-count { font-size: 4cqw; font-weight: 600; letter-spacing: 0.3px; }
-#views-label { font-size: 2.1cqw; font-weight: 600; color: #6e5630; }
+#views-count { font-size: 1.9em; font-weight: 600; letter-spacing: 0.3px; }
+#views-label { font-size: 1em; font-weight: 600; color: #6e5630; }
 
 /* Embedded app window (Amtrak map) — the page runs in its own document and
    fills the window; day/night styling lives inside that page. */

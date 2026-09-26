@@ -668,6 +668,29 @@ function saveRingPos() {
   }));
 }
 
+// Restore the page-views note's saved position/size (desktop only; mobile keeps
+// the CSS default). Size is stored as the container font-size in cqw.
+if (!_isTouch) {
+  try {
+    const vp = JSON.parse(localStorage.getItem('viewsPos') || 'null');
+    if (vp) {
+      const v = $('views-magnet');
+      if (vp.top  != null) v.style.top      = vp.top  + '%';
+      if (vp.left != null) v.style.left     = vp.left + '%';
+      if (vp.size != null) v.style.fontSize = vp.size + 'cqw';
+    }
+  } catch (e) {}
+}
+
+function saveViewsPos() {
+  const v = $('views-magnet');
+  localStorage.setItem('viewsPos', JSON.stringify({
+    top:  parseFloat(v.style.top  || getComputedStyle(v).top),
+    left: parseFloat(v.style.left || getComputedStyle(v).left),
+    size: v.style.fontSize ? parseFloat(v.style.fontSize) : null
+  }));
+}
+
 // Make webring draggable + resizable in edit mode (desktop only)
 if (isEditMode && !_isTouch) {
   const ring = $('ring-wrap');
@@ -698,6 +721,39 @@ if (isEditMode && !_isTouch) {
     };
     rh.addEventListener('pointermove', onMove);
     rh.addEventListener('pointerup',   onUp);
+  });
+}
+
+// Make the page-views note draggable + resizable in edit mode (desktop only).
+// Drag to move; drag the corner handle to scale (font-size in cqw). Both persist
+// to localStorage and are exported by "Copy layout" as VIEWS_POS.
+if (isEditMode && !_isTouch) {
+  const v = $('views-magnet');
+  v.hidden = false;                 // show it for editing even before Firebase answers
+  v.style.cursor = 'move';
+  makeDraggable(v, saveViewsPos);
+
+  const vh = document.createElement('div');
+  vh.style.cssText = 'position:absolute;right:-6px;bottom:-6px;width:14px;height:14px;background:#f6d400;border:1px solid #111;border-radius:2px;cursor:nwse-resize;z-index:10';
+  v.appendChild(vh);
+  vh.addEventListener('pointerdown', e => {
+    e.stopPropagation(); e.preventDefault();
+    vh.setPointerCapture(e.pointerId);
+    const cRect = $('fridge').getBoundingClientRect();
+    const sX = e.clientX;
+    const startSize = parseFloat(v.style.fontSize) ||
+                      (parseFloat(getComputedStyle(v).fontSize) / cRect.width * 100);
+    const onMove = e => {
+      const dx = (e.clientX - sX) / cRect.width * 100;
+      v.style.fontSize = Math.max(0.6, Math.round((startSize + dx) * 100) / 100) + 'cqw';
+    };
+    const onUp = () => {
+      vh.removeEventListener('pointermove', onMove);
+      vh.removeEventListener('pointerup',   onUp);
+      saveViewsPos();
+    };
+    vh.addEventListener('pointermove', onMove);
+    vh.addEventListener('pointerup',   onUp);
   });
 }
 
@@ -780,6 +836,13 @@ if (isEditMode) {
     let json = 'let ITEMS = [\n' + updated.map(it => '  ' + JSON.stringify(it)).join(',\n') + '\n];';
     const _tt = document.querySelector('[data-ttt]');
     if (_tt) json += '\n\nconst TTT_POS = { top: ' + (+parseFloat(_tt.style.top).toFixed(3)) + ', left: ' + (+parseFloat(_tt.style.left).toFixed(3)) + ', width: ' + (+parseFloat(_tt.style.width).toFixed(3)) + ' };';
+    const _vm = $('views-magnet');
+    if (_vm) {
+      const vt = _vm.style.top      ? +parseFloat(_vm.style.top).toFixed(3)  : 61;
+      const vl = _vm.style.left     ? +parseFloat(_vm.style.left).toFixed(3) : 26;
+      const vs = _vm.style.fontSize ? +parseFloat(_vm.style.fontSize)        : 1.3;
+      json += '\n\nconst VIEWS_POS = { top: ' + vt + ', left: ' + vl + ', size: ' + vs + ' };';
+    }
     const ov = document.createElement('div');
     ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:100001;display:flex;flex-direction:column;padding:16px;gap:8px';
     const st = document.createElement('div');

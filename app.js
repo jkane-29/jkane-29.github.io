@@ -33,6 +33,32 @@ function startFirebase() {
   });
   db = firebase.database();
   if (!isEditMode) initTicTacToe();
+  initPageViews();
+}
+
+// ── Page-views sticky note ─────────────────────────────────
+// Live total of page loads, shown as a Post-it on the fridge door. The magnet
+// stays hidden until Firebase answers, so it never flashes an empty/zero note
+// (and simply doesn't appear if Firebase is blocked/offline).
+function initPageViews() {
+  const wrap = $('views-magnet');
+  const out  = $('views-count');
+  if (!wrap || !out || !db) return;
+  const ref  = db.ref('pageViews');
+  const show = n => { out.textContent = (n || 0).toLocaleString(); wrap.hidden = false; };
+  const hide = () => { wrap.hidden = true; };   // denied/offline: no magnet at all
+
+  if (isEditMode) {                              // show the total but don't count
+    ref.once('value', s => show(s.val()), hide);
+    return;
+  }
+  // Count this load, then reveal the SERVER-confirmed total (not the optimistic
+  // local value) and keep it live for anyone watching the page.
+  ref.transaction(n => (n || 0) + 1, (err, committed, snap) => {
+    if (err || !committed) return hide();
+    show(snap.val());
+    ref.on('value', s => show(s.val()), hide);
+  });
 }
 
 // ── Letter set (magnets) ───────────────────────────────────

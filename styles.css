@@ -10,7 +10,7 @@ body {
   padding: 24px 0 60px;
 }
 .fridge-viewport { width: 100%; display: flex; justify-content: center; }
-.fridge { position: relative; width: min(700px, 92vw); user-select: none; }
+.fridge { position: relative; width: min(700px, 92vw); user-select: none; container-type: inline-size; }
 
 /* Mobile / touch: enter zoomed-in so just the center of the fridge fills the screen */
 @media (max-width: 900px), (pointer: coarse) {
@@ -400,6 +400,31 @@ body:not(.edit-mode) .item:hover .item-hover-label { display: block; }
   #ring-wrap { top: 77%; left: 24%; width: 52%; height: 9%; }
   #ring-embed { width: 140%; height: 140%; transform: scale(0.7143); }
 }
+
+/* Page-views sticky note — a small Post-it magnet on the lower door.
+   Sizes scale with the fridge via container-query units (see .fridge). */
+#views-magnet {
+  position: absolute;
+  top: 61%;
+  left: 26%;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3cqw;
+  padding: 1.5cqw 2.2cqw;
+  background: #f2da84;
+  color: #4a3a25;
+  font-family: 'Caveat', 'Segoe Script', 'Bradley Hand', cursive;
+  line-height: 1;
+  text-align: center;
+  border-radius: 2px;
+  transform: rotate(-4deg);
+  box-shadow: 0 0.4cqw 1cqw rgba(0, 0, 0, 0.4);
+  cursor: default;
+}
+#views-count { font-size: 4cqw; font-weight: 600; letter-spacing: 0.3px; }
+#views-label { font-size: 2.1cqw; font-weight: 600; color: #6e5630; }
 
 /* Embedded app window (Amtrak map) — the page runs in its own document and
    fills the window; day/night styling lives inside that page. */

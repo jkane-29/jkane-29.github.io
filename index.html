@@ -26,7 +26,11 @@
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-  <link rel="stylesheet" href="styles.css?v=4">
+  <link rel="stylesheet" href="styles.css?v=5">
+  <!-- Handwriting face for the page-views sticky note -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap">
   <style id="os-injected-style"></style>
 </head>
 <body>
@@ -40,6 +44,11 @@
                 src="https://overengineering.kognise.dev/embed/jack?link_color=%23000000"
                 title="overengineeRING embed"
                 loading="lazy"></iframe>
+      </div>
+      <!-- Page-views sticky note (revealed by app.js once Firebase answers) -->
+      <div id="views-magnet" hidden>
+        <span id="views-count">—</span>
+        <span id="views-label">page views</span>
       </div>
     </div>
   </div>
@@ -75,6 +84,6 @@
   <script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 
-  <script src="app.js?v=12"></script>
+  <script src="app.js?v=13"></script>
 </body>
 </html>

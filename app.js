@@ -668,19 +668,18 @@ function saveRingPos() {
   }));
 }
 
-// Restore the page-views note's saved position/size (desktop only; mobile keeps
-// the CSS default). Size is stored as the container font-size in cqw.
-if (!_isTouch) {
-  try {
-    const vp = JSON.parse(localStorage.getItem('viewsPos') || 'null');
-    if (vp) {
-      const v = $('views-magnet');
-      if (vp.top  != null) v.style.top      = vp.top  + '%';
-      if (vp.left != null) v.style.left     = vp.left + '%';
-      if (vp.size != null) v.style.fontSize = vp.size + 'cqw';
-    }
-  } catch (e) {}
-}
+// Restore the page-views note's saved position/size. Unlike the webring (which
+// the mobile CSS pins), the note sits at the same spot at every width, so a
+// saved position applies on any screen. Size is the container font-size in cqw.
+try {
+  const vp = JSON.parse(localStorage.getItem('viewsPos') || 'null');
+  if (vp) {
+    const v = $('views-magnet');
+    if (vp.top  != null) v.style.top      = vp.top  + '%';
+    if (vp.left != null) v.style.left     = vp.left + '%';
+    if (vp.size != null) v.style.fontSize = vp.size + 'cqw';
+  }
+} catch (e) {}
 
 function saveViewsPos() {
   const v = $('views-magnet');
@@ -724,10 +723,10 @@ if (isEditMode && !_isTouch) {
   });
 }
 
-// Make the page-views note draggable + resizable in edit mode (desktop only).
+// Make the page-views note draggable + resizable in edit mode (any width).
 // Drag to move; drag the corner handle to scale (font-size in cqw). Both persist
 // to localStorage and are exported by "Copy layout" as VIEWS_POS.
-if (isEditMode && !_isTouch) {
+if (isEditMode) {
   const v = $('views-magnet');
   v.hidden = false;                 // show it for editing even before Firebase answers
   v.style.cursor = 'move';
@@ -745,7 +744,7 @@ if (isEditMode && !_isTouch) {
                       (parseFloat(getComputedStyle(v).fontSize) / cRect.width * 100);
     const onMove = e => {
       const dx = (e.clientX - sX) / cRect.width * 100;
-      v.style.fontSize = Math.max(0.6, Math.round((startSize + dx) * 100) / 100) + 'cqw';
+      v.style.fontSize = Math.max(0.2, Math.round((startSize + dx) * 100) / 100) + 'cqw';
     };
     const onUp = () => {
       vh.removeEventListener('pointermove', onMove);

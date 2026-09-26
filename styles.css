@@ -407,10 +407,10 @@ body:not(.edit-mode) .item:hover .item-hover-label { display: block; }
    just changes font-size. */
 #views-magnet {
   position: absolute;
-  top: 61%;
-  left: 26%;
+  top: 49.04%;
+  left: 28.75%;
   z-index: 4;
-  font-size: 1.3cqw;
+  font-size: 0.45cqw;
   display: flex;
   flex-direction: column;
   align-items: center;

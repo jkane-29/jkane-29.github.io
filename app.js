@@ -668,27 +668,10 @@ function saveRingPos() {
   }));
 }
 
-// Restore the page-views note's saved position/size. Unlike the webring (which
-// the mobile CSS pins), the note sits at the same spot at every width, so a
-// saved position applies on any screen. Size is the container font-size in cqw.
-try {
-  const vp = JSON.parse(localStorage.getItem('viewsPos') || 'null');
-  if (vp) {
-    const v = $('views-magnet');
-    if (vp.top  != null) v.style.top      = vp.top  + '%';
-    if (vp.left != null) v.style.left     = vp.left + '%';
-    if (vp.size != null) v.style.fontSize = vp.size + 'cqw';
-  }
-} catch (e) {}
-
-function saveViewsPos() {
-  const v = $('views-magnet');
-  localStorage.setItem('viewsPos', JSON.stringify({
-    top:  parseFloat(v.style.top  || getComputedStyle(v).top),
-    left: parseFloat(v.style.left || getComputedStyle(v).left),
-    size: v.style.fontSize ? parseFloat(v.style.fontSize) : null
-  }));
-}
+// The note's position/size live only in CSS (the single source of truth). Edit
+// mode lets you drag/resize it and read the values off "Copy layout" to bake in;
+// nothing is persisted to localStorage, so code changes always take effect and a
+// stale local drag can never override the baked default.
 
 // Make webring draggable + resizable in edit mode (desktop only)
 if (isEditMode && !_isTouch) {
@@ -724,13 +707,13 @@ if (isEditMode && !_isTouch) {
 }
 
 // Make the page-views note draggable + resizable in edit mode (any width).
-// Drag to move; drag the corner handle to scale (font-size in cqw). Both persist
-// to localStorage and are exported by "Copy layout" as VIEWS_POS.
+// Drag to move; drag the corner handle to scale (font-size in cqw). Read the
+// resulting values off "Copy layout" (VIEWS_POS) to bake into the CSS.
 if (isEditMode) {
   const v = $('views-magnet');
   v.hidden = false;                 // show it for editing even before Firebase answers
   v.style.cursor = 'move';
-  makeDraggable(v, saveViewsPos);
+  makeDraggable(v);
 
   const vh = document.createElement('div');
   vh.style.cssText = 'position:absolute;right:-6px;bottom:-6px;width:14px;height:14px;background:#f6d400;border:1px solid #111;border-radius:2px;cursor:nwse-resize;z-index:10';
@@ -749,7 +732,6 @@ if (isEditMode) {
     const onUp = () => {
       vh.removeEventListener('pointermove', onMove);
       vh.removeEventListener('pointerup',   onUp);
-      saveViewsPos();
     };
     vh.addEventListener('pointermove', onMove);
     vh.addEventListener('pointerup',   onUp);

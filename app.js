@@ -75,11 +75,11 @@ const letterDefaultPos = i => ({
 let ITEMS = [
   { id: "item_1779583589922", src: "items/Bike Business.webp", top: 37.548, left: 29.04, width: 21.8, rotate: 0, href: "rides.html", hoverLabel: "Rides", windowTitle: "Best Rides" },
   { id: "item_1779583606062", src: "items/furniture_web.webp?v=2", top: 19.91, left: 26.77, width: 9.442, rotate: 0, href: "woodshop/woodshop copy.html", hoverLabel: "Woodshop" },
-  { id: "item_1779583643716", src: "items/greeting.webp", top: 9.908, left: 49.123, width: 13, rotate: 0, href: null, hoverLabel: null },
+  { id: "item_1779583643716", src: "items/greeting.webp", top: 9.908, left: 49.123, width: 13, rotate: 0, href: "about.html", hoverLabel: null, windowTitle: "About Me" },
   { id: "item_1779586060280", src: "items/tj receipt.webp", top: 10.299, left: 63.313, width: 9, rotate: 0, href: "https://tj-prices.com", hoverLabel: "TJ Prices" },
-  { id: "item_1781388702732", src: "items/about me.png", top: 9.922, left: 48.594, width: 13.9, rotate: 0, href: "about.html", hoverLabel: null, windowTitle: "About Me" },
+  { id: "item_1781388702732", src: "items/about me.png", top: 9.922, left: 48.594, width: 13.9, rotate: 0, href: null, hoverLabel: null, passthrough: true },
   { id: "item_1781392936791", src: "items/better doms.webp", top: 35.286, left: 53.122, width: 18.7, rotate: 0, href: null, hoverLabel: null },
-  { id: "item_amtrak", embed: "/amtrak/map.html?embed=1&v=3", fluid: true, aspect: "50 / 33", top: 9.76, left: 26.07, width: 23, rotate: 0, windowEmbed: "/amtrak/map.html?v=3", windowTitle: "Live Amtrak", hoverLabel: "Trains" },
+  { id: "item_amtrak", embed: "/amtrak/map.html?embed=1&v=3", fluid: true, aspect: "50 / 33", top: 9.76, left: 26.07, width: 23, rotate: 0, windowEmbed: "/amtrak/map.html?v=3", windowTitle: "Live Amtrak", hoverLabel: "Live Amtrak" },
   { id: "item_1781393177283", src: "items/shopping.png", top: 38.006, left: 37.651, width: 2.5, rotate: 0, href: null, hoverLabel: null },
   { id: "item_1786000000001", src: "items/writing.png", top: 20.514, left: 61.953, width: 11.5, rotate: 0, href: "writing/writing.html", hoverLabel: null, windowTitle: "Writing" },
   { id: "item_clockclock24", embed: "/ClockClock24/index.html?v=3", aspect: "8 / 3", top: 23.345, left: 46.158, width: 29.2, rotate: 0, href: "https://github.com/ArnaudSpanneut/ClockClock24", hoverLabel: null },
@@ -606,10 +606,16 @@ function renderItems() {
       makeDraggable(el);
     } else if (item.windowEmbed) {
       el.style.cursor = 'pointer';
+      el.classList.add('clickable');
       el.addEventListener('click', () => openEmbedWindow(item.windowEmbed, item.windowTitle || item.hoverLabel, item.aspect));
     } else if (item.href && !isPostcardOnTouch(item)) {
       el.style.cursor = 'pointer';
+      el.classList.add('clickable');
       el.addEventListener('click', () => openWindow(item.href, item.windowTitle || item.hoverLabel || item.href));
+    } else if (item.passthrough) {
+      // Decorative overlay (e.g. the "about me" label on the dog card): let hover
+      // and clicks fall through to the clickable magnet beneath it.
+      el.style.pointerEvents = 'none';
     }
   });
 }

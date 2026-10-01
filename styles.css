@@ -80,6 +80,16 @@ img {
 }
 body:not(.edit-mode) .item:hover .item-hover-label { display: block; }
 
+/* Hovering anywhere on the About Me postcard makes its "about me" label magnet
+   pop, so it's clear the card is clickable — without touching the card itself. */
+body:not(.edit-mode) .item[data-id="item_1781388702732"] img {
+  transition: transform 0.12s ease, filter 0.12s ease; transform-origin: center;
+}
+body:not(.edit-mode) .item[data-id="item_1779583643716"]:hover ~ .item[data-id="item_1781388702732"] img {
+  transform: scale(1.1);
+  filter: brightness(1.06) drop-shadow(0 3px 7px rgba(0, 0, 0, 0.55));
+}
+
 /* ── Fridge OS Window ── */
 #os-overlay {
   position: fixed; inset: 0;

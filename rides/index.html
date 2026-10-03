@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Best Rides Chi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --paper:  #ffffff;   /* flag white */
+      --card:   #ffffff;
+      --ink:    #14181f;
+      --mid:    #5f6672;
+      --faint:  #b5bbc4;
+      --line:   #dde2e8;
+      --hover:  #eef8fd;
+      --flag:   #41b6e6;   /* Chicago flag light blue */
+      --flagdk: #0b6fa4;   /* same hue, dark enough for text */
+      --red:    #e4002b;   /* Chicago flag red (stars) */
+      --mono:  'IBM Plex Mono', ui-monospace, Menlo, monospace;
+      --title: 'Space Mono', ui-monospace, Menlo, monospace;
+      --stripe: linear-gradient(to bottom, var(--flag) 0 36%, #fff 36% 64%, var(--flag) 64% 100%);
+    }
+    body { background: var(--paper); color: var(--ink); font: 12px/1.45 var(--mono); }
+
+    /* ── Header: white bar + Chicago-flag stripe ── */
+    header {
+      background: var(--paper); padding: 0 28px; height: 54px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+    }
+    header::after { content: ''; position: absolute; left: 0; right: 0; bottom: -12px; height: 12px; background: var(--stripe); }
+    .stars { display: inline-flex; gap: 3px; margin-left: 8px; vertical-align: 2px; }
+    .stars svg { fill: var(--red); }
+    .site-title { font: 700 17px var(--title); letter-spacing: -0.01em; color: var(--ink); }
+    nav { display: flex; gap: 2px; }
+    nav button, nav a {
+      background: none; border: none; color: var(--mid);
+      font: 12px var(--mono); text-transform: lowercase;
+      cursor: pointer; padding: 5px 10px; border-radius: 3px; text-decoration: none;
+    }
+    nav button:hover, nav a:hover { color: var(--ink); }
+    nav button.active { color: var(--paper); background: var(--ink); }
+    .wx { font-size: 12px; color: var(--mid); display: none; align-items: center; gap: 6px; }
+    .wx.show { display: inline-flex; }
+    .wx b { color: var(--ink); font-weight: 600; }
+    .wx .warrow { display: inline-block; font-size: 11px; color: var(--red); }
+    @media (max-width: 640px) { .wx { display: none !important; } header { padding: 0 14px; } }
+
+    main { max-width: 1060px; margin: 0 auto; padding: 36px 24px 80px; }
+
+    /* ── Controls ── */
+    .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-bottom: 14px; }
+    .seg { display: flex; border: 1px solid var(--ink); border-radius: 3px; overflow: hidden; }
+    .seg button, .tog { font: 12px var(--mono); color: var(--ink); background: var(--card); border: none; cursor: pointer; padding: 6px 11px; }
+    .seg button + button { border-left: 1px solid var(--ink); }
+    .seg button.on { background: var(--ink); color: var(--paper); }
+    .seg .n { opacity: 0.5; margin-left: 4px; }
+    .tog { border: 1px solid var(--line); border-radius: 3px; color: var(--mid); }
+    .tog:hover { border-color: var(--ink); color: var(--ink); }
+    .tog.on { background: var(--red); border-color: var(--red); color: #fff; }
+    .count { margin-left: auto; color: var(--mid); }
+
+    /* ── Table ── */
+    .table { background: var(--card); border: 1px solid var(--ink); border-radius: 3px; overflow: hidden; }
+    .row {
+      display: grid; align-items: center; gap: 0 14px;
+      grid-template-columns: 76px minmax(0, 1fr) 84px 56px 64px 64px 82px 170px;
+      padding: 9px 14px; border-top: 1px solid var(--line);
+    }
+    .row.head {
+      border-top: none; border-bottom: 1px solid var(--ink); padding-top: 8px; padding-bottom: 8px; background: var(--paper);
+      font-size: 10.5px; letter-spacing: 0.06em; color: var(--mid); text-transform: uppercase;
+    }
+    .row.head + .row { border-top: none; }
+    .head span { cursor: pointer; user-select: none; white-space: nowrap; }
+    .head span:hover { color: var(--ink); }
+    .head span.on { color: var(--red); font-weight: 600; }
+    .r { text-align: right; }
+    .ride { cursor: pointer; }
+    .ride:hover { background: var(--hover); }
+    .ride:hover .name { color: var(--red); }
+    .zero { color: var(--faint); }
+    .good { color: var(--flagdk); font-weight: 600; }  /* off-street ≥ 70% */
+
+    .thumb { width: 76px; height: 48px; border-radius: 2px; overflow: hidden; border: 1px solid var(--line);
+             pointer-events: none; position: relative; isolation: isolate; z-index: 0; background: #eceef1; }
+    .thumb > div { width: 100%; height: 100%; }
+    .thumb .leaflet-tile-pane { filter: grayscale(1) contrast(0.85) brightness(1.08); }
+
+    .name { font: 700 14px/1.25 var(--title); color: var(--ink); transition: color 0.1s; }
+    .place { font-size: 11px; color: var(--mid); margin-top: 3px; }
+    .lens { color: var(--faint); }
+    .compact { display: none; }
+
+    .train { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+    .train .d { color: var(--mid); }
+    .line {
+      display: inline-block; font: 600 9.5px var(--mono); letter-spacing: 0.02em;
+      padding: 1px 5px; border-radius: 2px; background: var(--lc); color: var(--lt);
+    }
+    .empty { padding: 36px; text-align: center; color: var(--mid); }
+
+    /* Mid widths (e.g. inside the jackkane.me fridge window): drop Type, slim the columns */
+    @media (max-width: 1000px) {
+      .row { grid-template-columns: 64px minmax(0, 1fr) 50px 58px 62px 76px 128px; gap: 0 10px; padding: 9px 10px; }
+      .row > :nth-child(3) { display: none; }
+      .thumb { width: 64px; height: 44px; }
+    }
+    @media (max-width: 760px) {
+      .row { grid-template-columns: 64px minmax(0, 1fr); padding: 10px 12px; }
+      .row.head { display: none; }
+      .row > .c { display: none; }
+      .thumb { width: 64px; height: 44px; }
+      .compact { display: flex; flex-wrap: wrap; gap: 2px 10px; margin-top: 4px; font-size: 11px; color: var(--mid); }
+      .count { margin-left: 0; }
+      main { padding: 30px 12px 60px; }
+    }
+
+    /* ── Data page ── */
+    .data { max-width: 780px; }
+    .data h2 { font: 700 15px var(--title); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 10px; }
+    .data table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--ink); margin-bottom: 28px; }
+    .data th, .data td { text-align: left; vertical-align: top; padding: 8px 12px; border-top: 1px solid var(--line); }
+    .data th { width: 170px; font-weight: 600; }
+    .data td { line-height: 1.55; }
+    .data a { color: var(--red); }
+    .data .stamp { color: var(--mid); }
+
+    /* ── Detail ── */
+    #overlay {
+      position: fixed; inset: 0; background: rgba(20,24,31,0.55); z-index: 1000;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity 0.15s;
+    }
+    #overlay.open { opacity: 1; pointer-events: all; }
+    #modal {
+      width: min(94vw, 840px); max-height: 92vh; background: var(--card); border: 1px solid var(--ink); border-radius: 4px;
+      box-shadow: 0 30px 80px rgba(20,24,31,0.4); overflow: hidden; display: flex; flex-direction: column;
+    }
+    #modal-bar {
+      height: 44px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between;
+      padding: 0 8px 0 16px; background: var(--paper); position: relative;
+    }
+    #modal-bar::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 8px; background: var(--stripe); }
+    #modal-title { font: 700 14px var(--title); padding-bottom: 6px; }
+    #modal-close { border: none; background: none; font: 20px var(--mono); color: var(--mid); cursor: pointer; padding: 0 8px 8px; }
+    #modal-close:hover { color: var(--red); }
+    #modal-scroll { overflow-y: auto; flex: 1; }
+    /* RWGPS embed needs real height or its map falls back to a world view */
+    #modal-map { height: 480px; }
+    #modal-map iframe { width: 1px; min-width: 100%; height: 100%; border: 0; display: block; }
+    #modal-body { padding: 18px 20px 24px; }
+
+    .variants { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+    .kv { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--ink); border-radius: 3px; overflow: hidden; margin-bottom: -1px; }
+    .kv div { padding: 9px 12px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--card); }
+    .kv div:nth-child(4n) { border-right: none; }
+    .kv .k { display: block; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--mid); }
+    .kv .v { display: block; font-size: 16px; font-weight: 600; margin-top: 2px; }
+
+    .list { width: 100%; border-collapse: collapse; margin-top: 18px; }
+    .list th { text-align: left; font-weight: 600; width: 140px; padding: 7px 0; vertical-align: top; }
+    .list td { padding: 7px 0; line-height: 1.55; vertical-align: top; }
+    .list tr + tr th, .list tr + tr td { border-top: 1px solid var(--line); }
+    .list .muted { color: var(--mid); }
+    .list a { color: var(--mid); }
+
+    .actions { display: flex; gap: 8px; margin-top: 18px; flex-wrap: wrap; }
+    .btn { font: 600 12px var(--mono); padding: 8px 14px; border-radius: 3px; text-decoration: none; border: 1px solid var(--ink); }
+    .btn.primary { background: var(--red); border-color: var(--red); color: #fff; }
+    .btn.secondary { background: var(--card); color: var(--ink); }
+    @media (max-width: 480px) { .kv { grid-template-columns: repeat(2, 1fr); } .kv div:nth-child(4n) { border-right: 1px solid var(--line); } .kv div:nth-child(2n) { border-right: none; } }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="site-title">Best Rides Chi<span class="stars"><svg viewBox="-6.5 -6.5 13 13" width="9" height="9" aria-hidden="true"><path d="M0.00 -6.00L1.20 -2.08L5.20 -3.00L2.40 0.00L5.20 3.00L1.20 2.08L0.00 6.00L-1.20 2.08L-5.20 3.00L-2.40 0.00L-5.20 -3.00L-1.20 -2.08Z"/></svg><svg viewBox="-6.5 -6.5 13 13" width="9" height="9" aria-hidden="true"><path d="M0.00 -6.00L1.20 -2.08L5.20 -3.00L2.40 0.00L5.20 3.00L1.20 2.08L0.00 6.00L-1.20 2.08L-5.20 3.00L-2.40 0.00L-5.20 -3.00L-1.20 -2.08Z"/></svg><svg viewBox="-6.5 -6.5 13 13" width="9" height="9" aria-hidden="true"><path d="M0.00 -6.00L1.20 -2.08L5.20 -3.00L2.40 0.00L5.20 3.00L1.20 2.08L0.00 6.00L-1.20 2.08L-5.20 3.00L-2.40 0.00L-5.20 -3.00L-1.20 -2.08Z"/></svg><svg viewBox="-6.5 -6.5 13 13" width="9" height="9" aria-hidden="true"><path d="M0.00 -6.00L1.20 -2.08L5.20 -3.00L2.40 0.00L5.20 3.00L1.20 2.08L0.00 6.00L-1.20 2.08L-5.20 3.00L-2.40 0.00L-5.20 -3.00L-1.20 -2.08Z"/></svg></span></div>
+  <nav id="nav">
+    <button class="active" data-v="rides">Rides</button>
+    <a href="map.html">Map</a>
+    <button data-v="data">Data</button>
+  </nav>
+  <span id="wx" class="wx"></span>
+</header>
+
+<main id="main"></main>
+
+<div id="overlay">
+  <div id="modal">
+    <div id="modal-bar"><span id="modal-title"></span><button id="modal-close" aria-label="Close">×</button></div>
+    <div id="modal-scroll"><div id="modal-map"></div><div id="modal-body"></div></div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="data/rides.js"></script>
+<script src="data/transit.js"></script>
+<script>
+const REGIONS = [['all', 'All'], ['city', 'Chicago'], ['suburbs', 'Suburbs'], ['indiana', 'Indiana']];
+const TYPE = { loop: 'Loop', out_and_back: 'Out & back', point_to_point: 'One way' };
+const SYS = { cta: 'CTA', metra: 'Metra', southshore: 'South Shore' };
+const PACE = 14;   // mph, for time estimates
+const NEAR = 1.0;  // mi, "Train" filter
+
+// Transit line chips keep their official colors
+const LINE_COLOR = {};
+TRANSIT_LINES.forEach(l => { const k = l.sys === 'southshore' ? 'South Shore' : l.short; LINE_COLOR[k] = LINE_COLOR[k] || l.color; });
+function chip(name) {
+  const c = LINE_COLOR[name] || '#777';
+  const [r, g, b] = [1, 3, 5].map(i => parseInt(c.slice(i, i + 2), 16));
+  return `<span class="line" style="--lc:${c};--lt:${(0.299 * r + 0.587 * g + 0.114 * b) > 165 ? '#1b1f2a' : '#fff'}">${name}</span>`;
+}
+
+const fmtMi = mi => mi >= 100 ? String(Math.round(mi)) : mi.toFixed(1);
+const fmtTime = mi => { const m = Math.round(mi / PACE * 60); return `${Math.floor(m / 60)}:${String(m % 60).padStart(2, '0')}`; };
+const pct = (n, cls = '') => `<span class="${n ? cls : 'zero'}">${n}%</span>`;
+const places = v => v.end ? `${v.start.label} → ${v.end.label}` : v.start.label;
+
+function bestStation(v) {
+  let best = null;
+  [['start', v.start], ['finish', v.end]].filter(e => e[1]).forEach(([at, e]) =>
+    (e.stations || []).forEach(s => { if (!best || s.mi < best.mi) best = { ...s, at }; }));
+  return best;
+}
+function trainCell(v) {
+  const s = bestStation(v);
+  if (!s || s.mi > 5) return '<span class="zero">—</span>';
+  return `<span class="train">${s.lines.slice(0, 3).map(chip).join('')}<span class="d">${s.mi.toFixed(1)} mi${s.at === 'finish' ? ' (end)' : ''}</span></span>`;
+}
+
+/* ── State ───────────────────────────────────────────────────────────── */
+let view = 'rides', region = 'all', sortKey = null, sortDir = 1;
+const F = { train: false, paved: false, short: false };
+const FILTERS = [
+  ['train', `Station ≤ ${NEAR} mi`, v => { const s = bestStation(v); return s && s.mi <= NEAR; }],
+  ['paved', 'Paved', v => v.unpaved <= 10],
+  ['short', 'Under 30 mi', v => v.mi < 30],
+];
+const COLS = [
+  // key, label, value for sorting, right-aligned
+  ['name',    'Ride',          r => r.name.toLowerCase(), false],
+  ['type',    'Type',          r => r.variants[0].type, false],
+  ['mi',      'Miles',         r => r.variants[0].mi, true],
+  ['gain',    'Climb ft',      r => r.variants[0].gain, true],
+  ['unpaved', 'Unpaved',       r => r.variants[0].unpaved, true],
+  ['path',    'Off-street',    r => r.variants[0].mix.path, true],
+  ['train',   'Nearest train', r => (bestStation(r.variants[0]) || { mi: 99 }).mi, false],
+];
+const main = document.getElementById('main');
+const thumbs = {};
+
+function rows() {
+  let rs = RIDES.filter(r => region === 'all' || r.region === region)
+    .filter(r => FILTERS.every(([k, , fn]) => !F[k] || fn(r.variants[0])));
+  if (sortKey) {
+    const fn = COLS.find(c => c[0] === sortKey)[2];
+    rs = [...rs].sort((a, b) => (fn(a) < fn(b) ? -1 : fn(a) > fn(b) ? 1 : 0) * sortDir);
+  }
+  return rs;
+}
+
+function rideRow(r) {
+  const v = r.variants[0];
+  return `<div class="row ride" data-id="${r.id}">
+    <div class="thumb"><div id="t-${r.id}"></div></div>
+    <div>
+      <div class="name">${r.name}</div>
+      <div class="place">${places(v)}${r.variants.length > 1 ? ` <span class="lens">· ${r.variants.length} lengths</span>` : ''}</div>
+      <div class="compact"><span>${fmtMi(v.mi)} mi</span><span>${v.gain} ft</span><span>${v.unpaved}% unpaved</span>${trainCell(v)}</div>
+    </div>
+    <div class="c">${TYPE[v.type] || ''}</div>
+    <div class="c r">${fmtMi(v.mi)}</div>
+    <div class="c r">${v.gain.toLocaleString()}</div>
+    <div class="c r">${pct(v.unpaved)}</div>
+    <div class="c r">${pct(v.mix.path, v.mix.path >= 70 ? 'good' : '')}</div>
+    <div class="c">${trainCell(v)}</div>
+  </div>`;
+}
+
+function render() {
+  if (view === 'data') return renderData();
+  const rs = rows();
+  const n = id => id === 'all' ? RIDES.length : RIDES.filter(r => r.region === id).length;
+  main.innerHTML = `
+    <div class="controls">
+      <div class="seg" id="regions">${REGIONS.map(([id, l]) =>
+        `<button data-g="${id}" class="${region === id ? 'on' : ''}">${l}<span class="n">${n(id)}</span></button>`).join('')}</div>
+      <div id="filters" style="display:flex;gap:6px;flex-wrap:wrap">${FILTERS.map(([k, l]) =>
+        `<button class="tog${F[k] ? ' on' : ''}" data-f="${k}">${l}</button>`).join('')}</div>
+      <div class="count">${rs.length} of ${RIDES.length}</div>
+    </div>
+    <div class="table">
+      <div class="row head"><div></div>${COLS.map(([k, l, , right]) =>
+        `<span data-k="${k}" class="${right ? 'r' : ''}${sortKey === k ? ' on' : ''}">${l}${sortKey === k ? (sortDir > 0 ? ' ↑' : ' ↓') : ''}</span>`).join('')}</div>
+      ${rs.length ? rs.map(rideRow).join('') : '<div class="empty">No rides match.</div>'}
+    </div>`;
+
+  document.getElementById('regions').onclick = e => { const b = e.target.closest('button'); if (b) { region = b.dataset.g; render(); } };
+  document.getElementById('filters').onclick = e => { const b = e.target.closest('button'); if (b) { F[b.dataset.f] = !F[b.dataset.f]; render(); } };
+  main.querySelector('.head').onclick = e => {
+    const h = e.target.closest('span[data-k]'); if (!h) return;
+    if (sortKey === h.dataset.k) { if (sortDir < 0) sortKey = null; sortDir = -sortDir; } else { sortKey = h.dataset.k; sortDir = 1; }
+    render();
+  };
+  main.querySelectorAll('.ride').forEach(el => el.onclick = () => openModal(RIDES.find(r => r.id === el.dataset.id)));
+  main.querySelectorAll('.thumb > div').forEach(el => io.observe(el));
+}
+
+/* Thumbnails: grey base map + route line, built when scrolled into view */
+const tiles = () => L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 });
+const io = new IntersectionObserver(es => es.forEach(e => {
+  if (!e.isIntersecting) return;
+  io.unobserve(e.target);
+  const id = e.target.id.slice(2), ride = RIDES.find(r => r.id === id);
+  if (thumbs[id]) thumbs[id].remove();
+  const m = L.map(e.target, { zoomControl: false, dragging: false, scrollWheelZoom: false, doubleClickZoom: false,
+    touchZoom: false, boxZoom: false, keyboard: false, attributionControl: false });
+  tiles().addTo(m);
+  const line = L.polyline(ride.variants[0].line, { color: '#e4002b', weight: 2.5 }).addTo(m);
+  m.fitBounds(line.getBounds(), { padding: [5, 5], maxZoom: 13 });
+  thumbs[id] = m;
+}), { rootMargin: '200px' });
+
+/* ── Detail ──────────────────────────────────────────────────────────── */
+const overlay = document.getElementById('overlay');
+
+function stationRow(label, e) {
+  const s = (e.stations || [])[0];
+  if (!s || s.mi > 5) return '';
+  return `<tr><th>${label}</th><td>${s.name} ${s.lines.map(chip).join(' ')} <span class="muted">${s.mi.toFixed(1)} mi</span></td></tr>`;
+}
+
+function renderDetail(ride, i) {
+  const v = ride.variants[i];
+  document.getElementById('modal-title').textContent = ride.name;
+  document.getElementById('modal-map').innerHTML =
+    `<iframe src="https://ridewithgps.com/embeds?type=route&id=${v.rwgps}&sampleGraph=true" title="${ride.name} on RideWithGPS" scrolling="no"></iframe>`;
+  const kv = (k, val) => `<div><span class="k">${k}</span><span class="v">${val}</span></div>`;
+  document.getElementById('modal-body').innerHTML = `
+    ${ride.variants.length > 1 ? `<div class="variants">${ride.variants.map((x, j) =>
+      `<button class="tog${j === i ? ' on' : ''}" data-i="${j}">${fmtMi(x.mi)} mi</button>`).join('')}</div>` : ''}
+    <div class="kv">
+      ${kv('Miles', fmtMi(v.mi))}
+      ${kv('Climb ft', v.gain.toLocaleString())}
+      ${kv('Unpaved', v.unpaved + '%')}
+      ${kv('Off-street', v.mix.path + '%')}
+    </div>
+    <table class="list">
+      <tr><th>${TYPE[v.type]}</th><td>${places(v)}</td></tr>
+      ${stationRow('Train at start', v.start)}
+      ${v.end ? stationRow('Train at end', v.end) : ''}
+    </table>
+    <div class="actions">
+      <a class="btn primary" href="https://ridewithgps.com/routes/${v.rwgps}" target="_blank" rel="noopener">RideWithGPS ↗</a>
+      <a class="btn secondary" href="map.html#${ride.id}">Map</a>
+    </div>`;
+  document.querySelectorAll('#modal-body .variants .tog').forEach(b => b.onclick = () => renderDetail(ride, +b.dataset.i));
+  document.getElementById('modal-scroll').scrollTop = 0;
+}
+
+function openModal(ride) { renderDetail(ride, 0); overlay.classList.add('open'); history.replaceState(null, '', '#' + ride.id); }
+function closeModal() {
+  overlay.classList.remove('open');
+  document.getElementById('modal-map').innerHTML = '';
+  history.replaceState(null, '', location.pathname);
+}
+document.getElementById('modal-close').onclick = closeModal;
+overlay.onclick = e => { if (e.target === overlay) closeModal(); };
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+/* ── Data page: what each column means and where it comes from ───────── */
+function renderData() {
+  main.innerHTML = `<div class="data">
+    <h2>Columns</h2>
+    <table>
+      <tr><th>Miles, Type</th><td>RideWithGPS route.</td></tr>
+      <tr><th>Climb ft</th><td>RideWithGPS total, minus jumps in its elevation data (≥ 4 m within 20 m of travel).</td></tr>
+      <tr><th>Unpaved</th><td>RideWithGPS route.</td></tr>
+      <tr><th>Off-street</th><td>Share of distance on bike paths and trails, including separated paths beside a road. RideWithGPS road type, checked against OpenStreetMap.</td></tr>
+      <tr><th>Main roads</th><td>Share of distance on tertiary-or-larger roads (detail view), split by whether OpenStreetMap shows a bike lane.</td></tr>
+      <tr><th>Nearest train</th><td>Closest station that allows bikes, to the start or end. Straight-line distance. CTA, Metra and South Shore GTFS.</td></tr>
+      <tr><th>Time</th><td>Distance ÷ ${PACE} mph, no stops.</td></tr>
+      <tr><th>Biggest climb, Steepest</th><td>From the cleaned elevation profile. Steepest = steepest 150 m.</td></tr>
+    </table>
+    <h2>Bikes on trains</h2>
+    <table>
+      ${Object.entries(BIKE_RULES).map(([k, r]) => `<tr><th>${SYS[k]}</th><td>${r.short} · <a href="${r.src}" target="_blank" rel="noopener">source</a></td></tr>`).join('')}
+      <tr><th>South Shore bike stations</th><td>Hegewisch, Hammond Gateway, South Hammond, Munster Ridge, Munster/Dyer, East Chicago, Miller, Portage/Ogden Dunes, Dune Park, 11th St (Michigan City), South Bend, and the Chicago stations shared with Metra.</td></tr>
+    </table>
+    <h2>Sources</h2>
+    <table>
+      <tr><th>Routes</th><td><a href="https://ridewithgps.com/partners/great-rides-chicago" target="_blank" rel="noopener">Great Rides Chicago</a>, Great Rides Schererville and other public routes on RideWithGPS</td></tr>
+      <tr><th>Roads, places</th><td><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors</td></tr>
+      <tr><th>Weather</th><td><a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a></td></tr>
+    </table>
+    <p class="stamp">Built ${BUILD_DATE}</p>
+  </div>`;
+}
+
+document.getElementById('nav').onclick = e => {
+  const b = e.target.closest('button'); if (!b) return;
+  document.querySelectorAll('#nav button').forEach(x => x.classList.toggle('active', x === b));
+  view = b.dataset.v; render();
+};
+
+/* ── Weather ─────────────────────────────────────────────────────────── */
+const COMPASS = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+fetch('https://api.open-meteo.com/v1/forecast?latitude=41.88&longitude=-87.63&current=temperature_2m,wind_speed_10m,wind_direction_10m&temperature_unit=fahrenheit&wind_speed_unit=mph')
+  .then(r => r.json())
+  .then(d => {
+    const c = d.current, wx = document.getElementById('wx');
+    wx.innerHTML = `<b>${Math.round(c.temperature_2m)}°</b> · <span class="warrow" style="transform:rotate(${c.wind_direction_10m + 90}deg)">➤</span><b>${COMPASS[Math.round(c.wind_direction_10m / 22.5) % 16]} ${Math.round(c.wind_speed_10m)}</b>`;
+    wx.classList.add('show');
+  }).catch(() => {});
+
+render();
+const deep = RIDES.find(r => '#' + r.id === location.hash);
+if (deep) openModal(deep);
+</script>
+</body>
+</html>

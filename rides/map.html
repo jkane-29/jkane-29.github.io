@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chicago Bike Map — Best Rides Chi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --paper: #ffffff; --card: #ffffff; --ink: #14181f; --mid: #5f6672; --line: #dde2e8;
+      --flag: #41b6e6; --red: #e4002b;
+      --mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace; --title: 'Space Mono', ui-monospace, Menlo, monospace;
+      --stripe: linear-gradient(to bottom, var(--flag) 0 36%, #fff 36% 64%, var(--flag) 64% 100%);
+    }
+    html, body { height: 100%; }
+    body { display: flex; flex-direction: column; font: 12px/1.45 var(--mono); color: var(--ink); background: var(--paper); }
+
+    /* ── Header: white bar + Chicago-flag stripe ── */
+    header {
+      background: var(--paper); height: 50px; flex-shrink: 0;
+      display: flex; align-items: center; padding: 0 20px; gap: 14px;
+      z-index: 1000; position: relative;
+    }
+    header::after { content: ''; position: absolute; left: 0; right: 0; bottom: -12px; height: 12px; background: var(--stripe); }
+    .stars { display: inline-flex; gap: 3px; margin-left: 8px; vertical-align: 2px; }
+    .stars svg { fill: var(--red); }
+    .site-title { font: 700 16px var(--title); color: var(--ink); text-decoration: none; }
+    .header-sep { color: var(--line); }
+    .header-label { color: var(--mid); text-transform: lowercase; }
+    .back-link { margin-left: auto; color: var(--mid); text-decoration: none; text-transform: lowercase; }
+    .back-link:hover { color: var(--red); }
+    .toggles { display: flex; gap: 6px; margin-left: 16px; }
+    .toggle-btn { font: 12px var(--mono); text-transform: lowercase; padding: 4px 10px; border-radius: 3px; cursor: pointer;
+                  border: 1px solid var(--line); color: var(--mid); background: var(--card); }
+    .toggle-btn.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+    @media (max-width: 640px) { .header-sep, .header-label, .back-link { display: none; } .toggles { margin-left: 0; } }
+
+    #map { flex: 1; background: #eceef1; }
+    /* Grey base map so rides and transit lines read first */
+    #map .leaflet-tile-pane { filter: grayscale(1) contrast(0.88) brightness(1.06); }
+    .leaflet-control-attribution { font-size: 9px; opacity: 0.7; }
+    .leaflet-tooltip { font: 11px var(--mono); }
+
+    /* ── Legend ── */
+    #legend {
+      position: absolute; bottom: 28px; left: 16px; z-index: 500;
+      background: var(--card); border: 1px solid var(--ink); border-radius: 3px;
+      padding: 10px 14px; font-size: 11px; max-height: calc(100% - 120px); overflow-y: auto;
+    }
+    .legend-title { font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--mid); margin: 8px 0 5px; }
+    .legend-title:first-child { margin-top: 0; }
+    .legend-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+    .legend-line { width: 20px; height: 3px; flex-shrink: 0; }
+    .legend-cols { display: grid; grid-template-columns: auto auto; column-gap: 14px; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin: 0 5px; }
+
+    /* ── Ride card ── */
+    #ride-card {
+      position: absolute; top: 74px; right: 16px; z-index: 600; width: 340px;
+      background: var(--card); border: 1px solid var(--ink); border-radius: 3px;
+      padding: 14px 16px; box-shadow: 0 10px 30px rgba(20,24,31,0.25); display: none;
+      max-height: calc(100% - 100px); overflow-y: auto;
+    }
+    #ride-card.open { display: block; }
+    .card-close { position: absolute; top: 6px; right: 11px; cursor: pointer; font-size: 16px; color: var(--mid); }
+    .card-close:hover { color: var(--red); }
+    .card-label { font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--mid); margin-bottom: 4px; }
+    .card-name { font: 700 15px/1.25 var(--title); margin-bottom: 3px; padding-right: 14px; }
+    .card-sub { font-size: 11px; color: var(--mid); margin-bottom: 10px; }
+    .card-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px 10px; border-top: 1px solid var(--line); padding-top: 9px; }
+    .card-stats div { font-size: 9.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--mid); }
+    .card-stats b { display: block; font-size: 15px; letter-spacing: 0; text-transform: none; color: var(--ink); font-weight: 600; margin-top: 1px; }
+    .card-section { margin-top: 10px; padding-top: 9px; border-top: 1px solid var(--line); font-size: 11px; line-height: 1.6; }
+    .card-section b { font-weight: 600; }
+    .line { display: inline-block; font: 600 9px var(--mono); padding: 1px 4px; border-radius: 2px; background: var(--lc); color: var(--lt); margin-right: 2px; vertical-align: 1px; }
+    .var-row { display: flex; align-items: center; gap: 7px; margin-top: 4px; cursor: pointer; }
+    .var-row:not(.on) { opacity: 0.4; }
+    .var-dash { width: 20px; flex-shrink: 0; border-top: 2px dashed var(--ink); }
+    .var-row.primary .var-dash { border-top: 3px solid var(--red); }
+    .card-links { margin-top: 12px; display: flex; gap: 8px; }
+    .card-links a { font: 600 11px var(--mono); color: #fff; background: var(--red); padding: 5px 10px; border-radius: 3px; text-decoration: none; }
+    .card-links a.sec { background: var(--card); border: 1px solid var(--ink); color: var(--ink); }
+  </style>
+</head>
+<body>
+
+<header>
+  <a class="site-title" href="index.html">Best Rides Chi<span class="stars"><svg viewBox="-6.5 -6.5 13 13" width="9" height="9" aria-hidden="true"><path d="M0.00 -6.00L1.20 -2.08L5.20 -3.00L2.40 0.00L5.20 3.00L1.20 2.08L0.00 6.00L-1.20 2.08L-5.20 3.00L-2.40 0.00L-5.20 -3.00L-1.20 -2.08Z"/></svg><svg viewBox="-6.5 -6.5 13 13" width="9" height="9" aria-hidden="true"><path d="M0.00 -6.00L1.20 -2.08L5.20 -3.00L2.40 0.00L5.20 3.00L1.20 2.08L0.00 6.00L-1.20 2.08L-5.20 3.00L-2.40 0.00L-5.20 -3.00L-1.20 -2.08Z"/></svg><svg viewBox="-6.5 -6.5 13 13" width="9" height="9" aria-hidden="true"><path d="M0.00 -6.00L1.20 -2.08L5.20 -3.00L2.40 0.00L5.20 3.00L1.20 2.08L0.00 6.00L-1.20 2.08L-5.20 3.00L-2.40 0.00L-5.20 -3.00L-1.20 -2.08Z"/></svg><svg viewBox="-6.5 -6.5 13 13" width="9" height="9" aria-hidden="true"><path d="M0.00 -6.00L1.20 -2.08L5.20 -3.00L2.40 0.00L5.20 3.00L1.20 2.08L0.00 6.00L-1.20 2.08L-5.20 3.00L-2.40 0.00L-5.20 -3.00L-1.20 -2.08Z"/></svg></span></a>
+  <span class="header-sep">/</span>
+  <span class="header-label">Map</span>
+  <div class="toggles">
+    <button class="toggle-btn on rides-toggle" id="btn-rides">rides</button>
+    <button class="toggle-btn transit-toggle" id="btn-transit">transit</button>
+  </div>
+  <a class="back-link" href="index.html">← rides</a>
+</header>
+
+<div id="map"></div>
+<div id="legend"></div>
+<div id="ride-card"><div class="card-close" id="card-close">×</div><div id="card-body"></div></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="data/rides.js"></script>
+<script src="data/transit.js"></script>
+<script>
+const TYPE = { loop: 'Loop', out_and_back: 'Out & back', point_to_point: 'One way' };
+const SYS = { cta: 'CTA', metra: 'Metra', southshore: 'South Shore' };
+const SYS_COLOR = { cta: '#00a1de', metra: '#0e3a7a', southshore: '#F6931C' };
+const NEAR = 1.0;
+
+const LINE_COLOR = {};
+TRANSIT_LINES.forEach(l => {
+  if (l.sys === 'southshore') LINE_COLOR['South Shore'] = LINE_COLOR['South Shore'] || l.color;
+  else LINE_COLOR[l.short] = l.color;
+});
+function lineChip(name) {
+  const c = LINE_COLOR[name] || '#888';
+  const [r, g, b] = [1, 3, 5].map(i => parseInt(c.slice(i, i + 2), 16));
+  return `<span class="line" style="--lc:${c};--lt:${(0.299 * r + 0.587 * g + 0.114 * b) > 165 ? '#111' : '#fff'}">${name}</span>`;
+}
+const fmtMi = mi => mi >= 100 ? String(Math.round(mi)) : mi.toFixed(1);
+const PACE = 14;
+const fmtTime = mi => { const m = Math.round(mi / PACE * 60); return `${Math.floor(m / 60)}:${String(m % 60).padStart(2, '0')}`; };
+
+function bestStation(v) {
+  let best = null;
+  [['start', v.start], ['finish', v.end]].filter(e => e[1]).forEach(([tag, e]) =>
+    (e.stations || []).forEach(s => { if (!best || s.mi < best.mi) best = { ...s, at: tag }; }));
+  return best;
+}
+const trainFriendly = v => { const b = bestStation(v); return b && b.mi <= NEAR; };
+
+/* ── Map ─────────────────────────────────────────────────────────────── */
+const map = L.map('map', { zoomControl: true });
+// OpenStreetMap's own tiles (no API key). Carto's free basemaps now require a key.
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors · transit: CTA, Metra, NICTD GTFS',
+  maxZoom: 19,
+}).addTo(map);
+map.createPane('transit').style.zIndex = 420;
+map.createPane('rideLines').style.zIndex = 610;
+map.createPane('rideDots').style.zIndex = 620;
+map.createPane('stations').style.zIndex = 630;
+
+/* ── Ride start dots → click to expand ───────────────────────────────── */
+const RIDE_COLOR = '#14181f';   // dots
+const ROUTE_COLOR = '#e4002b';  // opened route
+const DOT = { pane: 'rideDots', radius: 7, color: '#fff', weight: 2, fillColor: RIDE_COLOR, fillOpacity: 1, opacity: 1 };
+const markers = {};
+let active = null, activeLayers = [], variantLayers = [];
+
+RIDES.forEach(ride => {
+  const v = ride.variants[0];
+  const m = L.circleMarker([v.start.lat, v.start.lng], DOT)
+    .bindTooltip(`${ride.name} · ${fmtMi(v.mi)} mi`, { direction: 'top', opacity: 0.9 });
+  m.on('click', e => { L.DomEvent.stopPropagation(e); active && active.id === ride.id ? collapse() : expand(ride); });
+  m.addTo(map);
+  markers[ride.id] = m;
+});
+map.fitBounds(L.latLngBounds(RIDES.map(r => [r.variants[0].start.lat, r.variants[0].start.lng])), { padding: [40, 40] });
+
+const card = document.getElementById('ride-card'), cardBody = document.getElementById('card-body');
+
+function collapse() {
+  activeLayers.concat(variantLayers).forEach(l => map.removeLayer(l));
+  activeLayers = []; variantLayers = [];
+  if (active) markers[active.id].setStyle(dotStyle(active));
+  active = null;
+  card.classList.remove('open');
+  history.replaceState(null, '', location.pathname);
+}
+
+function stationLine(tag, end) {
+  const s = (end.stations || [])[0];
+  if (!s) return '';
+  if (s.mi > 5) return '';
+  return `<div>${s.name} ${s.lines.slice(0, 3).map(lineChip).join('')} ${s.mi.toFixed(1)} mi${tag === 'Finish' ? ' (end)' : ''}</div>`;
+}
+
+function expand(ride) {
+  collapse();
+  active = ride;
+  markers[ride.id].setStyle({ radius: 9, fillColor: '#fff', color: ROUTE_COLOR, weight: 3, fillOpacity: 1, opacity: 1 });
+  const v = ride.variants[0];
+  activeLayers.push(L.polyline(v.line, { pane: 'rideLines', color: '#fff', weight: 9, opacity: 0.9 }).addTo(map));
+  activeLayers.push(L.polyline(v.line, { pane: 'rideLines', color: ROUTE_COLOR, weight: 4.5 }).addTo(map));
+  // Other lengths: dashed, toggled from the card
+  variantLayers = ride.variants.slice(1).map(x => L.layerGroup([
+    L.polyline(x.line, { pane: 'rideLines', color: '#fff', weight: 7, opacity: 0.85 }),
+    L.polyline(x.line, { pane: 'rideLines', color: RIDE_COLOR, weight: 3, dashArray: '6 6' })
+      .bindTooltip(fmtMi(x.mi) + ' mi', { sticky: true }),
+  ]).addTo(map));
+  if (v.end) {
+    activeLayers.push(L.circleMarker([v.end.lat, v.end.lng], { pane: 'rideDots', radius: 6, color: ROUTE_COLOR, weight: 3, fillColor: '#fff', fillOpacity: 1 })
+      .bindTooltip('Finish · ' + v.end.label, { direction: 'top' }).addTo(map));
+  }
+
+  cardBody.innerHTML = `
+    <div class="card-label">${{ city: 'Chicago', suburbs: 'Suburbs', indiana: 'Indiana' }[ride.region]} · ${TYPE[v.type] || 'Ride'}</div>
+    <div class="card-name">${ride.name}</div>
+    <div class="card-sub">${v.end ? v.start.label + ' → ' + v.end.label : v.start.label}</div>
+    <div class="card-stats">
+      <div>Miles<b>${fmtMi(v.mi)}</b></div><div>Climb ft<b>${v.gain.toLocaleString()}</b></div><div>Unpaved<b>${v.unpaved}%</b></div><div>Off-street<b>${v.mix.path}%</b></div>
+    </div>
+    ${(() => { const t = stationLine('Start', v.start) + (v.end ? stationLine('Finish', v.end) : ''); return t ? `<div class="card-section">${t}</div>` : ''; })()}
+    ${ride.variants.length > 1 ? `<div class="card-section">
+      <div class="var-row on primary"><span class="var-dash"></span>${fmtMi(v.mi)} mi</div>
+      ${ride.variants.slice(1).map((x, i) => `<div class="var-row on" data-i="${i}"><span class="var-dash"></span>${fmtMi(x.mi)} mi</div>`).join('')}
+    </div>` : ''}
+    <div class="card-links">
+      <a href="https://ridewithgps.com/routes/${v.rwgps}" target="_blank" rel="noopener">RideWithGPS ↗</a>
+      <a class="sec" href="index.html#${ride.id}">Details</a>
+    </div>`;
+  card.classList.add('open');
+  cardBody.querySelectorAll('.var-row[data-i]').forEach(row => row.onclick = () => {
+    const g = variantLayers[+row.dataset.i];
+    map.hasLayer(g) ? map.removeLayer(g) : map.addLayer(g);
+    row.classList.toggle('on', map.hasLayer(g));
+  });
+
+  const b = L.latLngBounds(v.line);
+  ride.variants.slice(1).forEach(x => b.extend(L.latLngBounds(x.line)));
+  const sz = map.getSize();
+  if (b.isValid() && sz.x > 0 && sz.y > 0) map.flyToBounds(b, { paddingTopLeft: [40, 40], paddingBottomRight: [340, 40], duration: 0.7, maxZoom: 13 });
+  history.replaceState(null, '', '#' + ride.id);
+}
+document.getElementById('card-close').onclick = collapse;
+map.on('click', collapse);
+
+/* ── Transit mode: real lines + stations near rides ──────────────────── */
+let transitOn = false, transitLayer = null;
+function dotStyle(ride) {
+  if (!transitOn) return DOT;
+  const ok = ride.variants.some(trainFriendly);
+  return { ...DOT, radius: ok ? 8 : 5, fillOpacity: ok ? 1 : 0.18, opacity: ok ? 1 : 0.25 };
+}
+function buildTransit() {
+  const g = L.layerGroup();
+  const order = { metra: 0, southshore: 1, cta: 2 };
+  [...TRANSIT_LINES].sort((a, b) => order[a.sys] - order[b.sys]).forEach(l => {
+    L.polyline(l.coords, { pane: 'transit', color: l.color, weight: l.sys === 'cta' ? 4 : 3, opacity: 0.85 })
+      .bindTooltip(`${l.name} · ${SYS[l.sys]}`, { sticky: true }).addTo(g);
+  });
+  STATIONS.filter(s => s.nearRide || (s.sys === 'southshore')).forEach(s => {
+    const sysName = [s.sys, s.sys2].filter(Boolean).map(k => SYS[k]).join(' / ');
+    L.circleMarker([s.lat, s.lng], {
+      pane: 'stations', radius: s.bike ? 5 : 4, weight: 2,
+      color: s.bike ? SYS_COLOR[s.sys] : '#999', fillColor: s.bike ? '#fff' : '#ddd', fillOpacity: 1,
+      dashArray: s.bike ? null : '2 2',
+    }).bindTooltip(`<b>${s.name}</b> · ${sysName}<br>${s.lines.map(lineChip).join('')}<br>${s.bike ? 'Bikes OK' : 'No bikes at this station'}`,
+      { direction: 'top', opacity: 0.95 }).addTo(g);
+  });
+  return g;
+}
+function setTransit(on) {
+  transitOn = on;
+  if (on) { transitLayer = transitLayer || buildTransit(); transitLayer.addTo(map); }
+  else if (transitLayer) map.removeLayer(transitLayer);
+  RIDES.forEach(r => { if (!active || active.id !== r.id) markers[r.id].setStyle(dotStyle(r)); });
+  renderLegend();
+}
+
+/* ── Legend ──────────────────────────────────────────────────────────── */
+function renderLegend() {
+  const leg = document.getElementById('legend');
+  const rideRows = `
+    <div class="legend-title">Rides</div>
+    <div class="legend-row"><span class="legend-dot" style="background:#14181f;border:2px solid #fff"></span>Ride start</div>
+    <div class="legend-row"><span class="legend-line" style="border-top:2px dashed #14181f;height:0"></span>Other lengths</div>`;
+  if (!transitOn) {
+    leg.innerHTML = rideRows;
+    return;
+  }
+  const group = sys => TRANSIT_LINES.filter(l => l.sys === sys).map(l =>
+    `<div class="legend-row"><span class="legend-line" style="background:${l.color}"></span>${l.sys === 'southshore' ? l.short : l.short}</div>`).join('');
+  leg.innerHTML = `
+    <div class="legend-title">CTA 'L'</div><div class="legend-cols">${group('cta')}</div>
+    <div class="legend-title">Metra</div><div class="legend-cols">${group('metra')}</div>
+    <div class="legend-title">South Shore</div><div class="legend-cols">${group('southshore')}</div>
+    <div class="legend-title">Stations</div>
+    <div class="legend-row"><span class="legend-dot" style="background:#fff;border:2px solid #0e3a7a"></span>Bikes OK</div>
+    <div class="legend-row"><span class="legend-dot" style="background:#ddd;border:2px dashed #999"></span>No bikes (South Shore)</div>
+    <div class="legend-title">Rides</div>
+    <div class="legend-row"><span class="legend-dot" style="background:#14181f;border:2px solid #fff"></span>Station ≤ ${NEAR} mi</div>
+    <div class="legend-row"><span class="legend-dot" style="background:rgba(20,24,31,0.2);border:2px solid #fff"></span>Station > ${NEAR} mi</div>`;
+}
+
+/* ── Toggles ─────────────────────────────────────────────────────────── */
+document.getElementById('btn-rides').onclick = function () {
+  this.classList.toggle('on');
+  const on = this.classList.contains('on');
+  if (!on) collapse();
+  Object.values(markers).forEach(m => on ? m.addTo(map) : map.removeLayer(m));
+};
+document.getElementById('btn-transit').onclick = function () {
+  this.classList.toggle('on');
+  setTransit(this.classList.contains('on'));
+};
+
+renderLegend();
+const deep = RIDES.find(r => '#' + r.id === location.hash);
+if (deep) setTimeout(() => expand(deep), 300);
+</script>
+</body>
+</html>

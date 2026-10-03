@@ -1,0 +1,180 @@
+{
+  "_readme": "Curated ride list. Each ride = one or more public RideWithGPS route IDs; the first is the default, others show as alternate lengths. Rides with several routes need a \"name\". Optional: region (city | suburbs | indiana).",
+  "rides": [
+    {
+      "routes": [
+        [31702771],
+        [36072559],
+        [36072580]
+      ],
+      "name": "The Lakefront Trail"
+    },
+    {
+      "routes": [
+        [31646430]
+      ]
+    },
+    {
+      "routes": [
+        [31646576]
+      ]
+    },
+    {
+      "routes": [
+        [31646578]
+      ]
+    },
+    {
+      "routes": [
+        [32049473]
+      ]
+    },
+    {
+      "routes": [
+        [31702786]
+      ]
+    },
+    {
+      "routes": [
+        [31702781]
+      ]
+    },
+    {
+      "routes": [
+        [31712929]
+      ]
+    },
+    {
+      "routes": [
+        [31646571]
+      ]
+    },
+    {
+      "routes": [
+        [32050319]
+      ]
+    },
+    {
+      "routes": [
+        [44944114],
+        [44943748]
+      ],
+      "name": "Illinois Prairie Path"
+    },
+    {
+      "routes": [
+        [44817599],
+        [44944171]
+      ],
+      "name": "Fox River Trail"
+    },
+    {
+      "routes": [
+        [44944145],
+        [44943887]
+      ],
+      "name": "I&M Canal Trail"
+    },
+    {
+      "routes": [
+        [42017075],
+        [31723608]
+      ],
+      "name": "Des Plaines River Trail"
+    },
+    {
+      "routes": [
+        [31713106]
+      ]
+    },
+    {
+      "routes": [
+        [44971837]
+      ]
+    },
+    {
+      "routes": [
+        [31718313]
+      ]
+    },
+    {
+      "routes": [
+        [44945612]
+      ]
+    },
+    {
+      "routes": [
+        [44943793]
+      ]
+    },
+    {
+      "routes": [
+        [42017035]
+      ]
+    },
+    {
+      "routes": [
+        [44817394]
+      ]
+    },
+    {
+      "routes": [
+        [31646573]
+      ]
+    },
+    {
+      "routes": [
+        [42017033]
+      ]
+    },
+    {
+      "routes": [
+        [44817675],
+        [44817744]
+      ],
+      "name": "Brunner Forest Preserve"
+    },
+    {
+      "routes": [
+        [44818488]
+      ]
+    },
+    {
+      "routes": [
+        [28195565]
+      ]
+    },
+    {
+      "routes": [
+        [43303046]
+      ]
+    },
+    {
+      "routes": [
+        [21700253],
+        [5464954]
+      ],
+      "name": "Oak Savannah & Prairie Duneland Trails"
+    },
+    {
+      "routes": [
+        [32682526]
+      ]
+    },
+    {
+      "routes": [
+        [32704097]
+      ]
+    },
+    {
+      "routes": [
+        [32698579]
+      ]
+    },
+    {
+      "routes": [
+        [52827339]
+      ]
+    }
+  ]
+}

@@ -7,8 +7,9 @@ test.html
 bookshelf files/bookshelf copy/
 favicon-preview/
 
-# WIP — keep local
-rides/
+# Best Rides Chi: design explorations — keep local
+rides/mockups/
+rides/fonts.html
 
 # Original HEIC photos — kept local; web uses converted JPEGs
 *.HEIC

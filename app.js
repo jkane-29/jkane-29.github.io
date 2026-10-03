@@ -78,7 +78,7 @@ let ITEMS = [
   { id: "item_1779583643716", src: "items/greeting.webp", top: 9.908, left: 49.123, width: 13, rotate: 0, href: "about.html", hoverLabel: null, windowTitle: "About Me" },
   { id: "item_1779586060280", src: "items/tj receipt.webp", top: 10.299, left: 63.313, width: 9, rotate: 0, href: "https://tj-prices.com", hoverLabel: "TJ Prices" },
   { id: "item_1781388702732", src: "items/about me.png", top: 9.922, left: 48.594, width: 13.9, rotate: 0, href: null, hoverLabel: null, passthrough: true },
-  { id: "item_1781392936791", src: "items/better doms.webp", top: 35.286, left: 53.122, width: 18.7, rotate: 0, href: null, hoverLabel: null },
+  { id: "item_rides_map", embed: "/rides/fridge.html?v=7", fluid: true, aspect: "4 / 5", top: 35.286, left: 53.122, width: 18.7, rotate: 0, href: "https://www.jackkane.me/rides/", hoverLabel: "Best Rides Chi", square: true },
   { id: "item_amtrak", embed: "/amtrak/map.html?embed=1&v=3", fluid: true, aspect: "50 / 33", top: 9.76, left: 26.07, width: 23, rotate: 0, windowEmbed: "/amtrak/map.html?v=3", windowTitle: "Live Amtrak", hoverLabel: "Live Amtrak" },
   { id: "item_1781393177283", src: "items/shopping.png", top: 38.006, left: 37.651, width: 2.5, rotate: 0, href: null, hoverLabel: null },
   { id: "item_1786000000001", src: "items/writing.png", top: 20.514, left: 61.953, width: 11.5, rotate: 0, href: "writing/writing.html", hoverLabel: null, windowTitle: "Writing" },
@@ -550,7 +550,7 @@ function createItemEl(item) {
     // map's canvas is width:100%), so it needs no reference-size scaling.
     const fluid = !!item.fluid;
     wrap.style.overflow = 'hidden';
-    wrap.style.borderRadius = '4px';
+    wrap.style.borderRadius = item.square ? '0' : '4px';   // square: a printed card, e.g. the rides map
     wrap.style.position = 'absolute'; // containing block for the iframe (already abs on fridge)
     const frame = document.createElement('iframe');
     const _embedSrc = item.embed;

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Best Rides Chi — system map</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+  <style>
+    html, body { margin: 0; height: 100%; background: transparent; overflow: hidden; }
+    svg { display: block; width: 100%; height: 100%; }
+  </style>
+</head>
+<body>
+<!-- Fridge magnet: every CTA, Metra and South Shore line, drawn from the GTFS shapes in data/transit.js. -->
+<svg id="map" viewBox="0 0 400 500" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Chicagoland rail map"></svg>
+
+<script src="data/transit.js"></script>
+<script>
+const W = 400, H = 500;
+const FOOT = 78;                      // title band at the bottom, like the CTA map's title block
+const MAP = { x: 8, y: 8, w: W - 16, h: H - FOOT - 14 };
+// Card and lake match the grey base map in map.html (OSM tiles at grayscale(1) contrast(0.88) brightness(1.06))
+const CARD = '#e9e9e9', LAKE = '#cecece', FLAG_BLUE = '#41b6e6', STAR_RED = '#e4002b', INK = '#14181f';
+
+// Lake Michigan's south shore, north → south → east (lat, lng). Schematic, not survey-grade.
+const SHORE = [
+  [42.62, -87.81], [42.36, -87.82], [42.25, -87.80], [42.15, -87.75], [42.06, -87.67], [42.00, -87.65],
+  [41.95, -87.63], [41.90, -87.62], [41.88, -87.61], [41.84, -87.60], [41.79, -87.57], [41.74, -87.53],
+  [41.69, -87.50], [41.64, -87.42], [41.62, -87.30], [41.63, -87.18], [41.67, -87.03], [41.72, -86.90],
+  [41.80, -86.75], [41.90, -86.62],
+];
+
+// Frame every line, but stop the frame at New Buffalo: the South Shore runs off the edge toward South Bend
+const EAST_EDGE = -86.72;
+const allPts = TRANSIT_LINES.flatMap(l => l.coords).filter(p => p[1] <= EAST_EDGE);
+const lat0 = allPts.reduce((s, p) => s + p[0], 0) / allPts.length;
+const k = Math.cos(lat0 * Math.PI / 180);
+const proj = ([lat, lng]) => [lng * k, -lat];
+
+// True proportions, centred in the map box
+const P = allPts.map(proj);
+const [x0, x1] = [Math.min(...P.map(p => p[0])), Math.max(...P.map(p => p[0]))];
+const [y0, y1] = [Math.min(...P.map(p => p[1])), Math.max(...P.map(p => p[1]))];
+// Fill the card: let the region stretch, but by no more than 35% in either direction
+let sx = MAP.w / (x1 - x0), sy = MAP.h / (y1 - y0);
+sx = Math.min(sx, sy * 1.35); sy = Math.min(sy, sx * 1.35);
+const offX = MAP.x + (MAP.w - (x1 - x0) * sx) / 2, offY = MAP.y + (MAP.h - (y1 - y0) * sy) / 2;
+const toBox = ([x, y]) => [offX + (x - x0) * sx, offY + (y - y0) * sy];
+const place = ll => toBox(proj(ll));
+
+// Ramer–Douglas–Peucker on screen points
+function rdp(pts, tol) {
+  if (pts.length < 3) return pts;
+  const [a, b] = [pts[0], pts[pts.length - 1]];
+  const dx = b[0] - a[0], dy = b[1] - a[1], len = Math.hypot(dx, dy);
+  let best = 0, idx = 0;
+  for (let i = 1; i < pts.length - 1; i++) {
+    // Round-trip shapes (out, around the Loop, back) start where they end: measure from the endpoint
+    const d = len < 1e-6 ? Math.hypot(pts[i][0] - a[0], pts[i][1] - a[1])
+                         : Math.abs(dy * pts[i][0] - dx * pts[i][1] + b[0] * a[1] - b[1] * a[0]) / len;
+    if (d > best) { best = d; idx = i; }
+  }
+  return best > tol ? [...rdp(pts.slice(0, idx + 1), tol).slice(0, -1), ...rdp(pts.slice(idx), tol)] : [a, b];
+}
+
+// Octilinear: every leg becomes one diagonal + one straight run that land exactly
+// on the next point, ordered to continue the previous direction (fewer bends).
+function octilinear(pts, minLeg = 3) {
+  const out = [pts[0]];
+  let prev = null;
+  for (let i = 1; i < pts.length; i++) {
+    const [cx, cy] = out[out.length - 1], [tx, ty] = pts[i];
+    const dx = tx - cx, dy = ty - cy, ax = Math.abs(dx), ay = Math.abs(dy);
+    const d = Math.min(ax, ay);
+    const diag = [Math.sign(dx) * d, Math.sign(dy) * d];
+    const straight = ax > ay ? [dx - diag[0], 0] : [0, dy - diag[1]];
+    const dir = v => Math.atan2(v[1], v[0]).toFixed(2);
+    const legs = prev && dir(straight) === prev ? [straight, diag] : [diag, straight];
+    let [x, y] = [cx, cy];
+    for (const v of legs) {
+      if (Math.hypot(v[0], v[1]) < minLeg) continue;
+      x += v[0]; y += v[1];
+      out.push([x, y]);
+      prev = dir(v);
+    }
+    out[out.length - 1] = [tx, ty]; // absorb dropped tiny legs
+  }
+  return out;
+}
+const path = pts => 'M' + pts.map(p => p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join('L');
+
+// Lake: schematic shoreline, closed off to the top-right corner
+const shore = octilinear(rdp(SHORE.map(place), 4), 4);
+const lake = path([[shore[0][0], MAP.y - 20], ...shore, [W + 10, shore[shore.length - 1][1]], [W + 10, MAP.y - 20]]) + 'Z';
+
+// Metra and South Shore underneath, then the L (Red on top, as on the CTA map)
+const CTA_ORDER = ['Yellow', 'Purple', 'Pink', 'Brown', 'Orange', 'Green', 'Blue', 'Red'];
+const rank = l => l.sys === 'cta' ? 100 + CTA_ORDER.indexOf(l.short) : l.sys === 'southshore' ? 50 : 0;
+const lines = [...TRANSIT_LINES].sort((a, b) => rank(a) - rank(b))
+  .map(l => ({ color: l.color, d: path(octilinear(rdp(l.coords.map(place), 1.6), 1.5)) }));
+
+// Chicago six-pointed star
+const star = (cx, cy, R) => {
+  let d = '';
+  for (let j = 0; j < 12; j++) {
+    const rr = j % 2 ? R * 0.4 : R, a = (-90 + j * 30) * Math.PI / 180;
+    d += (j ? 'L' : 'M') + (cx + rr * Math.cos(a)).toFixed(1) + ' ' + (cy + rr * Math.sin(a)).toFixed(1);
+  }
+  return `<path d="${d}Z" fill="${STAR_RED}"/>`;
+};
+
+document.getElementById('map').innerHTML = `
+  <defs><clipPath id="box"><rect x="0" y="0" width="${W}" height="${H - FOOT}"/></clipPath></defs>
+  <rect width="${W}" height="${H}" fill="${CARD}"/>
+  <path d="${lake}" fill="${LAKE}" clip-path="url(#box)"/>
+  <g clip-path="url(#box)">
+  ${lines.map(l => `<path d="${l.d}" fill="none" stroke="${CARD}" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/>
+                    <path d="${l.d}" fill="none" stroke="${l.color}" stroke-width="4.2" stroke-linejoin="round" stroke-linecap="round"/>`).join('')}
+  </g>
+  ${(() => { // the Loop: Lake / Wabash / Van Buren / Wells, drawn as the L map does
+    const [a, b] = [place([41.8857, -87.6339]), place([41.8766, -87.6261])];
+    return `<rect x="${a[0] - 3.5}" y="${a[1] - 3.5}" width="${b[0] - a[0] + 7}" height="${b[1] - a[1] + 7}" fill="${CARD}" stroke="${INK}" stroke-width="2.4"/>`;
+  })()}
+  <rect y="${H - FOOT}" width="${W}" height="${FOOT}" fill="${CARD}"/>
+  <rect y="${H - FOOT + 2}" width="${W}" height="5" fill="${FLAG_BLUE}"/>
+  <rect y="${H - FOOT + 11}" width="${W}" height="5" fill="${FLAG_BLUE}"/>
+  <text x="12" y="${H - 20}" font-family="'Space Mono', ui-monospace, Menlo, monospace" font-weight="700" font-size="31" fill="${INK}">Best Rides Chi</text>
+  ${[0, 1, 2, 3].map(j => star(322 + j * 19, H - 30, 7.5)).join('')}`;
+</script>
+</body>
+</html>

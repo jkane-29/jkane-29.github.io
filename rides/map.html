@@ -58,6 +58,10 @@
     .legend-cols { display: grid; grid-template-columns: auto auto; column-gap: 14px; }
     .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin: 0 5px; }
 
+    /* Vector layers hide while the map flies to a ride (see expand) */
+    .leaflet-rideLines-pane, .leaflet-rideDots-pane, .leaflet-transit-pane { transition: opacity 0.3s ease; }
+    .flying .leaflet-rideLines-pane, .flying .leaflet-rideDots-pane, .flying .leaflet-transit-pane { opacity: 0; transition: none; }
+
     /* ── Ride card ── */
     #ride-card {
       position: absolute; top: 74px; right: 16px; z-index: 600; width: 340px;
@@ -109,8 +113,6 @@
 <script>
 const TYPE = { loop: 'Loop', out_and_back: 'Out & back', point_to_point: 'One way' };
 const SYS = { cta: 'CTA', metra: 'Metra', southshore: 'South Shore' };
-const SYS_COLOR = { cta: '#00a1de', metra: '#0e3a7a', southshore: '#F6931C' };
-const NEAR = 1.0;
 
 const LINE_COLOR = {};
 TRANSIT_LINES.forEach(l => {
@@ -126,25 +128,18 @@ const fmtMi = mi => mi >= 100 ? String(Math.round(mi)) : mi.toFixed(1);
 const PACE = 14;
 const fmtTime = mi => { const m = Math.round(mi / PACE * 60); return `${Math.floor(m / 60)}:${String(m % 60).padStart(2, '0')}`; };
 
-function bestStation(v) {
-  let best = null;
-  [['start', v.start], ['finish', v.end]].filter(e => e[1]).forEach(([tag, e]) =>
-    (e.stations || []).forEach(s => { if (!best || s.mi < best.mi) best = { ...s, at: tag }; }));
-  return best;
-}
-const trainFriendly = v => { const b = bestStation(v); return b && b.mi <= NEAR; };
 
 /* ── Map ─────────────────────────────────────────────────────────────── */
 const map = L.map('map', { zoomControl: true });
 // OpenStreetMap's own tiles (no API key). Carto's free basemaps now require a key.
-L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+const TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+L.tileLayer(TILE_URL, {
   attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors · transit: CTA, Metra, NICTD GTFS',
   maxZoom: 19,
 }).addTo(map);
 map.createPane('transit').style.zIndex = 420;
 map.createPane('rideLines').style.zIndex = 610;
 map.createPane('rideDots').style.zIndex = 620;
-map.createPane('stations').style.zIndex = 630;
 
 /* ── Ride start dots → click to expand ───────────────────────────────── */
 const RIDE_COLOR = '#14181f';   // dots
@@ -225,34 +220,43 @@ function expand(ride) {
   const b = L.latLngBounds(v.line);
   ride.variants.slice(1).forEach(x => b.extend(L.latLngBounds(x.line)));
   const sz = map.getSize();
-  if (b.isValid() && sz.x > 0 && sz.y > 0) map.flyToBounds(b, { paddingTopLeft: [40, 40], paddingBottomRight: [340, 40], duration: 0.7, maxZoom: 13 });
+  if (b.isValid() && sz.x > 0 && sz.y > 0) {
+    // Leaflet stretches vector layers while it zooms, so mid-flight the route and
+    // dots blow up into blurry blobs. Hide them for the flight; fade them in once
+    // the map lands and they're redrawn sharp.
+    const el = map.getContainer();
+    el.classList.add('flying');
+    map.once('moveend', () => requestAnimationFrame(() => el.classList.remove('flying')));
+    const opts = { paddingTopLeft: [40, 40], paddingBottomRight: [340, 40], duration: 0.7, maxZoom: 13 };
+    const dest = map._getBoundsCenterZoom(b, opts);
+    prefetchTiles(dest.center, dest.zoom);
+    map.flyToBounds(b, opts);
+  }
   history.replaceState(null, '', '#' + ride.id);
+}
+// Start fetching the tiles the map will land on as the flight begins, so it
+// arrives sharp instead of showing stretched, blurry tiles while they load.
+function prefetchTiles(center, zoom) {
+  const half = map.getSize().divideBy(2), c = map.project(center, zoom);
+  const lo = c.subtract(half).divideBy(256).floor(), hi = c.add(half).divideBy(256).floor();
+  const n = 2 ** zoom;
+  for (let x = lo.x; x <= hi.x; x++) for (let y = Math.max(0, lo.y); y <= Math.min(n - 1, hi.y); y++) {
+    new Image().src = L.Util.template(TILE_URL, { z: zoom, x: ((x % n) + n) % n, y });
+  }
 }
 document.getElementById('card-close').onclick = collapse;
 map.on('click', collapse);
 
 /* ── Transit mode: real lines + stations near rides ──────────────────── */
 let transitOn = false, transitLayer = null;
-function dotStyle(ride) {
-  if (!transitOn) return DOT;
-  const ok = ride.variants.some(trainFriendly);
-  return { ...DOT, radius: ok ? 8 : 5, fillOpacity: ok ? 1 : 0.18, opacity: ok ? 1 : 0.25 };
-}
+// Every ride start looks the same: if a line runs past a ride, it's close enough
+const dotStyle = () => DOT;
 function buildTransit() {
   const g = L.layerGroup();
   const order = { metra: 0, southshore: 1, cta: 2 };
   [...TRANSIT_LINES].sort((a, b) => order[a.sys] - order[b.sys]).forEach(l => {
     L.polyline(l.coords, { pane: 'transit', color: l.color, weight: l.sys === 'cta' ? 4 : 3, opacity: 0.85 })
       .bindTooltip(`${l.name} · ${SYS[l.sys]}`, { sticky: true }).addTo(g);
-  });
-  STATIONS.filter(s => s.nearRide || (s.sys === 'southshore')).forEach(s => {
-    const sysName = [s.sys, s.sys2].filter(Boolean).map(k => SYS[k]).join(' / ');
-    L.circleMarker([s.lat, s.lng], {
-      pane: 'stations', radius: s.bike ? 5 : 4, weight: 2,
-      color: s.bike ? SYS_COLOR[s.sys] : '#999', fillColor: s.bike ? '#fff' : '#ddd', fillOpacity: 1,
-      dashArray: s.bike ? null : '2 2',
-    }).bindTooltip(`<b>${s.name}</b> · ${sysName}<br>${s.lines.map(lineChip).join('')}<br>${s.bike ? 'Bikes OK' : 'No bikes at this station'}`,
-      { direction: 'top', opacity: 0.95 }).addTo(g);
   });
   return g;
 }
@@ -281,12 +285,8 @@ function renderLegend() {
     <div class="legend-title">CTA 'L'</div><div class="legend-cols">${group('cta')}</div>
     <div class="legend-title">Metra</div><div class="legend-cols">${group('metra')}</div>
     <div class="legend-title">South Shore</div><div class="legend-cols">${group('southshore')}</div>
-    <div class="legend-title">Stations</div>
-    <div class="legend-row"><span class="legend-dot" style="background:#fff;border:2px solid #0e3a7a"></span>Bikes OK</div>
-    <div class="legend-row"><span class="legend-dot" style="background:#ddd;border:2px dashed #999"></span>No bikes (South Shore)</div>
     <div class="legend-title">Rides</div>
-    <div class="legend-row"><span class="legend-dot" style="background:#14181f;border:2px solid #fff"></span>Station ≤ ${NEAR} mi</div>
-    <div class="legend-row"><span class="legend-dot" style="background:rgba(20,24,31,0.2);border:2px solid #fff"></span>Station > ${NEAR} mi</div>`;
+    <div class="legend-row"><span class="legend-dot" style="background:#14181f;border:2px solid #fff"></span>Ride start</div>`;
 }
 
 /* ── Toggles ─────────────────────────────────────────────────────────── */

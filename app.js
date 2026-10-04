@@ -549,9 +549,12 @@ function createItemEl(item) {
     // A "fluid" embed lays itself out to whatever box it is given (the Amtrak
     // map's canvas is width:100%), so it needs no reference-size scaling.
     const fluid = !!item.fluid;
-    wrap.style.overflow = 'hidden';
-    wrap.style.borderRadius = item.square ? '0' : '4px';   // square: a printed card, e.g. the rides map
     wrap.style.position = 'absolute'; // containing block for the iframe (already abs on fridge)
+    // The iframe is clipped by an inner box, not the item itself, so the item's
+    // hover label can still sit above it (e.g. "Live Amtrak").
+    const clip = document.createElement('div');
+    clip.style.cssText = `position:absolute; inset:0; overflow:hidden; border-radius:${item.square ? '0' : '4px'};`;   // square: a printed card, e.g. the rides map
+    wrap.appendChild(clip);
     const frame = document.createElement('iframe');
     const _embedSrc = item.embed;
     const _loadEmbed = () => { if (!frame.src) frame.src = _embedSrc; };
@@ -573,7 +576,7 @@ function createItemEl(item) {
     frame.style.cssText = fluid
       ? 'position:absolute; top:0; left:0; width:100%; height:100%; border:none; display:block; pointer-events:none; background:transparent;'
       : `position:absolute; top:0; left:0; width:${refW}px; height:${refH}px; border:none; display:block; pointer-events:none; transform-origin:top left; background:transparent;`;
-    wrap.appendChild(frame);
+    clip.appendChild(frame);
     if (!fluid) {
       const fit = () => { const w = wrap.clientWidth; if (w) frame.style.transform = `scale(${w / refW})`; };
       if (window.ResizeObserver) new ResizeObserver(fit).observe(wrap);

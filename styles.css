@@ -81,11 +81,14 @@ img {
 body:not(.edit-mode) .item:hover .item-hover-label { display: block; }
 
 /* Hovering anywhere on the About Me postcard makes its "about me" label magnet
-   pop, so it's clear the card is clickable — without touching the card itself. */
-body:not(.edit-mode) .item[data-id="item_1781388702732"] img {
+   pop, so it's clear the card is clickable — without touching the card itself.
+   The "writing" label magnet pops the same way when it's hovered directly. */
+body:not(.edit-mode) .item[data-id="item_1781388702732"] img,
+body:not(.edit-mode) .item[data-id="item_1786000000001"] img {
   transition: transform 0.12s ease, filter 0.12s ease; transform-origin: center;
 }
-body:not(.edit-mode) .item[data-id="item_1779583643716"]:hover ~ .item[data-id="item_1781388702732"] img {
+body:not(.edit-mode) .item[data-id="item_1779583643716"]:hover ~ .item[data-id="item_1781388702732"] img,
+body:not(.edit-mode) .item[data-id="item_1786000000001"]:hover img {
   transform: scale(1.1);
   filter: brightness(1.06) drop-shadow(0 3px 7px rgba(0, 0, 0, 0.55));
 }
@@ -294,7 +297,12 @@ body:not(.edit-mode) .item[data-id="item_1779583643716"]:hover ~ .item[data-id="
   #ttt:hover #ttt-status { opacity: 1; }
 }
 @media (pointer: coarse) {
-  #ttt-status { opacity: 1; font-size: 8px; }
+  /* Always shown on touch, so it gets its own fixed slot above the board (the
+     same space the hidden desktop status reserves): one line, never pushes the
+     board down, and spills sideways rather than wrapping on a narrow board. */
+  #ttt { padding-top: 1.35em; }
+  #ttt-status { opacity: 1; font-size: 8px; position: absolute; top: 0; left: 50%;
+    transform: translateX(-50%); margin: 0; white-space: nowrap; }
 }
 .ttt-board-wrap { position: relative; width: 100%; aspect-ratio: 1/1; }
 #ttt-grid {

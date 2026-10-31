@@ -75,7 +75,7 @@ const letterDefaultPos = i => ({
 let ITEMS = [
   { id: "item_1779583589922", src: "items/Bike Business.webp", top: 37.548, left: 29.04, width: 21.8, rotate: 0, href: "rides.html", hoverLabel: "Rides", windowTitle: "Best Rides" },
   { id: "item_1779583606062", src: "items/furniture_web.webp?v=2", top: 19.91, left: 26.77, width: 9.442, rotate: 0, href: "woodshop/woodshop copy.html", hoverLabel: "Woodshop" },
-  { id: "item_1779583643716", src: "items/greeting.webp", top: 9.908, left: 49.123, width: 13, rotate: 0, href: "about.html", hoverLabel: null, windowTitle: "About Me" },
+  { id: "item_1779583643716", src: "items/greeting.webp", aspect: "507 / 800", daily: ["items/greeting.webp", "items/about-gallery/01-grotte-de-han.webp", "items/about-gallery/02-mount-rushmore.webp", "items/about-gallery/03-empire-state.webp", "items/about-gallery/04-semmering.webp", "items/about-gallery/05-sagrada-familia.webp", "items/about-gallery/06-wilshire-blvd.webp"], top: 9.908, left: 49.123, width: 13, rotate: 0, href: "about.html", hoverLabel: null, windowTitle: "About Me" },
   { id: "item_1779586060280", src: "items/tj receipt.webp", top: 10.299, left: 63.313, width: 9, rotate: 0, href: "https://tj-prices.com", hoverLabel: "TJ Prices" },
   { id: "item_1781388702732", src: "items/about me.png", top: 9.922, left: 48.594, width: 13.9, rotate: 0, href: null, hoverLabel: null, passthrough: true },
   { id: "item_rides_map", embed: "/rides/fridge.html?v=7", fluid: true, aspect: "4 / 5", top: 35.286, left: 53.122, width: 18.7, rotate: 0, href: "https://www.jackkane.me/rides/", hoverLabel: "Best Rides Chi", square: true },
@@ -220,6 +220,7 @@ async function openWindow(href, title) {
     } else if (type === 'woodshop') {
       wsSrcs = Array.from(doc.querySelectorAll('img.project-image')).map(img => img.getAttribute('src'));
       contentEl.innerHTML = `<div id="ws-slide">
+  <div id="ws-backdrop"></div>
   <img id="ws-img" src="${wsSrcs[0]}">
   <div id="ws-counter">1 / ${wsSrcs.length}</div>
   <button id="ws-prev" class="ws-nav prev" title="Previous">◀</button>
@@ -230,7 +231,7 @@ async function openWindow(href, title) {
       Array.from(doc.body.childNodes).forEach(n => contentEl.appendChild(document.adoptNode(n)));
     }
 
-    if (type === 'woodshop') wireWoodshop(contentEl, wsSrcs);
+    if (type === 'woodshop') _windowCleanup = wireWoodshop(contentEl, wsSrcs);
     if (type === 'decisions') _windowCleanup = startDecisionsGame();
     if (type === 'postcard')  sizePostcard();
 
@@ -329,33 +330,50 @@ function sizePostcard() {
 
 // ── Woodshop slideshow wiring ──────────────────────────────
 function wireWoodshop(contentEl, srcs) {
-  if (!srcs?.length) return;
-  const img = contentEl.querySelector('#ws-img');
-  const ctr = contentEl.querySelector('#ws-counter');
-  let i = 0;
-  // Fit the window to each image so there's no black letterbox space.
-  img.onload = () => sizeWoodshopToImage(img);
-  if (img.complete && img.naturalWidth) sizeWoodshopToImage(img);
+  if (!srcs?.length) return null;
+  const img  = contentEl.querySelector('#ws-img');
+  const back = contentEl.querySelector('#ws-backdrop');
+  const ctr  = contentEl.querySelector('#ws-counter');
+  // The window stays one fixed size for the whole slideshow; each photo fits
+  // inside it, over a blurred copy of itself, so nothing jumps between slides.
+  sizeWoodshopFrame();
+  srcs.forEach(s => { new Image().src = s; });   // preload so slides swap instantly
+  back.style.backgroundImage = `url("${srcs[0]}")`;
+  let i = 0, token = 0;
   const show = n => {
     i = (n + srcs.length) % srcs.length;
-    img.src = srcs[i];
     ctr.textContent = (i + 1) + ' / ' + srcs.length;
+    const t = ++token, next = new Image();
+    next.onload = next.onerror = () => {
+      if (t !== token) return;   // a newer click won
+      img.style.opacity = 0;
+      setTimeout(() => {
+        if (t !== token) return;
+        img.src = srcs[i];
+        back.style.backgroundImage = `url("${srcs[i]}")`;
+        img.style.opacity = 1;
+      }, 150);
+    };
+    next.src = srcs[i];
   };
-  contentEl.querySelector('#ws-next').onclick = () => show(i + 1);
-  contentEl.querySelector('#ws-prev').onclick = () => show(i - 1);
-  contentEl.querySelector('#ws-slide').onclick = e => {
-    if (e.target.tagName !== 'BUTTON') show(i + 1);
+  contentEl.querySelector('#ws-next').onclick = e => { e.stopPropagation(); show(i + 1); };
+  contentEl.querySelector('#ws-prev').onclick = e => { e.stopPropagation(); show(i - 1); };
+  contentEl.querySelector('#ws-slide').onclick = () => show(i + 1);
+  const onKey = e => {
+    if (e.key === 'ArrowRight') show(i + 1);
+    else if (e.key === 'ArrowLeft') show(i - 1);
   };
+  document.addEventListener('keydown', onKey);
+  return () => document.removeEventListener('keydown', onKey);
 }
 
-// Size the OS window to match the current woodshop image's aspect ratio
+// Size the OS window to a fixed 4:3 frame for the slideshow
 // (desktop only — on touch the window is forced full-screen via CSS).
-function sizeWoodshopToImage(img) {
-  if (!img || !img.naturalWidth) return;
+function sizeWoodshopFrame() {
   if (window.matchMedia('(pointer: coarse), (max-width: 900px)').matches) return;
   const win = $('os-window');
   const TITLEBAR = 38;
-  const ar = img.naturalWidth / img.naturalHeight;
+  const ar = 4 / 3;
   const maxW = Math.min(window.innerWidth * 0.9, 1100);
   const maxContentH = window.innerHeight * 0.9 - TITLEBAR;
   let w = maxW;
@@ -526,6 +544,13 @@ document.addEventListener('mousemove', e => {
 document.addEventListener('mouseup', () => { _resize = null; });
 
 // ── Render items ───────────────────────────────────────────
+// One picture per calendar day (visitor's local date), cycling through the list.
+function pickDaily(srcs) {
+  const now = new Date();
+  const day = Math.floor(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) / 86400000);
+  return srcs[day % srcs.length];
+}
+
 function createItemEl(item) {
   const wrap = document.createElement('div');
   wrap.className = 'item';
@@ -585,7 +610,13 @@ function createItemEl(item) {
     }
   } else {
     const img = document.createElement('img');
-    img.src = encodeURI(item.src);
+    img.src = encodeURI(item.daily ? pickDaily(item.daily) : item.src);
+    if (item.daily) {
+      // Every daily picture is cropped to the same card shape, so overlays
+      // like the "about me" label stay put whatever the photo's proportions.
+      img.style.aspectRatio = item.aspect;
+      img.style.objectFit = 'cover';
+    }
     img.loading = 'lazy';
     img.draggable = false;
     wrap.appendChild(img);

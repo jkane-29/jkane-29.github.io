@@ -251,29 +251,42 @@ body:not(.edit-mode) .item[data-id="item_1786000000001"]:hover img {
   display: flex; align-items: center; justify-content: center;
   overflow: hidden;
 }
-#ws-img { max-width: 100%; max-height: 100%; object-fit: contain; display: block; }
+/* Blurred, dimmed copy of the current photo fills any space the photo doesn't */
+#ws-backdrop {
+  position: absolute; inset: -40px;
+  background: center / cover no-repeat;
+  filter: blur(28px) brightness(0.45);
+  transition: background-image 0.3s ease;
+}
+#ws-img {
+  position: relative;
+  width: 100%; height: 100%; object-fit: contain; display: block;
+  transition: opacity 0.15s ease;
+}
 #ws-counter {
-  position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%);
+  position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
   font: 12px -apple-system, sans-serif;
-  color: rgba(255,255,255,0.5);
+  color: rgba(255,255,255,0.85);
+  background: rgba(0,0,0,0.35);
+  padding: 3px 9px; border-radius: 10px;
   letter-spacing: 0.1em;
   pointer-events: none;
 }
 .ws-nav {
-  position: absolute; bottom: 12px;
-  background: none; border: none; cursor: pointer;
-  font-size: 22px; line-height: 1; padding: 4px 8px;
-  color: rgba(255,255,255,0.7);
+  position: absolute; top: 50%; transform: translateY(-50%);
+  width: 40px; height: 40px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.35); border: none; cursor: pointer;
+  font-size: 15px; line-height: 1; padding: 0;
+  color: rgba(255,255,255,0.85);
+  transition: background 0.15s ease;
 }
-.ws-nav.prev { left: 16px; }
-.ws-nav.next { right: 16px; }
+.ws-nav:hover { background: rgba(0,0,0,0.6); color: #fff; }
+.ws-nav.prev { left: 14px; }
+.ws-nav.next { right: 14px; }
 /* Larger tap targets on touch (Apple HIG ≥44px) */
 @media (pointer: coarse) {
-  .ws-nav {
-    font-size: 28px;
-    min-width: 44px; min-height: 44px;
-    display: flex; align-items: center; justify-content: center;
-  }
+  .ws-nav { width: 44px; height: 44px; font-size: 18px; }
 }
 
 /* Generic injected-page overrides */

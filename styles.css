@@ -465,3 +465,202 @@ body:not(.edit-mode) .item[data-id="item_1786000000001"]:hover img {
 #os-content:has(.os-embed-frame) { overflow: hidden; background: #e9eef0; }
 #os-content-inner:has(.os-embed-frame) { height: 100%; }
 .os-embed-frame { display: block; width: 100%; height: 100%; border: none; }
+
+/* ── Fridge door (door.js): lower door swings open on its right-hand hinge ── */
+#fridge-inside, #door-panel, #door-back, #door-edge, .door-handle, .door-floor { position: absolute; }
+/* Floor shadow under the open door: it comes and goes with the swing */
+.door-floor { z-index: 0; pointer-events: none; opacity: 0; transition: opacity 0.35s ease-in;
+  background: radial-gradient(ellipse 50% 50% at 50% 50%, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0) 100%); }
+.door-ajar .door-floor { opacity: 1; transition: opacity 0.9s ease-out 0.25s; }
+#fridge-inside { z-index: 1; background: #0b0b0b; border-radius: 0.6cqw; visibility: hidden; transition: box-shadow 0.6s ease; }
+.fridge-open #fridge-inside { visibility: visible; box-shadow: 0 0 5cqw 0.5cqw rgba(255, 246, 225, 0.32); }
+#door-panel { z-index: 2; overflow: hidden; }
+#door-panel img { position: absolute; display: block; height: auto; pointer-events: none; }
+.door-handle { z-index: 11; background: none; border: 0; padding: 0; cursor: pointer; }
+.fridge-open .door-member, .door-back, .door-edge { -webkit-backface-visibility: hidden; backface-visibility: hidden; }
+/* Iframes (webring, rides map) composite on their own layer, so they need it themselves */
+.fridge-open .door-member * { -webkit-backface-visibility: hidden; backface-visibility: hidden; }
+#door-back, #door-edge { visibility: hidden; }
+.fridge-open #door-back, .fridge-open #door-edge { visibility: visible; }
+.fridge-open .door-member { pointer-events: none; }
+/* A door magnet that showed up after the door opened (the page-views note waits on
+   Firebase) didn't swing with it, so keep it out of sight until the door shuts */
+.fridge-open #views-magnet:not(.door-member) { visibility: hidden; }
+.fridge-open #door-panel { filter: drop-shadow(1.5cqw 1cqw 1.5cqw rgba(0, 0, 0, 0.35)); }
+
+/* Cavity: cool liner, walls drawn in .fi-art (stretched 100×100 SVG) */
+.fi-cavity { position: absolute; inset: 2.2% 3.5%; overflow: hidden; border-radius: 0.5cqw; background: #ece9e4; cursor: pointer; }
+.fi-art, .fi-layer, .fi-shade, .fi-grain { position: absolute; inset: 0; width: 100%; height: 100%; }
+.fi-layer, .fi-shade, .fi-grain { pointer-events: none; }
+.fi-crease { fill: none; stroke: rgba(70, 60, 45, 0.22); stroke-width: 1; vector-effect: non-scaling-stroke; }
+/* Shelf runners moulded into the side walls: a ledge plus a lit top edge */
+.fi-rail { fill: rgba(150, 142, 128, 0.42); }
+.fi-rail-hi { fill: rgba(255, 255, 255, 0.85); }
+/* Tempered glass: nearly clear, faintly green, with a bright reflection along its surface */
+.fi-glass { fill: rgba(205, 225, 214, 0.28); stroke: rgba(255, 255, 255, 0.75); stroke-width: 0.6; vector-effect: non-scaling-stroke; }
+/* Its thick front edge reads green, like real glass seen end-on */
+.fi-lip-body { fill: #a9c7b6; opacity: 0.9; }
+.fi-lip-hi { fill: rgba(255, 255, 255, 0.95); }
+.fi-lip-lo { fill: rgba(60, 92, 76, 0.55); }
+/* Crisper drawers: frosted, translucent plastic */
+.fi-drawer { stroke: rgba(150, 142, 128, 0.55); stroke-width: 0.8; vector-effect: non-scaling-stroke; }
+.fi-drawer-inner { fill: rgba(120, 110, 95, 0.07); stroke: rgba(255, 255, 255, 0.55); stroke-width: 0.6; vector-effect: non-scaling-stroke; }
+.fi-drawer-rim { fill: rgba(255, 255, 255, 0.9); }
+.fi-pull { fill: rgba(90, 82, 70, 0.32); }
+.fi-pull-hi { fill: rgba(255, 255, 255, 0.7); }
+/* Ceiling lamp: a frosted lens set flush in the ceiling, seen at a low angle so
+   it reads as a flat oval. Neutral white like a real appliance bulb, with only a
+   tight halo; its light shows up as brightness in the compartment, not a bloom. */
+.fi-lamp { position: absolute; top: 1.7%; left: 50%; width: 30%; height: 2%; transform: translateX(-50%);
+  border-radius: 50%; pointer-events: none;
+  background: radial-gradient(ellipse at 50% 50%, #e9e8e4 0%, #d9d7d1 100%);
+  box-shadow: 0 0 0 0.14cqw rgba(160, 154, 142, 0.55);
+  transition: background 0.1s linear 0.3s, box-shadow 0.2s ease 0.3s; }
+.fridge-open .fi-lamp {
+  background: radial-gradient(ellipse at 50% 50%, #ffffff 0%, #ffffff 40%, #f6f6f3 75%, #e4e3df 100%);
+  box-shadow:
+    0 0 0 0.14cqw rgba(175, 170, 160, 0.6),             /* bezel */
+    0 0 0.5cqw 0.1cqw rgba(255, 255, 255, 0.95),        /* glare off the lens */
+    0 0 2.2cqw 0.4cqw rgba(255, 253, 247, 0.55); }      /* halo on the ceiling */
+/* Light falls off away from the lamp: dimmer toward the floor, deepest in the corners
+   and around the lip of the opening, where the light can't reach */
+.fi-shade { mix-blend-mode: multiply;
+  background:
+    radial-gradient(ellipse 110% 85% at 50% 2%, rgba(255, 255, 255, 0) 45%, rgba(150, 140, 125, 0.28) 100%),
+    linear-gradient(rgba(255, 255, 255, 0) 55%, rgba(170, 162, 148, 0.12) 100%);
+  box-shadow: inset 0 0 0 0.25cqw rgba(20, 16, 10, 0.55), inset 0 0 1.2cqw 0.2cqw rgba(30, 24, 15, 0.28), inset 0 -2cqw 3cqw -1cqw rgba(30, 24, 15, 0.2); }
+/* A whisper of grain so the plastic doesn't look computer-perfect */
+.fi-grain { opacity: 0.06; mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .45 0 0 0 0 .4 0 0 0 1.4 -.2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E"); }
+
+/* Light: flickers on as the door opens */
+.fi-light { position: absolute; inset: 0; pointer-events: none; opacity: 0;
+  background:
+    radial-gradient(ellipse 42% 7% at 50% 2.6%, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 100%),   /* bright patch of ceiling round the lens */
+    linear-gradient(rgba(255, 254, 250, 0.32) 0%, rgba(255, 254, 250, 0.12) 30%, rgba(255, 254, 250, 0) 60%); }  /* top of the compartment lit most */
+.fridge-open .fi-light { animation: fi-lamp-on 0.7s steps(1, end) 0.12s forwards; }
+@keyframes fi-lamp-on { 0% { opacity: 0.6; } 18% { opacity: 0.1; } 30% { opacity: 0.85; } 42% { opacity: 0.3; } 55%, 100% { opacity: 1; } }
+.fridge-open .fi-cavity { animation: fi-brighten 0.7s ease-out 0.12s both; }
+@keyframes fi-brighten { from { filter: brightness(0.55); } to { filter: brightness(1); } }
+
+/* A little cold air rolling out of the bottom */
+.fi-mist { position: absolute; left: -10%; right: -10%; bottom: -6%; height: 34%; pointer-events: none; opacity: 0;
+  background: radial-gradient(ellipse 40% 50% at 30% 70%, rgba(255,255,255,0.7), transparent 70%),
+              radial-gradient(ellipse 45% 55% at 70% 75%, rgba(255,255,255,0.6), transparent 70%);
+  filter: blur(1.2cqw); }
+.fridge-open .fi-mist { animation: fi-mist 2.6s ease-out 0.25s both; }
+@keyframes fi-mist { 0% { opacity: 0; transform: translateY(10%) scale(0.9); } 25% { opacity: 0.45; }
+                     100% { opacity: 0; transform: translateY(-35%) scale(1.25); } }
+
+/* Inside of the door: liner, rubber gasket and three slim moulded ledges. Its left
+   side is the hinge end (it's turned 180°), which sits in the fridge's shade. */
+.door-back { z-index: 3; border-radius: 1.2cqw; overflow: hidden; cursor: pointer;
+  background: linear-gradient(90deg, #d6d2c9, #e9e6df 18%, #f3f1ec 55%, #e8e5de); }
+/* The moulded well: the liner steps down into a recessed centre panel, leaving a
+   raised ridge round the edge that the bins clip into. Shade falls on the inner
+   wall of the step along the top and hinge side; the far lip catches the light. */
+.db-well { position: absolute; left: 8%; right: 8%; top: 4.5%; bottom: 4%; border-radius: 1cqw;
+  background: linear-gradient(90deg, #dcd8cf, #e7e4dd 25%, #efede8 60%, #e4e1da);
+  box-shadow:
+    0 0 0 0.22cqw rgba(255, 255, 255, 0.8),                   /* lit top of the ridge */
+    0 0 0 0.4cqw rgba(150, 142, 128, 0.28),
+    inset 0 0 0 0.14cqw rgba(105, 96, 82, 0.45),              /* crisp edge of the step */
+    inset 1.1cqw 1.2cqw 1.6cqw -0.3cqw rgba(55, 46, 32, 0.3), /* step wall in shade */
+    inset -0.5cqw -0.6cqw 0.9cqw -0.2cqw rgba(255, 255, 255, 0.7); }
+/* Glossy plastic: a soft streak of reflected light across the liner */
+.db-sheen { position: absolute; inset: 0; pointer-events: none; mix-blend-mode: screen;
+  background: linear-gradient(104deg, rgba(255, 255, 255, 0) 30%, rgba(255, 255, 255, 0.32) 44%, rgba(255, 255, 255, 0.08) 52%, rgba(255, 255, 255, 0) 62%); }
+/* Magnetic gasket: a rubber bellows round the whole door, casting a soft shadow
+   onto the liner inside it */
+.db-gasket { position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  box-shadow:
+    inset 0 0 0 0.35cqw #77736c,
+    inset 0 0 0 0.75cqw #a7a39b,
+    inset 0 0 0 1.05cqw #8a867f,
+    inset 0 0 0 1.18cqw rgba(40, 34, 25, 0.35),
+    inset 0 0 1.4cqw 1.2cqw rgba(40, 34, 25, 0.1); }
+/* Door shelves: moulded off-white plastic, a rolled rim on top, a guard that catches
+   the light lower down, darker end caps where they clip into the liner, and a soft
+   shadow cast on the liner beneath. The bottom one is the deeper bottle shelf. */
+.db-shelf { position: absolute; left: 8.4%; right: 8.4%; height: 6%;
+  border-radius: 0.2cqw 0.2cqw 0.9cqw 0.9cqw;
+  background:
+    linear-gradient(90deg, rgba(130, 120, 104, 0.22), rgba(130, 120, 104, 0) 6%, rgba(130, 120, 104, 0) 94%, rgba(130, 120, 104, 0.22)),
+    linear-gradient(#fdfcf8 0%, #f0ede6 40%, #e3dfd6 100%);
+  box-shadow:
+    inset 0 0.35cqw 0 #ffffff,                               /* rolled rim */
+    inset 0 0.55cqw 0 rgba(150, 142, 128, 0.45),
+    inset 0 -0.3cqw 0 rgba(150, 142, 128, 0.35),
+    0 1.1cqw 1.4cqw -0.5cqw rgba(45, 38, 28, 0.28); }
+.db-shelf.tall { height: 9%; }
+/* Looking down into the shelf: the lower it sits below eye level, the more of its
+   shadowed inside shows above the rim (--look, set per shelf in door.js) */
+.db-shelf::before { content: ''; position: absolute; left: 0.5%; right: 0.5%; bottom: 100%; height: var(--look, 0);
+  border-radius: 0.5cqw 0.5cqw 0 0;
+  background: linear-gradient(rgba(150, 142, 128, 0.32), rgba(120, 112, 98, 0.42));
+  box-shadow: inset 0 0.2cqw 0 rgba(255, 255, 255, 0.55); }
+/* A pressed rib along the guard */
+.db-shelf::after { content: ''; position: absolute; left: 4%; right: 4%; top: 58%; height: 0.2cqw;
+  background: rgba(150, 142, 128, 0.35); box-shadow: 0 0.15cqw 0 rgba(255, 255, 255, 0.8); }
+
+/* Side rails: raised, rounded ridges either side of the well that the bins clip
+   into. Lit along their crown, shaded on the flanks, and each throws a shadow
+   inward onto the well. */
+.db-ridge { position: absolute; top: 3.2%; bottom: 3.2%; width: 6.4%; border-radius: 1.4cqw; pointer-events: none; }
+.db-ridge.l { left: 2.4%;
+  background: linear-gradient(90deg, #cdc8bd 0%, #e2ded6 25%, #f1efea 50%, #e7e4dd 75%, #d2cdc3 100%);
+  box-shadow: 0.5cqw 0 0.8cqw -0.2cqw rgba(40, 33, 22, 0.2); }
+.db-ridge.r { right: 2.4%;
+  background: linear-gradient(270deg, #cac5ba 0%, #dfdbd3 25%, #eeece7 50%, #e4e1da 75%, #cfcac0 100%);
+  box-shadow: -0.5cqw 0 0.8cqw -0.2cqw rgba(40, 33, 22, 0.2); }
+/* Bin end caps: chunky moulded blocks where each bin clips into a side rail */
+.db-cap { position: absolute; top: calc(-1 * var(--look, 0) - 0.2cqw); bottom: -0.1cqw; width: 3.4%;
+  border-radius: 0.3cqw 0.3cqw 0.5cqw 0.5cqw;
+  background: linear-gradient(90deg, #c6c0b5, #e4e0d8 45%, #c9c3b8);
+  box-shadow: inset 0 0.25cqw 0 rgba(255, 255, 255, 0.7), 0 0.35cqw 0.5cqw rgba(40, 33, 22, 0.2); }
+.db-cap.l { left: -1.7%; }
+.db-cap.r { right: -1.7%; }
+/* Dairy compartment: an opaque box standing proud of the liner, with a lit top
+   surface, end caps, a smoky see-through flip-up lid and a tab. It sits nearest
+   the lamp, so it throws the deepest shadow. */
+.db-dairy { position: absolute; left: 8.4%; right: 8.4%; top: 7.5%; height: 14%;
+  border-radius: 0.5cqw 0.5cqw 0.6cqw 0.6cqw;
+  background: linear-gradient(#f1eee8, #e2ded5 70%, #d3cec3);
+  box-shadow:
+    inset 0 0 0 0.16cqw rgba(105, 96, 82, 0.5),
+    inset 0 0.35cqw 0 rgba(255, 255, 255, 0.9),
+    0 0.5cqw 0.6cqw -0.1cqw rgba(40, 33, 22, 0.38),
+    0 2cqw 2.4cqw -0.5cqw rgba(40, 33, 22, 0.4); }
+/* Its top, seen from just above: a lit strip receding toward the liner */
+.db-dairy::before { content: ''; position: absolute; left: 0; right: 0; bottom: calc(100% - 0.1cqw); height: var(--look, 0);
+  clip-path: polygon(3% 0, 97% 0, 100% 100%, 0 100%);
+  background: linear-gradient(#d9d4ca, #f7f5f1); }
+.db-lid { position: absolute; left: 2.5%; right: 2.5%; top: 7%; bottom: 20%; border-radius: 0.6cqw;
+  background: linear-gradient(rgba(120, 110, 94, 0.62), rgba(92, 84, 70, 0.5));
+  box-shadow: inset 0 0.3cqw 0 rgba(255, 255, 255, 0.75), inset 0 -0.2cqw 0 rgba(70, 60, 45, 0.35), inset 0 0 1.2cqw rgba(255, 255, 255, 0.22); }
+.db-lid::before { content: ''; position: absolute; inset: 0; border-radius: inherit;
+  background: linear-gradient(112deg, rgba(255, 255, 255, 0) 18%, rgba(255, 255, 255, 0.5) 30%, rgba(255, 255, 255, 0) 44%); }
+.db-lid::after { content: ''; position: absolute; left: 41%; right: 41%; bottom: -1cqw; height: 1.1cqw;
+  border-radius: 0 0 0.6cqw 0.6cqw; background: linear-gradient(#cdc8bd, #b9b3a7);
+  box-shadow: inset 0 -0.15cqw 0 rgba(70, 60, 45, 0.3), 0 0.3cqw 0.4cqw rgba(45, 38, 28, 0.2); }
+
+/* Lamplight on the door: it reaches in from the hinge side (left here) and the top,
+   so the liner dims toward the free edge and the foot of the door */
+.db-shade { position: absolute; inset: 0; pointer-events: none; mix-blend-mode: multiply;
+  background: radial-gradient(ellipse 130% 95% at 0% 8%, rgba(255, 255, 255, 0) 38%, rgba(150, 140, 124, 0.38) 100%); }
+.db-glow { position: absolute; inset: 0; pointer-events: none; mix-blend-mode: screen;
+  background: radial-gradient(ellipse 75% 45% at 4% 6%, rgba(255, 244, 218, 0.4), rgba(255, 244, 218, 0) 70%); }
+
+/* Door edge, back (gasket) to front (enamel shell, matching the photo's black) */
+.door-edge { z-index: 3; cursor: pointer;
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0) 6%, rgba(0, 0, 0, 0) 92%, rgba(0, 0, 0, 0.55)),   /* ends fall into shade */
+    linear-gradient(90deg,
+      #5f5b55 0%, #a19d95 5%, #6c6861 10%, #aaa69e 15%, #75716a 20%, #8f8b84 24%,   /* gasket bellows */
+      #2a2a2a 28%, #070707 33%, #121212 55%,                                         /* enamel shell */
+      #3a3a3a 76%, #5c5c5c 81%, #1c1c1c 87%, #050505 100%); }                        /* rounded front corner catching light */
+
+@media (prefers-reduced-motion: reduce) {
+  .fridge-open .fi-light, .fridge-open .fi-cavity, .fridge-open .fi-mist { animation: none; }
+  .fridge-open .fi-light { opacity: 1; }
+}

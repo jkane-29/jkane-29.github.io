@@ -4,10 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Best Rides Chi</title>
+  <meta name="description" content="Chicagoland's best bike rides in one place: distance, climbing, surface and the nearest train.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <!-- Ride details embed RideWithGPS; warm the connection before anyone clicks -->
+  <link rel="preconnect" href="https://ridewithgps.com">
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
@@ -21,49 +23,60 @@
       --flag:   #41b6e6;   /* Chicago flag light blue */
       --flagdk: #0b6fa4;   /* same hue, dark enough for text */
       --red:    #e4002b;   /* Chicago flag red (stars) */
+      --mapbg:  #eceef1;
       --mono:  'IBM Plex Mono', ui-monospace, Menlo, monospace;
       --title: 'Space Mono', ui-monospace, Menlo, monospace;
       --stripe: linear-gradient(to bottom, var(--flag) 0 36%, #fff 36% 64%, var(--flag) 64% 100%);
+      --head: 54px;        /* header bar, without the stripe */
+      --ease: cubic-bezier(.2, .7, .2, 1);
     }
-    body { background: var(--paper); color: var(--ink); font: 12px/1.45 var(--mono); }
+    html { scrollbar-gutter: stable; }
+    body { background: var(--paper); color: var(--ink); font: 12px/1.45 var(--mono); -webkit-font-smoothing: antialiased; }
+    body:has(dialog[open]), body[data-view="map"] { overflow: hidden; }
+    a { color: inherit; }
+    :focus-visible { outline: 2px solid var(--flag); outline-offset: 2px; }
 
     /* ── Header: white bar + Chicago-flag stripe ── */
     header {
-      background: var(--paper); padding: 0 28px; height: 54px;
-      display: flex; align-items: center; justify-content: space-between;
+      background: var(--paper); padding: 0 28px; height: var(--head);
+      display: flex; align-items: center; gap: 18px;
       position: sticky; top: 0; z-index: 100;
     }
     header::after { content: ''; position: absolute; left: 0; right: 0; bottom: -12px; height: 12px; background: var(--stripe); }
     .stars { display: inline-flex; gap: 3px; margin-left: 8px; vertical-align: 2px; }
     .stars svg { fill: var(--red); }
-    .site-title { font: 700 17px var(--title); letter-spacing: -0.01em; color: var(--ink); }
-    nav { display: flex; gap: 2px; }
-    nav button, nav a {
-      background: none; border: none; color: var(--mid);
-      font: 12px var(--mono); text-transform: lowercase;
-      cursor: pointer; padding: 5px 10px; border-radius: 3px; text-decoration: none;
+    .site-title { font: 700 17px var(--title); letter-spacing: -0.01em; color: var(--ink); text-decoration: none; white-space: nowrap; }
+    nav { display: flex; gap: 2px; margin: 0 auto; }
+    nav a {
+      color: var(--mid); font: 12px var(--mono); text-transform: lowercase;
+      padding: 5px 10px; border-radius: 3px; text-decoration: none; transition: color .12s, background-color .12s;
     }
-    nav button:hover, nav a:hover { color: var(--ink); }
-    nav button.active { color: var(--paper); background: var(--ink); }
-    .wx { font-size: 12px; color: var(--mid); display: none; align-items: center; gap: 6px; }
-    .wx.show { display: inline-flex; }
+    nav a:hover { color: var(--ink); }
+    nav a[aria-current="page"] { color: var(--paper); background: var(--ink); }
+    .wx { font-size: 12px; color: var(--mid); display: inline-flex; align-items: center; gap: 6px; min-width: 92px; justify-content: flex-end;
+          opacity: 0; transition: opacity .3s; }
+    .wx.show { opacity: 1; }
     .wx b { color: var(--ink); font-weight: 600; }
     .wx .warrow { display: inline-block; font-size: 11px; color: var(--red); }
-    @media (max-width: 640px) { .wx { display: none !important; } header { padding: 0 14px; } }
+    @media (max-width: 640px) { .wx { display: none; } header { padding: 0 14px; gap: 10px; } nav { margin-right: 0; } }
 
     main { max-width: 1060px; margin: 0 auto; padding: 36px 24px 80px; }
+    [hidden] { display: none !important; }
 
     /* ── Controls ── */
     .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-bottom: 14px; }
     .seg { display: flex; border: 1px solid var(--ink); border-radius: 3px; overflow: hidden; }
-    .seg button, .tog { font: 12px var(--mono); color: var(--ink); background: var(--card); border: none; cursor: pointer; padding: 6px 11px; }
+    .seg button, .tog { font: 12px var(--mono); color: var(--ink); background: var(--card); border: none; cursor: pointer; padding: 6px 11px;
+                        transition: background-color .12s, color .12s, border-color .12s; }
     .seg button + button { border-left: 1px solid var(--ink); }
+    .seg button:hover:not(.on) { background: var(--hover); }
     .seg button.on { background: var(--ink); color: var(--paper); }
-    .seg .n { opacity: 0.5; margin-left: 4px; }
+    .seg .n { opacity: 0.5; margin-left: 4px; font-variant-numeric: tabular-nums; }
+    .filters { display: flex; gap: 6px; flex-wrap: wrap; }
     .tog { border: 1px solid var(--line); border-radius: 3px; color: var(--mid); }
     .tog:hover { border-color: var(--ink); color: var(--ink); }
     .tog.on { background: var(--red); border-color: var(--red); color: #fff; }
-    .count { margin-left: auto; color: var(--mid); }
+    .count { margin-left: auto; color: var(--mid); font-variant-numeric: tabular-nums; }
 
     /* ── Table ── */
     .table { background: var(--card); border: 1px solid var(--ink); border-radius: 3px; overflow: hidden; }
@@ -73,24 +86,24 @@
       padding: 9px 14px; border-top: 1px solid var(--line);
     }
     .row.head {
-      border-top: none; border-bottom: 1px solid var(--ink); padding-top: 8px; padding-bottom: 8px; background: var(--paper);
+      border-top: none; border-bottom: 1px solid var(--ink); padding-top: 4px; padding-bottom: 4px; background: var(--paper);
       font-size: 10.5px; letter-spacing: 0.06em; color: var(--mid); text-transform: uppercase;
     }
-    .row.head + .row { border-top: none; }
-    .head span { cursor: pointer; user-select: none; white-space: nowrap; }
-    .head span:hover { color: var(--ink); }
-    .head span.on { color: var(--red); font-weight: 600; }
+    .rows > .row:first-child { border-top: none; }
+    .head button { all: unset; cursor: pointer; user-select: none; white-space: nowrap; padding: 4px 0; }
+    .head button:hover { color: var(--ink); }
+    .head button:focus-visible { outline: 2px solid var(--flag); }
+    .head button.on { color: var(--red); font-weight: 600; }
     .r { text-align: right; }
-    .ride { cursor: pointer; }
+    .ride { color: inherit; text-decoration: none; cursor: pointer; transition: background-color .12s; font-variant-numeric: tabular-nums; }
     .ride:hover { background: var(--hover); }
     .ride:hover .name { color: var(--red); }
+    .ride:focus-visible { outline-offset: -2px; }
     .zero { color: var(--faint); }
     .good { color: var(--flagdk); font-weight: 600; }  /* off-street ≥ 70% */
 
-    .thumb { width: 76px; height: 48px; border-radius: 2px; overflow: hidden; border: 1px solid var(--line);
-             pointer-events: none; position: relative; isolation: isolate; z-index: 0; background: #eceef1; }
-    .thumb > div { width: 100%; height: 100%; }
-    .thumb .leaflet-tile-pane { filter: grayscale(1) contrast(0.85) brightness(1.08); }
+    .thumb { display: block; width: 76px; height: 48px; border-radius: 2px; border: 1px solid var(--line);
+             background: var(--mapbg); object-fit: cover; }
 
     .name { font: 700 14px/1.25 var(--title); color: var(--ink); transition: color 0.1s; }
     .place { font-size: 11px; color: var(--mid); margin-top: 3px; }
@@ -104,8 +117,9 @@
       padding: 1px 5px; border-radius: 2px; background: var(--lc); color: var(--lt);
     }
     .empty { padding: 36px; text-align: center; color: var(--mid); }
+    .empty button { font: inherit; color: var(--red); background: none; border: none; cursor: pointer; text-decoration: underline; margin-left: 6px; }
 
-    /* Mid widths (e.g. inside the jackkane.me fridge window): drop Type, slim the columns */
+    /* Mid widths: drop Type, slim the columns */
     @media (max-width: 1000px) {
       .row { grid-template-columns: 64px minmax(0, 1fr) 50px 58px 62px 76px 128px; gap: 0 10px; padding: 9px 10px; }
       .row > :nth-child(3) { display: none; }
@@ -115,7 +129,6 @@
       .row { grid-template-columns: 64px minmax(0, 1fr); padding: 10px 12px; }
       .row.head { display: none; }
       .row > .c { display: none; }
-      .thumb { width: 64px; height: 44px; }
       .compact { display: flex; flex-wrap: wrap; gap: 2px 10px; margin-top: 4px; font-size: 11px; color: var(--mid); }
       .count { margin-left: 0; }
       main { padding: 30px 12px 60px; }
@@ -131,29 +144,38 @@
     .data a { color: var(--red); }
     .data .stamp { color: var(--mid); }
 
-    /* ── Detail ── */
-    #overlay {
-      position: fixed; inset: 0; background: rgba(20,24,31,0.55); z-index: 1000;
-      display: flex; align-items: center; justify-content: center;
-      opacity: 0; pointer-events: none; transition: opacity 0.15s;
+    /* ── Ride detail (native dialog) ── */
+    dialog#ride {
+      width: min(94vw, 840px); max-width: none; max-height: 92vh; margin: auto; padding: 0;
+      background: var(--card); color: var(--ink); border: 1px solid var(--ink); border-radius: 4px;
+      box-shadow: 0 30px 80px rgba(20,24,31,0.4); overflow: hidden;
+      opacity: 0; transform: translateY(10px) scale(.985);
+      transition: opacity .2s var(--ease), transform .2s var(--ease), overlay .2s allow-discrete, display .2s allow-discrete;
     }
-    #overlay.open { opacity: 1; pointer-events: all; }
-    #modal {
-      width: min(94vw, 840px); max-height: 92vh; background: var(--card); border: 1px solid var(--ink); border-radius: 4px;
-      box-shadow: 0 30px 80px rgba(20,24,31,0.4); overflow: hidden; display: flex; flex-direction: column;
-    }
+    dialog#ride[open] { display: flex; flex-direction: column; opacity: 1; transform: none; }
+    @starting-style { dialog#ride[open] { opacity: 0; transform: translateY(10px) scale(.985); } }
+    dialog#ride::backdrop { background: rgba(20,24,31,0); transition: background-color .2s, overlay .2s allow-discrete, display .2s allow-discrete; }
+    dialog#ride[open]::backdrop { background: rgba(20,24,31,0.55); }
+    @starting-style { dialog#ride[open]::backdrop { background: rgba(20,24,31,0); } }
+
     #modal-bar {
-      height: 44px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between;
+      height: 44px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; gap: 10px;
       padding: 0 8px 0 16px; background: var(--paper); position: relative;
     }
     #modal-bar::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 8px; background: var(--stripe); }
-    #modal-title { font: 700 14px var(--title); padding-bottom: 6px; }
+    #modal-title { font: 700 14px var(--title); padding-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     #modal-close { border: none; background: none; font: 20px var(--mono); color: var(--mid); cursor: pointer; padding: 0 8px 8px; }
     #modal-close:hover { color: var(--red); }
-    #modal-scroll { overflow-y: auto; flex: 1; }
-    /* RWGPS embed needs real height or its map falls back to a world view */
-    #modal-map { height: 480px; }
-    #modal-map iframe { width: 1px; min-width: 100%; height: 100%; border: 0; display: block; }
+    #modal-scroll { overflow-y: auto; flex: 1; overscroll-behavior: contain; }
+    /* RWGPS embed needs real height or its map falls back to a world view. Until it
+       has loaded, the route itself is drawn here, so there's never a blank box. */
+    #modal-map { height: 480px; position: relative; background: var(--mapbg); overflow: hidden; }
+    #modal-map svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+    #modal-map .draw { stroke-dasharray: 1; stroke-dashoffset: 1; animation: draw .7s var(--ease) .05s forwards; }
+    @keyframes draw { to { stroke-dashoffset: 0; } }
+    #modal-map iframe { position: absolute; inset: 0; width: 1px; min-width: 100%; height: 100%; border: 0; display: block;
+                        opacity: 0; transition: opacity .35s ease; }
+    #modal-map iframe.ready { opacity: 1; }
     #modal-body { padding: 18px 20px 24px; }
 
     .variants { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
@@ -161,52 +183,157 @@
     .kv div { padding: 9px 12px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--card); }
     .kv div:nth-child(4n) { border-right: none; }
     .kv .k { display: block; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--mid); }
-    .kv .v { display: block; font-size: 16px; font-weight: 600; margin-top: 2px; }
+    .kv .v { display: block; font-size: 16px; font-weight: 600; margin-top: 2px; font-variant-numeric: tabular-nums; }
 
     .list { width: 100%; border-collapse: collapse; margin-top: 18px; }
     .list th { text-align: left; font-weight: 600; width: 140px; padding: 7px 0; vertical-align: top; }
     .list td { padding: 7px 0; line-height: 1.55; vertical-align: top; }
     .list tr + tr th, .list tr + tr td { border-top: 1px solid var(--line); }
     .list .muted { color: var(--mid); }
-    .list a { color: var(--mid); }
 
     .actions { display: flex; gap: 8px; margin-top: 18px; flex-wrap: wrap; }
-    .btn { font: 600 12px var(--mono); padding: 8px 14px; border-radius: 3px; text-decoration: none; border: 1px solid var(--ink); }
+    .btn { font: 600 12px var(--mono); padding: 8px 14px; border-radius: 3px; text-decoration: none; border: 1px solid var(--ink); cursor: pointer; }
     .btn.primary { background: var(--red); border-color: var(--red); color: #fff; }
     .btn.secondary { background: var(--card); color: var(--ink); }
+    .btn.secondary:hover { background: var(--hover); }
     @media (max-width: 480px) { .kv { grid-template-columns: repeat(2, 1fr); } .kv div:nth-child(4n) { border-right: 1px solid var(--line); } .kv div:nth-child(2n) { border-right: none; } }
+
+    /* Phones: the detail is a sheet that rises from the bottom */
+    @media (max-width: 640px) {
+      dialog#ride { width: 100%; max-height: 92dvh; margin: auto 0 0; border-radius: 10px 10px 0 0; border-bottom: none;
+                    transform: translateY(40px); }
+      @starting-style { dialog#ride[open] { opacity: 0; transform: translateY(40px); } }
+      #modal-body { padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
+    }
+
+    /* ── Map view ── */
+    #view-map { position: fixed; top: calc(var(--head) + 12px); left: 0; right: 0; bottom: 0; z-index: 0; isolation: isolate; background: var(--mapbg); }
+    #map { position: absolute; inset: 0; background: var(--mapbg); }
+    /* Grey base map so rides and transit lines read first */
+    #map .leaflet-tile-pane { filter: grayscale(1) contrast(0.88) brightness(1.06); }
+    #map .leaflet-control-attribution { font-size: 9px; opacity: 0.7; }
+    #map .leaflet-tooltip { font: 11px var(--mono); }
+    #map .leaflet-control-zoom a { font-family: var(--mono); }
+    /* Vector layers hide while the map flies to a ride (see expand) */
+    .leaflet-rideLines-pane, .leaflet-rideDots-pane, .leaflet-transit-pane { transition: opacity 0.3s ease; }
+    .flying .leaflet-rideLines-pane, .flying .leaflet-rideDots-pane, .flying .leaflet-transit-pane { opacity: 0; transition: none; }
+
+    .map-toggles { position: absolute; top: 10px; left: 54px; z-index: 500; display: flex; gap: 6px; }
+    .toggle-btn { font: 12px var(--mono); text-transform: lowercase; padding: 4px 10px; border-radius: 3px; cursor: pointer;
+                  border: 1px solid var(--line); color: var(--mid); background: var(--card); box-shadow: 0 1px 4px rgba(20,24,31,.12);
+                  transition: background-color .12s, color .12s, border-color .12s; }
+    .toggle-btn:hover { border-color: var(--ink); color: var(--ink); }
+    .toggle-btn.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+    #legend {
+      position: absolute; bottom: 28px; left: 16px; z-index: 500;
+      background: var(--card); border: 1px solid var(--ink); border-radius: 3px;
+      padding: 10px 14px; font-size: 11px; max-height: calc(100% - 120px); overflow-y: auto;
+    }
+    .legend-title { font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--mid); margin: 8px 0 5px; }
+    .legend-title:first-child { margin-top: 0; }
+    .legend-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+    .legend-line { width: 20px; height: 3px; flex-shrink: 0; }
+    .legend-cols { display: grid; grid-template-columns: auto auto; column-gap: 14px; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin: 0 5px; }
+
+    #ride-card {
+      position: absolute; top: 16px; right: 16px; z-index: 600; width: 340px;
+      background: var(--card); border: 1px solid var(--ink); border-radius: 3px;
+      padding: 14px 16px; box-shadow: 0 10px 30px rgba(20,24,31,0.25);
+      max-height: calc(100% - 32px); overflow-y: auto;
+      opacity: 0; transform: translateY(-6px); pointer-events: none; visibility: hidden;
+      transition: opacity .18s var(--ease), transform .18s var(--ease), visibility 0s .18s;
+    }
+    #ride-card.open { opacity: 1; transform: none; pointer-events: auto; visibility: visible; transition: opacity .18s var(--ease), transform .18s var(--ease); }
+    .card-close { position: absolute; top: 4px; right: 6px; cursor: pointer; font: 16px var(--mono); color: var(--mid); background: none; border: none; padding: 2px 6px; }
+    .card-close:hover { color: var(--red); }
+    .card-label { font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--mid); margin-bottom: 4px; }
+    .card-name { font: 700 15px/1.25 var(--title); margin-bottom: 3px; padding-right: 14px; }
+    .card-sub { font-size: 11px; color: var(--mid); margin-bottom: 10px; }
+    .card-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px 10px; border-top: 1px solid var(--line); padding-top: 9px; }
+    .card-stats div { font-size: 9.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--mid); }
+    .card-stats b { display: block; font-size: 15px; letter-spacing: 0; text-transform: none; color: var(--ink); font-weight: 600; margin-top: 1px; font-variant-numeric: tabular-nums; }
+    .card-section { margin-top: 10px; padding-top: 9px; border-top: 1px solid var(--line); font-size: 11px; line-height: 1.6; }
+    #ride-card .line { font-size: 9px; padding: 1px 4px; margin-right: 2px; vertical-align: 1px; }
+    .var-row { display: flex; align-items: center; gap: 7px; margin-top: 4px; cursor: pointer; }
+    .var-row:not(.on) { opacity: 0.4; }
+    .var-dash { width: 20px; flex-shrink: 0; border-top: 2px dashed var(--ink); }
+    .var-row.primary { cursor: default; }
+    .var-row.primary .var-dash { border-top: 3px solid var(--red); }
+    .card-links { margin-top: 12px; display: flex; gap: 8px; }
+    .card-links a, .card-links button { font: 600 11px var(--mono); color: #fff; background: var(--red); padding: 5px 10px; border-radius: 3px; text-decoration: none; border: 1px solid var(--red); cursor: pointer; }
+    .card-links .sec { background: var(--card); border: 1px solid var(--ink); color: var(--ink); }
+    .card-links .sec:hover { background: var(--hover); }
+    @media (max-width: 640px) {
+      #ride-card { top: auto; bottom: 10px; left: 10px; right: 10px; width: auto; max-height: 55%; transform: translateY(8px); }
+      #view-map:has(#ride-card.open) #legend { display: none; }
+    }
+
+    /* ── Motion ── */
+    ::view-transition-group(*) { animation-duration: .26s; animation-timing-function: var(--ease); }
+    ::view-transition-old(root), ::view-transition-new(root) { animation-duration: .16s; }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after, ::backdrop { transition-duration: 0s !important; animation-duration: 0s !important; }
+      #modal-map .draw { stroke-dashoffset: 0; }
+    }
   </style>
 </head>
-<body>
+<body data-view="rides">
 
 <header>
-  <div class="site-title">Best Rides Chi<span class="stars"><svg viewBox="-6.5 -6.5 13 13" width="9" height="9" aria-hidden="true"><path d="M0.00 -6.00L1.20 -2.08L5.20 -3.00L2.40 0.00L5.20 3.00L1.20 2.08L0.00 6.00L-1.20 2.08L-5.20 3.00L-2.40 0.00L-5.20 -3.00L-1.20 -2.08Z"/></svg><svg viewBox="-6.5 -6.5 13 13" width="9" height="9" aria-hidden="true"><path d="M0.00 -6.00L1.20 -2.08L5.20 -3.00L2.40 0.00L5.20 3.00L1.20 2.08L0.00 6.00L-1.20 2.08L-5.20 3.00L-2.40 0.00L-5.20 -3.00L-1.20 -2.08Z"/></svg><svg viewBox="-6.5 -6.5 13 13" width="9" height="9" aria-hidden="true"><path d="M0.00 -6.00L1.20 -2.08L5.20 -3.00L2.40 0.00L5.20 3.00L1.20 2.08L0.00 6.00L-1.20 2.08L-5.20 3.00L-2.40 0.00L-5.20 -3.00L-1.20 -2.08Z"/></svg><svg viewBox="-6.5 -6.5 13 13" width="9" height="9" aria-hidden="true"><path d="M0.00 -6.00L1.20 -2.08L5.20 -3.00L2.40 0.00L5.20 3.00L1.20 2.08L0.00 6.00L-1.20 2.08L-5.20 3.00L-2.40 0.00L-5.20 -3.00L-1.20 -2.08Z"/></svg></span></div>
-  <nav id="nav">
-    <button class="active" data-v="rides">Rides</button>
-    <a href="map.html">Map</a>
-    <button data-v="data">Data</button>
+  <a class="site-title" href="#">Best Rides Chi<span class="stars"><svg viewBox="-6.5 -6.5 13 13" width="9" height="9" aria-hidden="true"><path d="M0.00 -6.00L1.20 -2.08L5.20 -3.00L2.40 0.00L5.20 3.00L1.20 2.08L0.00 6.00L-1.20 2.08L-5.20 3.00L-2.40 0.00L-5.20 -3.00L-1.20 -2.08Z"/></svg><svg viewBox="-6.5 -6.5 13 13" width="9" height="9" aria-hidden="true"><path d="M0.00 -6.00L1.20 -2.08L5.20 -3.00L2.40 0.00L5.20 3.00L1.20 2.08L0.00 6.00L-1.20 2.08L-5.20 3.00L-2.40 0.00L-5.20 -3.00L-1.20 -2.08Z"/></svg><svg viewBox="-6.5 -6.5 13 13" width="9" height="9" aria-hidden="true"><path d="M0.00 -6.00L1.20 -2.08L5.20 -3.00L2.40 0.00L5.20 3.00L1.20 2.08L0.00 6.00L-1.20 2.08L-5.20 3.00L-2.40 0.00L-5.20 -3.00L-1.20 -2.08Z"/></svg><svg viewBox="-6.5 -6.5 13 13" width="9" height="9" aria-hidden="true"><path d="M0.00 -6.00L1.20 -2.08L5.20 -3.00L2.40 0.00L5.20 3.00L1.20 2.08L0.00 6.00L-1.20 2.08L-5.20 3.00L-2.40 0.00L-5.20 -3.00L-1.20 -2.08Z"/></svg></span></a>
+  <nav id="nav" aria-label="Views">
+    <a href="#" data-v="rides" aria-current="page">Rides</a>
+    <a href="#map" data-v="map">Map</a>
+    <a href="#data" data-v="data">Data</a>
   </nav>
-  <span id="wx" class="wx"></span>
+  <span id="wx" class="wx" aria-label="Chicago weather now"></span>
 </header>
 
-<main id="main"></main>
+<main>
+  <section id="view-rides">
+    <div class="controls">
+      <div class="seg" id="regions" role="group" aria-label="Region"></div>
+      <div class="filters" id="filters" role="group" aria-label="Filters"></div>
+      <div class="count" id="count" aria-live="polite"></div>
+    </div>
+    <div class="table">
+      <div class="row head" id="head"></div>
+      <div class="rows" id="rows"></div>
+      <div class="empty" id="empty" hidden>No rides match.<button type="button" id="clear">Clear filters</button></div>
+    </div>
+  </section>
+  <section id="view-data" class="data" hidden></section>
+</main>
 
-<div id="overlay">
-  <div id="modal">
-    <div id="modal-bar"><span id="modal-title"></span><button id="modal-close" aria-label="Close">×</button></div>
-    <div id="modal-scroll"><div id="modal-map"></div><div id="modal-body"></div></div>
+<section id="view-map" hidden>
+  <div id="map"></div>
+  <div class="map-toggles">
+    <button type="button" class="toggle-btn on" id="btn-rides" aria-pressed="true">rides</button>
+    <button type="button" class="toggle-btn" id="btn-transit" aria-pressed="false">transit</button>
   </div>
-</div>
+  <div id="legend"></div>
+  <div id="ride-card" role="region" aria-label="Selected ride"><button type="button" class="card-close" id="card-close" aria-label="Close">×</button><div id="card-body"></div></div>
+</section>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<dialog id="ride" aria-labelledby="modal-title">
+  <div id="modal-bar"><span id="modal-title"></span><button type="button" id="modal-close" aria-label="Close">×</button></div>
+  <div id="modal-scroll"><div id="modal-map"></div><div id="modal-body"></div></div>
+</dialog>
+
 <script src="data/rides.js"></script>
 <script src="data/transit.js"></script>
 <script>
 const REGIONS = [['all', 'All'], ['city', 'Chicago'], ['suburbs', 'Suburbs'], ['indiana', 'Indiana']];
+const REGION_NAME = { city: 'Chicago', suburbs: 'Suburbs', indiana: 'Indiana' };
 const TYPE = { loop: 'Loop', out_and_back: 'Out & back', point_to_point: 'One way' };
 const SYS = { cta: 'CTA', metra: 'Metra', southshore: 'South Shore' };
 const PACE = 14;   // mph, for time estimates
-const NEAR = 1.0;  // mi, "Train" filter
+const NEAR = 1.0;  // mi, "Station" filter
+const BY_ID = Object.fromEntries(RIDES.map(r => [r.id, r]));
+const STILL = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const $ = id => document.getElementById(id);
 
 // Transit line chips keep their official colors
 const LINE_COLOR = {};
@@ -218,7 +345,6 @@ function chip(name) {
 }
 
 const fmtMi = mi => mi >= 100 ? String(Math.round(mi)) : mi.toFixed(1);
-const fmtTime = mi => { const m = Math.round(mi / PACE * 60); return `${Math.floor(m / 60)}:${String(m % 60).padStart(2, '0')}`; };
 const pct = (n, cls = '') => `<span class="${n ? cls : 'zero'}">${n}%</span>`;
 const places = v => v.end ? `${v.start.label} → ${v.end.label}` : v.start.label;
 
@@ -234,9 +360,10 @@ function trainCell(v) {
   return `<span class="train">${s.lines.slice(0, 3).map(chip).join('')}<span class="d">${s.mi.toFixed(1)} mi${s.at === 'finish' ? ' (end)' : ''}</span></span>`;
 }
 
-/* ── State ───────────────────────────────────────────────────────────── */
-let view = 'rides', region = 'all', sortKey = null, sortDir = 1;
-const F = { train: false, paved: false, short: false };
+// One view-transition helper: animates where the browser supports it, instant elsewhere
+const transition = fn => (!STILL && document.startViewTransition) ? document.startViewTransition(fn) : (fn(), null);
+
+/* ── List state: lives in the URL query, so refresh / back / sharing keep it ── */
 const FILTERS = [
   ['train', `Station ≤ ${NEAR} mi`, v => { const s = bestStation(v); return s && s.mi <= NEAR; }],
   ['paved', 'Paved', v => v.unpaved <= 10],
@@ -252,83 +379,111 @@ const COLS = [
   ['path',    'Off-street',    r => r.variants[0].mix.path, true],
   ['train',   'Nearest train', r => (bestStation(r.variants[0]) || { mi: 99 }).mi, false],
 ];
-const main = document.getElementById('main');
-const thumbs = {};
+const S = { region: 'all', only: new Set(), sort: null, dir: 1 };
+(function readQuery() {
+  const q = new URLSearchParams(location.search);
+  if (REGIONS.some(([id]) => id === q.get('region'))) S.region = q.get('region');
+  (q.get('only') || '').split(',').forEach(k => { if (FILTERS.some(f => f[0] === k)) S.only.add(k); });
+  const s = q.get('sort') || '';
+  if (COLS.some(c => c[0] === s.replace(/^-/, ''))) { S.sort = s.replace(/^-/, ''); S.dir = s.startsWith('-') ? -1 : 1; }
+})();
+function writeQuery() {
+  const q = new URLSearchParams();
+  if (S.region !== 'all') q.set('region', S.region);
+  if (S.only.size) q.set('only', [...S.only].join(','));
+  if (S.sort) q.set('sort', (S.dir < 0 ? '-' : '') + S.sort);
+  const qs = q.toString().replace(/%2C/g, ',');
+  history.replaceState(history.state, '', location.pathname + (qs ? '?' + qs : '') + location.hash);
+}
 
-function rows() {
-  let rs = RIDES.filter(r => region === 'all' || r.region === region)
-    .filter(r => FILTERS.every(([k, , fn]) => !F[k] || fn(r.variants[0])));
-  if (sortKey) {
-    const fn = COLS.find(c => c[0] === sortKey)[2];
-    rs = [...rs].sort((a, b) => (fn(a) < fn(b) ? -1 : fn(a) > fn(b) ? 1 : 0) * sortDir);
+const passes = r => [...S.only].every(k => FILTERS.find(f => f[0] === k)[2](r.variants[0]));
+function visibleRides() {
+  let rs = RIDES.filter(r => (S.region === 'all' || r.region === S.region) && passes(r));
+  if (S.sort) {
+    const fn = COLS.find(c => c[0] === S.sort)[2];
+    rs = [...rs].sort((a, b) => (fn(a) < fn(b) ? -1 : fn(a) > fn(b) ? 1 : 0) * S.dir || a.name.localeCompare(b.name));
   }
   return rs;
 }
 
-function rideRow(r) {
+/* ── List: rows are built once, then filtered and reordered in place ──── */
+const rowEl = {};
+function buildRow(r) {
   const v = r.variants[0];
-  return `<div class="row ride" data-id="${r.id}">
-    <div class="thumb"><div id="t-${r.id}"></div></div>
+  const a = document.createElement('a');
+  a.className = 'row ride'; a.href = '#' + r.id; a.dataset.id = r.id;
+  a.innerHTML = `
+    <img class="thumb" src="data/thumbs/${r.id}.webp" width="76" height="48" alt="" loading="lazy" decoding="async">
     <div>
       <div class="name">${r.name}</div>
       <div class="place">${places(v)}${r.variants.length > 1 ? ` <span class="lens">· ${r.variants.length} lengths</span>` : ''}</div>
-      <div class="compact"><span>${fmtMi(v.mi)} mi</span><span>${v.gain} ft</span><span>${v.unpaved}% unpaved</span>${trainCell(v)}</div>
+      <div class="compact"><span>${fmtMi(v.mi)} mi</span><span>${v.gain.toLocaleString()} ft</span><span>${v.unpaved}% unpaved</span>${trainCell(v)}</div>
     </div>
     <div class="c">${TYPE[v.type] || ''}</div>
     <div class="c r">${fmtMi(v.mi)}</div>
     <div class="c r">${v.gain.toLocaleString()}</div>
     <div class="c r">${pct(v.unpaved)}</div>
     <div class="c r">${pct(v.mix.path, v.mix.path >= 70 ? 'good' : '')}</div>
-    <div class="c">${trainCell(v)}</div>
-  </div>`;
+    <div class="c">${trainCell(v)}</div>`;
+  return a;
+}
+RIDES.forEach(r => { rowEl[r.id] = buildRow(r); $('rows').appendChild(rowEl[r.id]); });
+
+$('head').innerHTML = '<div></div>' + COLS.map(([k, l, , right]) =>
+  `<span class="${right ? 'r' : ''}"><button type="button" data-k="${k}">${l}</button></span>`).join('');
+$('filters').innerHTML = FILTERS.map(([k, l]) => `<button type="button" class="tog" data-f="${k}" aria-pressed="false">${l}</button>`).join('');
+
+function paintControls(rs) {
+  const n = id => RIDES.filter(r => (id === 'all' || r.region === id) && passes(r)).length;
+  $('regions').innerHTML = REGIONS.map(([id, l]) =>
+    `<button type="button" data-g="${id}" class="${S.region === id ? 'on' : ''}" aria-pressed="${S.region === id}">${l}<span class="n">${n(id)}</span></button>`).join('');
+  $('filters').querySelectorAll('.tog').forEach(b => {
+    const on = S.only.has(b.dataset.f); b.classList.toggle('on', on); b.setAttribute('aria-pressed', on);
+  });
+  $('head').querySelectorAll('button').forEach(b => {
+    const on = b.dataset.k === S.sort, label = COLS.find(c => c[0] === b.dataset.k)[1];
+    b.classList.toggle('on', on);
+    b.textContent = label + (on ? (S.dir > 0 ? ' ↑' : ' ↓') : '');
+    b.parentNode.setAttribute('aria-sort', on ? (S.dir > 0 ? 'ascending' : 'descending') : 'none');
+  });
+  $('count').textContent = `${rs.length} of ${RIDES.length}`;
+  $('empty').hidden = rs.length > 0;
 }
 
-function render() {
-  if (view === 'data') return renderData();
-  const rs = rows();
-  const n = id => id === 'all' ? RIDES.length : RIDES.filter(r => r.region === id).length;
-  main.innerHTML = `
-    <div class="controls">
-      <div class="seg" id="regions">${REGIONS.map(([id, l]) =>
-        `<button data-g="${id}" class="${region === id ? 'on' : ''}">${l}<span class="n">${n(id)}</span></button>`).join('')}</div>
-      <div id="filters" style="display:flex;gap:6px;flex-wrap:wrap">${FILTERS.map(([k, l]) =>
-        `<button class="tog${F[k] ? ' on' : ''}" data-f="${k}">${l}</button>`).join('')}</div>
-      <div class="count">${rs.length} of ${RIDES.length}</div>
-    </div>
-    <div class="table">
-      <div class="row head"><div></div>${COLS.map(([k, l, , right]) =>
-        `<span data-k="${k}" class="${right ? 'r' : ''}${sortKey === k ? ' on' : ''}">${l}${sortKey === k ? (sortDir > 0 ? ' ↑' : ' ↓') : ''}</span>`).join('')}</div>
-      ${rs.length ? rs.map(rideRow).join('') : '<div class="empty">No rides match.</div>'}
-    </div>`;
-
-  document.getElementById('regions').onclick = e => { const b = e.target.closest('button'); if (b) { region = b.dataset.g; render(); } };
-  document.getElementById('filters').onclick = e => { const b = e.target.closest('button'); if (b) { F[b.dataset.f] = !F[b.dataset.f]; render(); } };
-  main.querySelector('.head').onclick = e => {
-    const h = e.target.closest('span[data-k]'); if (!h) return;
-    if (sortKey === h.dataset.k) { if (sortDir < 0) sortKey = null; sortDir = -sortDir; } else { sortKey = h.dataset.k; sortDir = 1; }
-    render();
+// Rows slide to their new places on sort / filter (View Transitions where supported)
+function updateList(animate = true) {
+  const rs = visibleRides(), show = new Set(rs.map(r => r.id));
+  const apply = () => {
+    rs.forEach(r => $('rows').appendChild(rowEl[r.id]));
+    for (const id in rowEl) rowEl[id].hidden = !show.has(id);
+    paintControls(rs);
   };
-  main.querySelectorAll('.ride').forEach(el => el.onclick = () => openModal(RIDES.find(r => r.id === el.dataset.id)));
-  main.querySelectorAll('.thumb > div').forEach(el => io.observe(el));
+  const named = animate && document.startViewTransition && !STILL && view === 'rides'
+    ? Object.values(rowEl).filter(el => !el.hidden || show.has(el.dataset.id)) : [];
+  named.forEach(el => { el.style.viewTransitionName = 'r-' + el.dataset.id; });
+  const t = named.length ? document.startViewTransition(apply) : (apply(), null);
+  t && t.finished.finally(() => named.forEach(el => { el.style.viewTransitionName = ''; }));
+  writeQuery();
 }
 
-/* Thumbnails: grey base map + route line, built when scrolled into view */
-const tiles = () => L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 });
-const io = new IntersectionObserver(es => es.forEach(e => {
-  if (!e.isIntersecting) return;
-  io.unobserve(e.target);
-  const id = e.target.id.slice(2), ride = RIDES.find(r => r.id === id);
-  if (thumbs[id]) thumbs[id].remove();
-  const m = L.map(e.target, { zoomControl: false, dragging: false, scrollWheelZoom: false, doubleClickZoom: false,
-    touchZoom: false, boxZoom: false, keyboard: false, attributionControl: false });
-  tiles().addTo(m);
-  const line = L.polyline(ride.variants[0].line, { color: '#e4002b', weight: 2.5 }).addTo(m);
-  m.fitBounds(line.getBounds(), { padding: [5, 5], maxZoom: 13 });
-  thumbs[id] = m;
-}), { rootMargin: '200px' });
+$('regions').onclick = e => { const b = e.target.closest('button'); if (b && b.dataset.g !== S.region) { S.region = b.dataset.g; updateList(); } };
+$('filters').onclick = e => { const b = e.target.closest('button'); if (!b) return; const k = b.dataset.f; S.only.has(k) ? S.only.delete(k) : S.only.add(k); updateList(); };
+$('head').onclick = e => {
+  const b = e.target.closest('button[data-k]'); if (!b) return;
+  if (S.sort === b.dataset.k) { if (S.dir < 0) S.sort = null; S.dir = -S.dir; } else { S.sort = b.dataset.k; S.dir = 1; }
+  updateList();
+};
+$('clear').onclick = () => { S.region = 'all'; S.only.clear(); updateList(); };
+$('rows').addEventListener('click', e => {
+  const a = e.target.closest('a.ride');
+  if (!a || e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;   // let new-tab clicks through
+  e.preventDefault();
+  showRide(a.dataset.id, location.pathname + location.search + '#' + a.dataset.id);
+});
 
-/* ── Detail ──────────────────────────────────────────────────────────── */
-const overlay = document.getElementById('overlay');
+/* ── Ride detail ─────────────────────────────────────────────────────── */
+const dlg = $('ride');
+let dlgRide = null;
 
 function stationRow(label, e) {
   const s = (e.stations || [])[0];
@@ -336,15 +491,43 @@ function stationRow(label, e) {
   return `<tr><th>${label}</th><td>${s.name} ${s.lines.map(chip).join(' ')} <span class="muted">${s.mi.toFixed(1)} mi</span></td></tr>`;
 }
 
+// The route, drawn straight away in the map slot while the RideWithGPS embed loads
+function routeSketch(line) {
+  const W = 840, H = 480, P = 56, k = Math.cos(line[0][0] * Math.PI / 180);
+  const xy = line.map(([lat, lng]) => [lng * k, -lat]);
+  const xs = xy.map(p => p[0]), ys = xy.map(p => p[1]);
+  const [x0, x1, y0, y1] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
+  const s = Math.min((W - 2 * P) / (x1 - x0 || 1), (H - 2 * P) / (y1 - y0 || 1));
+  const ox = (W - (x1 - x0) * s) / 2, oy = (H - (y1 - y0) * s) / 2;
+  const step = Math.max(1, Math.floor(xy.length / 600));
+  const d = 'M' + xy.filter((_, i) => i % step === 0 || i === xy.length - 1)
+    .map(([x, y]) => `${(ox + (x - x0) * s).toFixed(1)} ${(oy + (y - y0) * s).toFixed(1)}`).join('L');
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+    <path d="${d}" fill="none" stroke="#fff" stroke-width="9" stroke-linejoin="round" stroke-linecap="round" opacity=".9"/>
+    <path class="draw" pathLength="1" d="${d}" fill="none" stroke="#e4002b" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+  </svg>`;
+}
+
 function renderDetail(ride, i) {
   const v = ride.variants[i];
-  document.getElementById('modal-title').textContent = ride.name;
-  document.getElementById('modal-map').innerHTML =
-    `<iframe src="https://ridewithgps.com/embeds?type=route&id=${v.rwgps}&sampleGraph=true" title="${ride.name} on RideWithGPS" scrolling="no"></iframe>`;
+  $('modal-title').textContent = ride.name;
+  const box = $('modal-map');
+  box.innerHTML = routeSketch(v.line);
+  const frame = document.createElement('iframe');
+  frame.title = `${ride.name} on RideWithGPS`;
+  frame.setAttribute('scrolling', 'no');
+  // Fade the embed in once it has drawn, over the sketch (fallback in case load never fires)
+  let shown = false;
+  const reveal = () => { if (!shown) { shown = true; frame.classList.add('ready'); } };
+  frame.addEventListener('load', () => setTimeout(reveal, 250));
+  setTimeout(reveal, 4000);
+  frame.src = `https://ridewithgps.com/embeds?type=route&id=${v.rwgps}&sampleGraph=true`;
+  box.appendChild(frame);
+
   const kv = (k, val) => `<div><span class="k">${k}</span><span class="v">${val}</span></div>`;
-  document.getElementById('modal-body').innerHTML = `
-    ${ride.variants.length > 1 ? `<div class="variants">${ride.variants.map((x, j) =>
-      `<button class="tog${j === i ? ' on' : ''}" data-i="${j}">${fmtMi(x.mi)} mi</button>`).join('')}</div>` : ''}
+  $('modal-body').innerHTML = `
+    ${ride.variants.length > 1 ? `<div class="variants" role="group" aria-label="Length">${ride.variants.map((x, j) =>
+      `<button type="button" class="tog${j === i ? ' on' : ''}" data-i="${j}" aria-pressed="${j === i}">${fmtMi(x.mi)} mi</button>`).join('')}</div>` : ''}
     <div class="kv">
       ${kv('Miles', fmtMi(v.mi))}
       ${kv('Climb ft', v.gain.toLocaleString())}
@@ -358,25 +541,291 @@ function renderDetail(ride, i) {
     </table>
     <div class="actions">
       <a class="btn primary" href="https://ridewithgps.com/routes/${v.rwgps}" target="_blank" rel="noopener">RideWithGPS ↗</a>
-      <a class="btn secondary" href="map.html#${ride.id}">Map</a>
+      <a class="btn secondary" href="#map/${ride.id}">Map</a>
     </div>`;
-  document.querySelectorAll('#modal-body .variants .tog').forEach(b => b.onclick = () => renderDetail(ride, +b.dataset.i));
-  document.getElementById('modal-scroll').scrollTop = 0;
+  $('modal-body').querySelectorAll('.variants .tog').forEach(b => b.onclick = () => renderDetail(ride, +b.dataset.i));
+  $('modal-scroll').scrollTop = 0;
 }
 
-function openModal(ride) { renderDetail(ride, 0); overlay.classList.add('open'); history.replaceState(null, '', '#' + ride.id); }
-function closeModal() {
-  overlay.classList.remove('open');
-  document.getElementById('modal-map').innerHTML = '';
-  history.replaceState(null, '', location.pathname);
+// Opening a ride adds a history entry, so the phone's back gesture closes it
+function showRide(id, url = location.href) {
+  history.pushState({ ride: id, pushed: true }, '', url);
+  sync();
 }
-document.getElementById('modal-close').onclick = closeModal;
-overlay.onclick = e => { if (e.target === overlay) closeModal(); };
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+function openDetail(ride) {
+  if (dlgRide !== ride) renderDetail(ride, 0);
+  dlgRide = ride;
+  if (!dlg.open) dlg.showModal();
+  document.title = `${ride.name} — Best Rides Chi`;
+}
+function closeDetail() {
+  if (!dlg.open) return;
+  dlg.close();
+  dlgRide = null;
+  setTimeout(() => { if (!dlg.open) $('modal-map').innerHTML = ''; }, 220);   // stop the embed after the fade
+  document.title = TITLES[view];
+}
+function dismissDetail() {
+  if (history.state && history.state.pushed) return history.back();       // popstate → sync closes it
+  const keep = location.hash.startsWith('#map') || location.hash === '#data' ? location.hash : '';
+  history.replaceState(null, '', location.pathname + location.search + keep);
+  sync();
+}
+$('modal-close').onclick = dismissDetail;
+dlg.addEventListener('cancel', e => { e.preventDefault(); dismissDetail(); });         // Esc
+dlg.addEventListener('click', e => { if (e.target === dlg) dismissDetail(); });       // backdrop
+dlg.addEventListener('click', e => {                                                  // "Map" inside the detail
+  const a = e.target.closest('a[href^="#map"]'); if (!a) return;
+  e.preventDefault();
+  history.replaceState(null, '', location.pathname + location.search + a.getAttribute('href'));
+  sync();
+});
+
+/* ── Views + routing ─────────────────────────────────────────────────── */
+// #            ride list          #<ride>        list, with that ride open
+// #map         map                #map/<ride>    map, with that ride selected
+// #data        data notes
+const TITLES = { rides: 'Best Rides Chi', map: 'Map — Best Rides Chi', data: 'Data — Best Rides Chi' };
+let view = null;
+
+function route() {
+  const h = decodeURIComponent(location.hash.slice(1));
+  if (h === 'map' || h.startsWith('map/')) return { view: 'map', mapRide: BY_ID[h.slice(4)] || null };
+  if (h === 'data') return { view: 'data' };
+  return { view: 'rides', ride: BY_ID[h] || null };
+}
+
+// Resolves once the new view is actually in the page (a view transition swaps it a frame later)
+function setView(next, animate) {
+  if (next === view) return Promise.resolve();
+  const apply = () => {
+    view = next;
+    document.body.dataset.view = next;
+    $('view-rides').hidden = next !== 'rides';
+    $('view-data').hidden = next !== 'data';
+    $('view-map').hidden = next !== 'map';
+    document.querySelectorAll('#nav a').forEach(a => a.dataset.v === next ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current'));
+    if (next === 'data' && !$('view-data').innerHTML) renderData();
+    if (next !== 'map') window.scrollTo({ top: next === 'rides' ? listScroll : 0 });
+    if (!dlg.open) document.title = TITLES[next];
+  };
+  if (view === 'rides') listScroll = window.scrollY;
+  const t = animate && view ? transition(apply) : apply();
+  return t ? t.updateCallbackDone : Promise.resolve();
+}
+let listScroll = 0;
+
+function sync(animate = true) {
+  const r = route();
+  // A ride's own link (#<ride>) opens its detail over the list
+  if (r.ride && !(history.state && history.state.ride === r.ride.id)) history.replaceState({ ride: r.ride.id }, '');
+  const shown = setView(r.view, animate);
+  if (r.view === 'map') shown.then(() => showMap(r.mapRide));
+  const want = history.state && BY_ID[history.state.ride];
+  want ? openDetail(want) : closeDetail();
+}
+history.scrollRestoration = 'manual';   // views manage their own scroll
+addEventListener('popstate', () => sync());
+addEventListener('hashchange', () => sync());
+
+/* ── Map (Leaflet loads the first time it's needed, or once the page is idle) ── */
+let leafletReady = null;
+function loadLeaflet() {
+  return leafletReady = leafletReady || new Promise((resolve, reject) => {
+    const css = document.createElement('link');
+    css.rel = 'stylesheet'; css.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+    document.head.appendChild(css);
+    const js = document.createElement('script');
+    js.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+    js.onload = resolve; js.onerror = reject;
+    document.head.appendChild(js);
+  });
+}
+document.querySelector('#nav a[data-v="map"]').addEventListener('pointerenter', loadLeaflet, { once: true });
+
+let M = null;   // the map's own state, created on first visit
+async function showMap(ride) {
+  await loadLeaflet();
+  if (!M) M = initMap();
+  M.map.invalidateSize();
+  if (ride && (!M.active || M.active.id !== ride.id)) M.expand(ride);
+  else if (!ride && M.active) history.replaceState(history.state, '', location.pathname + location.search + '#map/' + M.active.id);   // keep the selection
+}
+
+function initMap() {
+  const TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+  const map = L.map('map', { zoomControl: true });
+  L.tileLayer(TILE_URL, {
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors · transit: CTA, Metra, NICTD GTFS',
+    maxZoom: 19,
+  }).addTo(map);
+  map.createPane('transit').style.zIndex = 420;
+  map.createPane('rideLines').style.zIndex = 610;
+  map.createPane('rideDots').style.zIndex = 620;
+
+  const RIDE_COLOR = '#14181f';   // dots
+  const ROUTE_COLOR = '#e4002b';  // opened route
+  const DOT = { pane: 'rideDots', radius: 7, color: '#fff', weight: 2, fillColor: RIDE_COLOR, fillOpacity: 1, opacity: 1 };
+  const markers = {};
+  const card = $('ride-card'), cardBody = $('card-body');
+  const M = { map, active: null };
+  let activeLayers = [], variantLayers = [];
+
+  RIDES.forEach(ride => {
+    const v = ride.variants[0];
+    const m = L.circleMarker([v.start.lat, v.start.lng], DOT)
+      .bindTooltip(`${ride.name} · ${fmtMi(v.mi)} mi`, { direction: 'top', opacity: 0.9 });
+    m.on('click', e => { L.DomEvent.stopPropagation(e); M.active && M.active.id === ride.id ? M.collapse() : M.expand(ride); });
+    m.addTo(map);
+    markers[ride.id] = m;
+  });
+  map.fitBounds(L.latLngBounds(RIDES.map(r => [r.variants[0].start.lat, r.variants[0].start.lng])), { padding: [40, 40] });
+
+  const setHash = id => history.replaceState(history.state, '', location.pathname + location.search + '#map' + (id ? '/' + id : ''));
+
+  M.collapse = (updateHash = true) => {
+    activeLayers.concat(variantLayers).forEach(l => map.removeLayer(l));
+    activeLayers = []; variantLayers = [];
+    if (M.active) markers[M.active.id].setStyle(DOT);
+    M.active = null;
+    card.classList.remove('open');
+    if (updateHash) setHash(null);
+  };
+
+  function stationLine(tag, end) {
+    const s = (end.stations || [])[0];
+    if (!s || s.mi > 5) return '';
+    return `<div>${s.name} ${s.lines.slice(0, 3).map(chip).join('')} ${s.mi.toFixed(1)} mi${tag === 'Finish' ? ' (end)' : ''}</div>`;
+  }
+
+  // Start fetching the tiles the map will land on as the flight begins, so it
+  // arrives sharp instead of showing stretched, blurry tiles while they load.
+  function prefetchTiles(center, zoom) {
+    const half = map.getSize().divideBy(2), c = map.project(center, zoom);
+    const lo = c.subtract(half).divideBy(256).floor(), hi = c.add(half).divideBy(256).floor();
+    const n = 2 ** zoom;
+    for (let x = lo.x; x <= hi.x; x++) for (let y = Math.max(0, lo.y); y <= Math.min(n - 1, hi.y); y++) {
+      new Image().src = L.Util.template(TILE_URL, { z: zoom, x: ((x % n) + n) % n, y });
+    }
+  }
+
+  M.expand = ride => {
+    M.collapse(false);
+    M.active = ride;
+    markers[ride.id].setStyle({ radius: 9, fillColor: '#fff', color: ROUTE_COLOR, weight: 3, fillOpacity: 1, opacity: 1 });
+    const v = ride.variants[0];
+    activeLayers.push(L.polyline(v.line, { pane: 'rideLines', color: '#fff', weight: 9, opacity: 0.9 }).addTo(map));
+    activeLayers.push(L.polyline(v.line, { pane: 'rideLines', color: ROUTE_COLOR, weight: 4.5 }).addTo(map));
+    // Other lengths: dashed, toggled from the card
+    variantLayers = ride.variants.slice(1).map(x => L.layerGroup([
+      L.polyline(x.line, { pane: 'rideLines', color: '#fff', weight: 7, opacity: 0.85 }),
+      L.polyline(x.line, { pane: 'rideLines', color: RIDE_COLOR, weight: 3, dashArray: '6 6' })
+        .bindTooltip(fmtMi(x.mi) + ' mi', { sticky: true }),
+    ]).addTo(map));
+    if (v.end) {
+      activeLayers.push(L.circleMarker([v.end.lat, v.end.lng], { pane: 'rideDots', radius: 6, color: ROUTE_COLOR, weight: 3, fillColor: '#fff', fillOpacity: 1 })
+        .bindTooltip('Finish · ' + v.end.label, { direction: 'top' }).addTo(map));
+    }
+
+    cardBody.innerHTML = `
+      <div class="card-label">${REGION_NAME[ride.region]} · ${TYPE[v.type] || 'Ride'}</div>
+      <div class="card-name">${ride.name}</div>
+      <div class="card-sub">${places(v)}</div>
+      <div class="card-stats">
+        <div>Miles<b>${fmtMi(v.mi)}</b></div><div>Climb ft<b>${v.gain.toLocaleString()}</b></div><div>Unpaved<b>${v.unpaved}%</b></div><div>Off-street<b>${v.mix.path}%</b></div>
+      </div>
+      ${(() => { const t = stationLine('Start', v.start) + (v.end ? stationLine('Finish', v.end) : ''); return t ? `<div class="card-section">${t}</div>` : ''; })()}
+      ${ride.variants.length > 1 ? `<div class="card-section">
+        <div class="var-row on primary"><span class="var-dash"></span>${fmtMi(v.mi)} mi</div>
+        ${ride.variants.slice(1).map((x, i) => `<div class="var-row on" data-i="${i}" role="button" tabindex="0"><span class="var-dash"></span>${fmtMi(x.mi)} mi</div>`).join('')}
+      </div>` : ''}
+      <div class="card-links">
+        <a href="https://ridewithgps.com/routes/${v.rwgps}" target="_blank" rel="noopener">RideWithGPS ↗</a>
+        <button type="button" class="sec" id="card-details">Details</button>
+      </div>`;
+    card.classList.add('open');
+    card.scrollTop = 0;
+    cardBody.querySelectorAll('.var-row[data-i]').forEach(row => row.onclick = row.onkeydown = e => {
+      if (e.type === 'keydown' && e.key !== 'Enter' && e.key !== ' ') return;
+      e.preventDefault();
+      const g = variantLayers[+row.dataset.i];
+      map.hasLayer(g) ? map.removeLayer(g) : map.addLayer(g);
+      row.classList.toggle('on', map.hasLayer(g));
+    });
+    $('card-details').onclick = () => showRide(ride.id);   // detail opens over the map
+
+    const b = L.latLngBounds(v.line);
+    ride.variants.slice(1).forEach(x => b.extend(L.latLngBounds(x.line)));
+    const sz = map.getSize();
+    if (b.isValid() && sz.x > 0 && sz.y > 0) {
+      // Keep the route clear of the card: beside it on wide screens, above it on phones
+      const narrow = sz.x <= 640;
+      const opts = { paddingTopLeft: [40, 50], paddingBottomRight: narrow ? [30, card.offsetHeight + 30] : [card.offsetWidth + 40, 40],
+                     duration: 0.7, maxZoom: 13 };
+      const dest = map._getBoundsCenterZoom(b, opts);
+      prefetchTiles(dest.center, dest.zoom);
+      // Leaflet stretches vector layers while it zooms, so mid-flight the route and
+      // dots blow up into blurry blobs. Hide them for the flight; fade them in once
+      // the map lands and they're redrawn sharp.
+      const el = map.getContainer();
+      if (!STILL) {
+        el.classList.add('flying');
+        map.once('moveend', () => requestAnimationFrame(() => el.classList.remove('flying')));
+        map.flyToBounds(b, opts);
+      } else map.fitBounds(b, opts);
+    }
+    setHash(ride.id);
+  };
+
+  $('card-close').onclick = () => M.collapse();
+  map.on('click', () => M.collapse());
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && view === 'map' && !dlg.open && M.active) M.collapse(); });
+
+  /* Transit: every CTA, Metra and South Shore line */
+  let transitOn = false, transitLayer = null;
+  function buildTransit() {
+    const g = L.layerGroup();
+    const order = { metra: 0, southshore: 1, cta: 2 };
+    [...TRANSIT_LINES].sort((a, b) => order[a.sys] - order[b.sys]).forEach(l => {
+      L.polyline(l.coords, { pane: 'transit', color: l.color, weight: l.sys === 'cta' ? 4 : 3, opacity: 0.85 })
+        .bindTooltip(`${l.name} · ${SYS[l.sys]}`, { sticky: true }).addTo(g);
+    });
+    return g;
+  }
+  function renderLegend() {
+    const rideRows = `
+      <div class="legend-title">Rides</div>
+      <div class="legend-row"><span class="legend-dot" style="background:#14181f;border:2px solid #fff"></span>Ride start</div>`;
+    if (!transitOn) {
+      $('legend').innerHTML = rideRows + `<div class="legend-row"><span class="legend-line" style="border-top:2px dashed #14181f;height:0"></span>Other lengths</div>`;
+      return;
+    }
+    const group = sys => TRANSIT_LINES.filter(l => l.sys === sys).map(l =>
+      `<div class="legend-row"><span class="legend-line" style="background:${l.color}"></span>${l.short}</div>`).join('');
+    $('legend').innerHTML = `
+      <div class="legend-title">CTA 'L'</div><div class="legend-cols">${group('cta')}</div>
+      <div class="legend-title">Metra</div><div class="legend-cols">${group('metra')}</div>
+      <div class="legend-title">South Shore</div><div class="legend-cols">${group('southshore')}</div>` + rideRows;
+  }
+  const press = (btn, on) => { btn.classList.toggle('on', on); btn.setAttribute('aria-pressed', on); };
+  $('btn-rides').onclick = function () {
+    const on = !this.classList.contains('on'); press(this, on);
+    if (!on) M.collapse();
+    Object.values(markers).forEach(m => on ? m.addTo(map) : map.removeLayer(m));
+  };
+  $('btn-transit').onclick = function () {
+    transitOn = !this.classList.contains('on'); press(this, transitOn);
+    if (transitOn) { transitLayer = transitLayer || buildTransit(); transitLayer.addTo(map); }
+    else if (transitLayer) map.removeLayer(transitLayer);
+    renderLegend();
+  };
+  renderLegend();
+  return M;
+}
 
 /* ── Data page: what each column means and where it comes from ───────── */
 function renderData() {
-  main.innerHTML = `<div class="data">
+  $('view-data').innerHTML = `
     <h2>Columns</h2>
     <table>
       <tr><th>Miles, Type</th><td>RideWithGPS route.</td></tr>
@@ -396,32 +845,26 @@ function renderData() {
     <h2>Sources</h2>
     <table>
       <tr><th>Routes</th><td><a href="https://ridewithgps.com/partners/great-rides-chicago" target="_blank" rel="noopener">Great Rides Chicago</a>, Great Rides Schererville and other public routes on RideWithGPS</td></tr>
-      <tr><th>Roads, places</th><td><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors</td></tr>
+      <tr><th>Roads, places, maps</th><td><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors</td></tr>
       <tr><th>Weather</th><td><a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a></td></tr>
     </table>
-    <p class="stamp">Built ${BUILD_DATE}</p>
-  </div>`;
+    <p class="stamp">Built ${BUILD_DATE}</p>`;
 }
-
-document.getElementById('nav').onclick = e => {
-  const b = e.target.closest('button'); if (!b) return;
-  document.querySelectorAll('#nav button').forEach(x => x.classList.toggle('active', x === b));
-  view = b.dataset.v; render();
-};
 
 /* ── Weather ─────────────────────────────────────────────────────────── */
 const COMPASS = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
 fetch('https://api.open-meteo.com/v1/forecast?latitude=41.88&longitude=-87.63&current=temperature_2m,wind_speed_10m,wind_direction_10m&temperature_unit=fahrenheit&wind_speed_unit=mph')
   .then(r => r.json())
   .then(d => {
-    const c = d.current, wx = document.getElementById('wx');
+    const c = d.current, wx = $('wx');
     wx.innerHTML = `<b>${Math.round(c.temperature_2m)}°</b> · <span class="warrow" style="transform:rotate(${c.wind_direction_10m + 90}deg)">➤</span><b>${COMPASS[Math.round(c.wind_direction_10m / 22.5) % 16]} ${Math.round(c.wind_speed_10m)}</b>`;
     wx.classList.add('show');
   }).catch(() => {});
 
-render();
-const deep = RIDES.find(r => '#' + r.id === location.hash);
-if (deep) openModal(deep);
+updateList(false);
+sync(false);
+// Make the map tab instant: fetch Leaflet once the list is up and the page is idle
+(window.requestIdleCallback || (fn => setTimeout(fn, 1500)))(() => loadLeaflet(), { timeout: 4000 });
 </script>
 </body>
 </html>

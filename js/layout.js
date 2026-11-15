@@ -1,0 +1,25 @@
+// ── Fridge layout ─────────────────────────────────────────────
+// Where every magnet sits, as % of the fridge photo. To rearrange: open the
+// site with ?edit, drag things around, press "Copy layout" and paste the
+// ITEMS / TTT_POS it gives you over the ones below (VIEWS_POS goes in
+// styles.css, under the page-views sticky note).
+//
+// Per item: src (image) or embed (live iframe); href opens in the fridge
+// window (http links open a new tab); windowEmbed opens a whole app in the
+// window; hoverLabel shows on hover; passthrough lets clicks fall through.
+let ITEMS = [
+  { id: "item_1779583589922", src: "items/bike-business.webp", top: 37.548, left: 29.04, width: 21.8, rotate: 0, href: "rides.html", hoverLabel: "Rides", windowTitle: "Best Rides" },
+  { id: "item_1779583606062", src: "items/furniture.webp", top: 19.91, left: 26.77, width: 9.442, rotate: 0, href: "woodshop/", hoverLabel: "Woodshop" },
+  { id: "item_1779583643716", src: "items/greeting.webp", aspect: "507 / 800", daily: ["items/greeting.webp", "items/about-gallery/01-grotte-de-han.webp", "items/about-gallery/02-mount-rushmore.webp", "items/about-gallery/03-empire-state.webp", "items/about-gallery/04-semmering.webp", "items/about-gallery/05-sagrada-familia.webp", "items/about-gallery/06-wilshire-blvd.webp"], top: 9.908, left: 49.123, width: 13, rotate: 0, href: "about.html", hoverLabel: null, windowTitle: "About Me" },
+  { id: "item_1779586060280", src: "items/tj-receipt.webp", top: 10.299, left: 63.313, width: 9, rotate: 0, href: "https://tj-prices.com", hoverLabel: "TJ Prices" },
+  { id: "item_1781388702732", src: "items/about-me.png", top: 9.922, left: 48.594, width: 13.9, rotate: 0, href: null, hoverLabel: null, passthrough: true },
+  { id: "item_rides_map", embed: "/rides/fridge.html?v=7", fluid: true, aspect: "4 / 5", top: 35.286, left: 53.122, width: 18.7, rotate: 0, href: "https://www.jackkane.me/rides/", hoverLabel: "Best Rides Chi", square: true },
+  { id: "item_amtrak", embed: "/amtrak/map.html?embed=1&v=3", fluid: true, aspect: "50 / 33", top: 9.76, left: 26.07, width: 23, rotate: 0, windowEmbed: "/amtrak/map.html?v=3", windowTitle: "Live Amtrak", hoverLabel: "Live Amtrak" },
+  { id: "item_1781393177283", src: "items/shopping.png", top: 38.006, left: 37.651, width: 2.5, rotate: 0, href: null, hoverLabel: null },
+  { id: "item_1786000000001", src: "items/writing.png", top: 20.514, left: 61.953, width: 11.5, rotate: 0, href: "writing/writing.html", hoverLabel: null, windowTitle: "Writing" },
+  { id: "item_clockclock24", embed: "/ClockClock24/index.html?v=3", aspect: "8 / 3", top: 23.345, left: 46.158, width: 29.2, rotate: 0, href: "https://github.com/ArnaudSpanneut/ClockClock24", hoverLabel: null },
+  { id: "item_1788007465835", src: "items/shopping.png", top: 35.879, left: 61.621, width: 2.5, rotate: 0, href: null, hoverLabel: null }
+];
+
+// Tic-tac-toe board position (draggable in edit mode)
+const TTT_POS = { top: 19.545, left: 37.545, width: 10.135 };

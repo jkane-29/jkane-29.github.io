@@ -1,0 +1,6 @@
+# GitHub Pages builds this site with Jekyll, but every page is plain
+# HTML/JS, so Jekyll only copies files. Folders starting with _ (like
+# _drafts/) are never published, and neither are these source-only paths.
+exclude:
+  - rides/tools
+  - decisions/decisions.py

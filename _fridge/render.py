@@ -44,6 +44,19 @@ RIBS = [0.33 + 0.055 * i for i in range(9)]  # shelf supports moulded into the s
 SHELF_RIBS = [3, 7]                          # which of them carry a glass shelf
 CRISPER_LID_Y = 0.262
 
+ORB = '--no-orb' not in sys.argv              # the portal at the back (see "The orb" below)
+ORB_C, ORB_R = (0.0, 0.610, ZC - 0.375), 0.078
+ORB_GLOW = (2.2, 22.0, 5.0)                   # radiance: portal green
+LAMP = 0.12 if ORB else 1.0                    # with the orb lit, the fridge's own lamp runs dim
+
+if '--where' in sys.argv:                     # the orb's outline in the photo, in pixels
+    k = CAM_D / (CAM_D - ORB_C[2])
+    d = math.hypot(CAM_D - ORB_C[2], ORB_C[1] - CAM_Y)
+    print('orb centre x=%.1f y=%.1f radius=%.1f (photo px)' % (
+        250 + (HW + ORB_C[0] * k) / PX, 1314 - (CAM_Y + (ORB_C[1] - CAM_Y) * k) / PX,
+        ORB_R / math.sqrt(1 - (ORB_R / d) ** 2) * k / PX))
+    sys.exit()
+
 import mitsuba as mi
 for variant in ('metal_ad_rgb', 'llvm_ad_rgb', 'scalar_rgb'):
     try:
@@ -159,10 +172,18 @@ add(box(-LX, LX, LY, CAV_Y1 + 0.01, LZ0, LZ1, 0.009, k=6), TRIM)
 # surface, which wrongly shadows everything lit at a glancing angle.)
 scene['lamp'] = {'type': 'rectangle', 'bsdf': {'type': 'null'},
                  'to_world': T().translate([0, LY - 0.002, (LZ0 + LZ1) / 2]).rotate([1, 0, 0], 90).scale([LX - 0.018, (LZ1 - LZ0) / 2 - 0.018, 1]),
-                 'emitter': {'type': 'area', 'radiance': rgb(140, 144, 150)}}
+                 'emitter': {'type': 'area', 'radiance': rgb(*[v * LAMP for v in (140, 144, 150)])}}
 # thermostat dial on its front
 scene['dial'] = {'type': 'cylinder', 'radius': 0.013, 'p0': [0.06, LY + 0.017, LZ1 - 0.001], 'p1': [0.06, LY + 0.017, LZ1 + 0.006], 'bsdf': TRIM}
 scene['dialcap'] = {'type': 'disk', 'bsdf': TRIM, 'to_world': T().translate([0.06, LY + 0.017, LZ1 + 0.006]).scale(0.013)}
+
+# ── The orb: a ball of light hanging in the back, between the two glass shelves ──
+# Only its light is rendered here (the glow on the liner, its reflection in the glass); the
+# moving surface of the orb itself is drawn live over this spot by js/orb.js, which needs
+# to know where it lands in the photo: run with --where to print that.
+if ORB:
+    scene['orb'] = {'type': 'sphere', 'center': list(ORB_C), 'radius': ORB_R, 'bsdf': DARK,
+                    'emitter': {'type': 'area', 'radiance': rgb(*ORB_GLOW)}}
 
 # ── The door, swung open on its right-hand hinge ─────────────────────────────
 # Modelled closed (filling the door's rectangle, z from the cabinet face to 0),

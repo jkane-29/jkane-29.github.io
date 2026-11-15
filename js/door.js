@@ -23,7 +23,7 @@
   const CAMERA = 2733;                                  // the photo's camera distance, in photo px (3 m)
   const STILL  = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const SWING_MS = STILL ? 0 : 560, FADE_MS = STILL ? 0 : 200, CLOSE_MS = STILL ? 0 : 460;
-  const V = '?v=1';
+  const V = '?v=3';
 
   const pct = r => ({ left: r.x / IMG.w * 100 + '%', top: r.y / IMG.h * 100 + '%',
                       width: r.w / IMG.w * 100 + '%', height: r.h / IMG.h * 100 + '%' });
@@ -157,11 +157,14 @@
 
   handle.addEventListener('click', e => { e.stopPropagation(); open(); });
 
-  // Clicking inside shuts the door, unless that click was really a pan-drag
+  // A click anywhere shuts the door: inside it, on the fridge, or on the wall around it.
+  // Not a pan-drag, though, and not a click that is opening one of the other magnets.
   let down = null;
-  interior.addEventListener('pointerdown', e => { down = { x: e.clientX, y: e.clientY }; });
-  interior.addEventListener('click', e => {
+  document.addEventListener('pointerdown', e => { down = { x: e.clientX, y: e.clientY }; }, true);
+  document.addEventListener('click', e => {
+    if (state !== 'open') return;
     if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) > 5) return;
+    if (e.target.closest('.item.clickable, #ring-wrap, #os-overlay, a, button')) return;
     close();
   });
   document.addEventListener('keydown', e => {

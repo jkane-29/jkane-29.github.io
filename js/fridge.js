@@ -169,7 +169,7 @@ if (FINE_POINTER) {
   let panning = false, panStart = { x: 0, y: 0 }, panOrigin = { x: 0, y: 0 };
   document.addEventListener('pointerdown', e => {
     if (windowOpen()) return;
-    if (e.target !== zFridge && !e.target.classList.contains('fridge-bg')) return;
+    if (e.target !== zFridge && !e.target.closest('.fridge-bg, .door-pan')) return;   // the door and the inside pan too
     panning = true;
     document.body.style.cursor = 'grabbing';
     panStart  = { x: e.clientX, y: e.clientY };

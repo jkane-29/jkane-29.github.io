@@ -422,6 +422,9 @@ body:not(.edit-mode) .item[data-id="item_1786000000001"]:hover img {
 @keyframes door-lamp { 0% { filter: brightness(0.45); } 22% { filter: brightness(0.9); } 34% { filter: brightness(0.55); } 50%, 100% { filter: none; } }
 .door-open { z-index: 2; opacity: 0; pointer-events: none; transition: opacity 0.14s ease-in; }
 .door-ajar .door-open { opacity: 1; transition: opacity 0.2s ease-out; }
+/* the orb's moving surface (js/orb.js), over the glowing ball in both renders */
+.door-orb { position: absolute; z-index: 2; pointer-events: none; visibility: hidden; }
+.fridge-open .door-orb { visibility: visible; }
 .door-panel { z-index: 3; overflow: hidden; }
 .door-panel img { position: absolute; display: block; height: auto; pointer-events: none; }
 .door-handle { z-index: 11; background: none; border: 0; padding: 0; cursor: pointer; }

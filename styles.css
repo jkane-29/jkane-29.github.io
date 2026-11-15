@@ -412,3 +412,27 @@ body:not(.edit-mode) .item[data-id="item_1786000000001"]:hover img {
 #os-content:has(.os-embed-frame) { overflow: hidden; background: #e9eef0; }
 #os-content-inner:has(.os-embed-frame) { height: 100%; }
 .os-embed-frame { display: block; width: 100%; height: 100%; border: none; }
+
+/* ── Fridge door (js/door.js): the lower door swings open on its right-hand hinge ──
+   The inside is two rendered images (see _fridge/): the cavity, and the open door. */
+.door-interior, .door-open, .door-panel, .door-handle, .door-floor { position: absolute; display: block; }
+.door-interior { z-index: 1; visibility: hidden; cursor: pointer; }
+.fridge-open .door-interior { visibility: visible; animation: door-lamp 0.55s steps(1, end) both; }
+/* the lamp catches as the door cracks open */
+@keyframes door-lamp { 0% { filter: brightness(0.45); } 22% { filter: brightness(0.9); } 34% { filter: brightness(0.55); } 50%, 100% { filter: none; } }
+.door-open { z-index: 2; opacity: 0; pointer-events: none; transition: opacity 0.14s ease-in; }
+.door-ajar .door-open { opacity: 1; transition: opacity 0.2s ease-out; }
+.door-panel { z-index: 3; overflow: hidden; }
+.door-panel img { position: absolute; display: block; height: auto; pointer-events: none; }
+.door-handle { z-index: 11; background: none; border: 0; padding: 0; cursor: pointer; }
+.fridge-open .door-member { pointer-events: none; -webkit-backface-visibility: hidden; backface-visibility: hidden; }
+.door-gone { visibility: hidden !important; }            /* door front + its magnets, once turned out of sight */
+.fridge-open #views-magnet:not(.door-member) { visibility: hidden; }   /* a note that loads late stays off the open door */
+/* soft shadow the open door throws on the floor */
+.door-floor { z-index: 0; pointer-events: none; opacity: 0; transition: opacity 0.2s ease-in;
+  background: radial-gradient(ellipse 50% 50% at 50% 50%, rgba(0, 0, 0, 0.22), rgba(0, 0, 0, 0) 100%); }
+.door-ajar .door-floor { opacity: 1; transition: opacity 0.5s ease-out; }
+@media (prefers-reduced-motion: reduce) {
+  .fridge-open .door-interior { animation: none; }
+  .door-open, .door-ajar .door-open, .door-floor, .door-ajar .door-floor { transition: none; }
+}

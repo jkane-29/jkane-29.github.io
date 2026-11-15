@@ -166,7 +166,9 @@
     #modal-title { font: 700 14px var(--title); padding-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     #modal-close { border: none; background: none; font: 20px var(--mono); color: var(--mid); cursor: pointer; padding: 0 8px 8px; }
     #modal-close:hover { color: var(--red); }
-    #modal-scroll { overflow-y: auto; flex: 1; overscroll-behavior: contain; }
+    /* flex-basis auto, not flex: 1: the dialog has only a max-height, and Safari sizes a
+       0-basis child of an indefinite-height column to nothing (just the title bar shows) */
+    #modal-scroll { overflow-y: auto; flex: 1 1 auto; min-height: 0; overscroll-behavior: contain; }
     /* RWGPS embed needs real height or its map falls back to a world view. Until it
        has loaded, the route itself is drawn here, so there's never a blank box. */
     #modal-map { height: 480px; position: relative; background: var(--mapbg); overflow: hidden; }

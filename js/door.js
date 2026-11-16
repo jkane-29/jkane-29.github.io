@@ -20,10 +20,10 @@
   const OPEN   = { x: 250, y: 430, w: 935, h: 1021 };   // what fridge/open.webp covers (see FX0…FY1 in render.py)
   const FLOOR  = { x: 770, y: 1392, w: 400, h: 70 };    // where the open door's shadow falls
   const HINGE  = { inset: 9, depth: 11 };               // hinge pin: px in from the door's right edge, px behind its face
-  const CAMERA = 2733;                                  // the photo's camera distance, in photo px (3 m)
+  const CAMERA = 5466;                                  // the photo's camera distance, in photo px (6 m)
   const STILL  = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const SWING_MS = STILL ? 0 : 560, FADE_MS = STILL ? 0 : 200, CLOSE_MS = STILL ? 0 : 460;
-  const V = '?v=3';
+  const V = '?v=4';
 
   const pct = r => ({ left: r.x / IMG.w * 100 + '%', top: r.y / IMG.h * 100 + '%',
                       width: r.w / IMG.w * 100 + '%', height: r.h / IMG.h * 100 + '%' });

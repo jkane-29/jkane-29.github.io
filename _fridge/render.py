@@ -29,7 +29,7 @@ PX = 0.573 / 522            # metres per photo pixel (lower door = 522 px wide)
 DOOR_W, DOOR_H = 522 * PX, 811 * PX
 HW = DOOR_W / 2
 CAM_Y = (1314 - 768) * PX   # photo centre (768 px down) above the door's bottom edge (1314 px)
-CAM_D = 3.0                 # camera distance: a product shot on a normal-to-long lens
+CAM_D = 6.0                 # camera distance: a product shot on a long lens (the photo shows almost no perspective)
 
 # ── The cabinet ──────────────────────────────────────────────────────────────
 ZC = -0.065                 # cabinet face sits one door-thickness behind the door front
@@ -45,7 +45,7 @@ SHELF_RIBS = [3, 7]                          # which of them carry a glass shelf
 CRISPER_LID_Y = 0.262
 
 ORB = '--no-orb' not in sys.argv              # the portal at the back (see "The orb" below)
-ORB_C, ORB_R = (0.0, 0.610, ZC - 0.375), 0.078
+ORB_C, ORB_R = (0.0, 0.610, ZC - 0.375), 0.073
 ORB_GLOW = (2.2, 22.0, 5.0)                   # radiance: portal green
 LAMP = 0.12 if ORB else 1.0                    # with the orb lit, the fridge's own lamp runs dim
 
@@ -225,11 +225,12 @@ if DOOR:
         e = 0.014 + k * 0.005
         door_add(frame(HW - e, HW - e - w, e, e + w, DOOR_H - e - w, DOOR_H - e, ZL - d, ZL, 0.004), GASKET)
     # the dike: a raised wall that plugs into the cabinet opening and carries the shelves
-    DX, DY0, DY1, DZ = CAV_X - 0.010, CAV_Y0 + 0.012, CAV_Y1 - 0.012, ZL - 0.060
-    door_add(frame(DX, DX - 0.028, DY0, DY0 + 0.028, DY1 - 0.028, DY1, DZ, ZL, 0.012), LINER)
-    # three moulded shelves between the dike's walls; the bottom one is deeper, for bottles
-    for y0, h, depth in [(0.085, 0.115, 0.088), (0.365, 0.075, 0.078), (0.600, 0.075, 0.078)]:
-        door_add(tub(-DX + 0.026, DX - 0.026, y0, y0 + h, ZL - depth, ZL - 0.002), TRIM)
+    DX, DY0, DY1, DZ = CAV_X - 0.010, CAV_Y0 + 0.012, CAV_Y1 - 0.012, ZL - 0.034
+    door_add(frame(DX, DX - 0.016, DY0, DY0 + 0.016, DY1 - 0.016, DY1, DZ, ZL, 0.007), LINER)
+    # two slim moulded shelves between the dike's walls. They have to clear the glass shelves when
+    # the door shuts (those stop 95 mm behind the cabinet face); the bottom of the door is left bare.
+    for y0, h, depth in [(0.375, 0.052, 0.056), (0.610, 0.052, 0.056)]:
+        door_add(tub(-DX + 0.015, DX - 0.015, y0, y0 + h, ZL - depth, ZL - 0.002, t=0.003, r=0.010), TRIM)
 
 # ── Camera: where the photo's camera was, cropped to the door's rectangle ────
 def arg(name, default):

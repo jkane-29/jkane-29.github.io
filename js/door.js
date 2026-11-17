@@ -93,7 +93,7 @@
   // (Transforms, not scrolling: mobile browsers disagree on scripted scrolling when zoomed.)
   function reframe(on, ms, ease) {
     if (!(IS_TOUCH && !FINE_POINTER)) return;
-    let x = 0, k = 1;
+    let x = 0, y = 0, k = 1;
     if (on) {
       const r = panel.getBoundingClientRect(), f = fridge.getBoundingClientRect(), vv = window.visualViewport;
       const viewL = vv ? vv.offsetLeft : 0, viewW = vv ? vv.width : innerWidth;
@@ -101,10 +101,12 @@
       k = Math.min(1, (viewW - 16) / span);
       const ox = f.left + f.width / 2;                      // scale() works about the top centre
       x = viewL + (viewW - span * k) / 2 - (ox + (r.left - ox) * k);
+      const viewT = vv ? vv.offsetTop : 0, viewH = vv ? vv.height : innerHeight;
+      if (f.height * k < viewH) y = viewT + (viewH - f.height * k) / 2 - f.top;   // and, now that it is smaller than the screen, sits in the middle of it
     }
     fridge.style.transformOrigin = '50% 0';
     fridge.style.transition = ms ? `translate ${ms}ms ${ease}, scale ${ms}ms ${ease}` : '';
-    fridge.style.translate = on ? `${x}px 0` : '';
+    fridge.style.translate = on ? `${x}px ${y}px` : '';
     fridge.style.scale = on ? String(k) : '';
   }
 

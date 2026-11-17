@@ -137,7 +137,20 @@ if (FINE_POINTER) {
   const zFridge = $('fridge');
   let zoom = 1, panX = 0, panY = 0;
   const MIN_ZOOM = 0.3, MAX_ZOOM = 5;
-  const applyTransform = () => { zFridge.style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`; };
+  // window.FRIDGE_BOUNDS (photo pixels; set by js/away.js on the Moon) is as far as the view may wander:
+  // the screen always stays inside it, so you never see past the edge of the rendered ground.
+  const applyTransform = () => {
+    const B = window.FRIDGE_BOUNDS;
+    if (B) {
+      const s = zFridge.offsetWidth / 1024;
+      zoom = Math.max(zoom, innerWidth / ((B.r - B.l) * s), innerHeight / ((B.b - B.t) * s));
+      panX = Math.min(-B.l * s * zoom, Math.max(innerWidth - B.r * s * zoom, panX));
+      panY = Math.min(-B.t * s * zoom, Math.max(innerHeight - B.b * s * zoom, panY));
+    }
+    zFridge.style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`;
+  };
+  window.fridgeReframe = applyTransform;
+  addEventListener('resize', () => { if (window.FRIDGE_BOUNDS) applyTransform(); });
 
   const initZoom = () => {
     const fW = zFridge.offsetWidth, fH = zFridge.offsetHeight;

@@ -439,3 +439,39 @@ body:not(.edit-mode) .item[data-id="item_1786000000001"]:hover img {
   .fridge-open .door-interior { animation: none; }
   .door-open, .door-ajar .door-open, .door-floor, .door-ajar .door-floor { transition: none; }
 }
+
+/* ── Through the orb: the fridge on the Moon (js/away.js) ── */
+.away-scene { position: absolute; z-index: -1; overflow: hidden; display: none; background: #000; }
+.away-scene > * { position: absolute; display: block; }
+.away-door { opacity: 0; transition: opacity 0.2s ease-in; }
+.door-ajar .away-door { opacity: 1; }
+.away-earth { pointer-events: none; }
+.away-cut { position: absolute; left: 0; top: 0; width: 100%; height: auto; z-index: 0; visibility: hidden; pointer-events: none; }
+.orb-way { position: absolute; z-index: 4; display: none; border: 0; padding: 0; border-radius: 50%; background: none; cursor: pointer; }
+.door-ajar .orb-way { display: block; }
+/* once loaded it is kept painted, as a pin-prick hidden behind the orb, so nothing has to be decoded when the orb is clicked */
+.away-scene.ready { display: block; clip-path: circle(1px at var(--sx) var(--sy)); }
+body.away .away-scene { clip-path: none; }
+body.away, body.away .fridge-viewport { background: #000; }
+body.away .away-scene { display: block; }
+body.away .away-cut { visibility: visible; }
+body.away .fridge > img.fridge-bg { visibility: hidden; }
+body.away .door-floor { display: none; }
+/* a phone page scrolls, so there the picture stops short and its edges fall into the dark */
+@media (max-width: 900px), (pointer: coarse) {
+  .away-scene::after { content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(to right, #000, transparent 4%, transparent 96%, #000), linear-gradient(to bottom, transparent 93%, #000); }
+}
+/* the crossing: both places at once, the Moon inside the circle --r about the orb, home outside it */
+body.crossing, body.crossing .fridge-viewport { background: #fff; }
+body.crossing .away-scene { display: block; z-index: 0; clip-path: circle(var(--r) at var(--sx) var(--sy)); will-change: clip-path; }
+body.crossing .away-cut { visibility: visible; clip-path: circle(var(--r) at var(--ox) var(--oy)); }
+body.crossing .fridge > img.fridge-bg { visibility: visible; }   /* home stays whole underneath; the Moon's circle is laid over it */
+body.crossing .door-floor { display: none; }
+/* the ring is drawn once and only ever scaled (--k), which costs nothing per frame however big it gets */
+.away-rim { position: absolute; z-index: 30; display: none; pointer-events: none; border-radius: 50%; will-change: transform, opacity;
+  left: calc(var(--ox) - 512px); top: calc(var(--oy) - 512px); width: 1024px; height: 1024px; transform: scale(var(--k, 0.1));
+  background: radial-gradient(circle closest-side, transparent 78%, rgba(20, 200, 90, 0.10) 84%, rgba(30, 230, 110, 0.42) 89.6%,
+    rgba(200, 255, 215, 0.98) 90.9%, rgba(30, 230, 110, 0.45) 92.2%, rgba(20, 200, 90, 0.12) 96%, transparent 100%); }
+body.crossing .away-rim { display: block; }
+@media (prefers-reduced-motion: reduce) { .away-door { transition: none; } }

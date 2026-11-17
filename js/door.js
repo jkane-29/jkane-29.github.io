@@ -88,21 +88,21 @@
     });
   }
 
-  // On a phone the fridge fills the screen and the hinge sits at its edge, so the view
-  // pulls back and slides over until the opening and the open door both fit on screen.
+  // On a phone the fridge is wider than the screen, so when the door opens the view pulls back
+  // until the whole fridge and its open door fit, and sits them in the middle of the screen.
   // (Transforms, not scrolling: mobile browsers disagree on scripted scrolling when zoomed.)
+  const WHOLE = { x: 232, y: 88, w: 960, h: 1370 };       // the fridge with its door hanging open, in photo pixels
   function reframe(on, ms, ease) {
     if (!(IS_TOUCH && !FINE_POINTER)) return;
     let x = 0, y = 0, k = 1;
     if (on) {
-      const r = panel.getBoundingClientRect(), f = fridge.getBoundingClientRect(), vv = window.visualViewport;
+      const f = fridge.getBoundingClientRect(), vv = window.visualViewport, px = f.width / IMG.w;
       const viewL = vv ? vv.offsetLeft : 0, viewW = vv ? vv.width : innerWidth;
-      const span = r.width * OPEN.w / DOOR.w;
-      k = Math.min(1, (viewW - 16) / span);
-      const ox = f.left + f.width / 2;                      // scale() works about the top centre
-      x = viewL + (viewW - span * k) / 2 - (ox + (r.left - ox) * k);
       const viewT = vv ? vv.offsetTop : 0, viewH = vv ? vv.height : innerHeight;
-      if (f.height * k < viewH) y = viewT + (viewH - f.height * k) / 2 - f.top;   // and, now that it is smaller than the screen, sits in the middle of it
+      k = Math.min(1, (viewW - 12) / (WHOLE.w * px), (viewH - 12) / (WHOLE.h * px));
+      const ox = f.left + f.width / 2;                      // scale() works about the top centre
+      x = viewL + viewW / 2 - (ox + (f.left + (WHOLE.x + WHOLE.w / 2) * px - ox) * k);
+      y = viewT + viewH / 2 - (f.top + (WHOLE.y + WHOLE.h / 2) * px * k);
     }
     fridge.style.transformOrigin = '50% 0';
     fridge.style.transition = ms ? `translate ${ms}ms ${ease}, scale ${ms}ms ${ease}` : '';

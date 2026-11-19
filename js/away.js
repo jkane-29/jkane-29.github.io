@@ -17,8 +17,7 @@
   const WORLD = { x: -1500, y: -282, w: 4024, h: 2600 };   // what moon.webp covers, in photo pixels (HXP, HYP in moon.py)
   const DOOR  = { x: 995, y: 1233, w: 1529, h: 256 };  // from moon_publish.py:                            // the open door's shadow: a patch of the same picture
   const EARTH = { x: 952, y: 236, r: 122 };                // a third bigger than life (it is really 1.9° across from the Moon), to be seen properly
-  // How much of the picture is laid out. A phone page scrolls, so there it stops just past the open door.
-  const VIEW  = IS_TOUCH && !FINE_POINTER ? { x: -300, y: -282, w: 1800, h: 2600 } : WORLD;
+  const VIEW  = WORLD;                                     // how much of the picture is laid out: all of it
   const V = '?v=5';
   const STILL = matchMedia('(prefers-reduced-motion: reduce)').matches;
 

@@ -11,7 +11,8 @@
 // hinge line under one shared perspective, so their links, hover labels and
 // positions stay exactly as js/fridge.js made them.
 (function () {
-  if (isEditMode) return;   // layout editing keeps the plain, closed fridge
+  if (isEditMode) return;               // layout editing keeps the plain, closed fridge
+  if (IS_TOUCH && !FINE_POINTER) return;  // phones keep the plain, closed fridge, full screen (and so no orb, no Moon)
 
   const fridge = $('fridge');
   const IMG    = { w: 1024, h: 1536 };                  // fridge2.jpg
@@ -88,28 +89,6 @@
     });
   }
 
-  // On a phone the fridge is wider than the screen, so when the door opens the view pulls back
-  // until the whole fridge and its open door fit, and sits them in the middle of the screen.
-  // (Transforms, not scrolling: mobile browsers disagree on scripted scrolling when zoomed.)
-  const WHOLE = { x: 232, y: 88, w: 960, h: 1370 };       // the fridge with its door hanging open, in photo pixels
-  function reframe(on, ms, ease) {
-    if (!(IS_TOUCH && !FINE_POINTER)) return;
-    let x = 0, y = 0, k = 1;
-    if (on) {
-      const f = fridge.getBoundingClientRect(), vv = window.visualViewport, px = f.width / IMG.w;
-      const viewL = vv ? vv.offsetLeft : 0, viewW = vv ? vv.width : innerWidth;
-      const viewT = vv ? vv.offsetTop : 0, viewH = vv ? vv.height : innerHeight;
-      k = Math.min(1, (viewW - 12) / (WHOLE.w * px), (viewH - 12) / (WHOLE.h * px));
-      const ox = f.left + f.width / 2;                      // scale() works about the top centre
-      x = viewL + viewW / 2 - (ox + (f.left + (WHOLE.x + WHOLE.w / 2) * px - ox) * k);
-      y = viewT + viewH / 2 - (f.top + (WHOLE.y + WHOLE.h / 2) * px * k);
-    }
-    fridge.style.transformOrigin = '50% 0';
-    fridge.style.transition = ms ? `translate ${ms}ms ${ease}, scale ${ms}ms ${ease}` : '';
-    fridge.style.translate = on ? `${x}px ${y}px` : '';
-    fridge.style.scale = on ? String(k) : '';
-  }
-
   async function open() {
     if (state !== 'closed') return;
     state = 'opening';
@@ -127,7 +106,6 @@
     void fridge.offsetWidth;                                // start the swing from closed
     requestAnimationFrame(() => {
       setAngle(90, SWING_MS, 'cubic-bezier(.45,.02,.75,.55)');   // the seal lets go, then it gathers speed
-      reframe(true, SWING_MS + FADE_MS, 'cubic-bezier(.45,.05,.25,1)');
     });
     // As the door front turns edge-on, the rendered open door takes over
     later(() => fridge.classList.add('door-ajar'), SWING_MS * 0.82);
@@ -143,7 +121,6 @@
     group.members.forEach(e => e.classList.remove('door-gone'));
     handle.setAttribute('aria-expanded', 'false');
     setAngle(0, CLOSE_MS, 'cubic-bezier(.3,.2,.4,1)');
-    reframe(false, CLOSE_MS, 'cubic-bezier(.55,0,.8,.4)');
     later(() => {
       group.members.forEach(e => {                          // put everything back exactly
         e.style.transition = '';
@@ -151,7 +128,6 @@
         e.classList.remove('door-member');
       });
       fridge.classList.remove('fridge-open');
-      fridge.style.transition = '';
       group = null;
       state = 'closed';
     }, CLOSE_MS);

@@ -12,12 +12,12 @@ body {
 .fridge-viewport { width: 100%; display: flex; justify-content: center; }
 .fridge { position: relative; width: min(700px, 92vw); user-select: none; container-type: inline-size; }
 
-/* Mobile / touch: the fridge is sized so that it and its open door (960 of the photo's 1024 px across)
-   just fit the screen's width. Opening the door then only slides the view over; nothing changes size. */
+/* Mobile / touch: enter zoomed-in so just the center of the fridge fills the screen.
+   (The fridge door, and the orb and the Moon behind it, are desktop only: see js/door.js.) */
 @media (max-width: 900px), (pointer: coarse) {
   body { align-items: flex-start; }
   .fridge-viewport { width: max-content; justify-content: flex-start; }
-  .fridge { width: calc((100vw - 12px) * 1.0667); }
+  .fridge { width: 130vw; }
 }
 
 /* ── Desktop: zoom/pan canvas ── */
@@ -377,7 +377,7 @@ body:not(.edit-mode) .item[data-id="item_1786000000001"]:hover img {
 /* Mobile / touch: webring sits lower/wider, and keeps the larger text scale. */
 @media (max-width: 900px), (pointer: coarse) {
   #ring-wrap { top: 77%; left: 24%; width: 52%; height: 9%; }
-  #ring-embed { width: 176%; height: 176%; transform: scale(0.5682); }
+  #ring-embed { width: 140%; height: 140%; transform: scale(0.7143); }
 }
 
 /* Page-views sticky note — a small Post-it magnet on the lower door.
@@ -458,11 +458,6 @@ body.away .away-scene { display: block; }
 body.away .away-cut { visibility: visible; }
 body.away .fridge > img.fridge-bg { visibility: hidden; }
 body.away .door-floor { display: none; }
-/* a phone page scrolls, so there the picture stops short and its edges fall into the dark */
-@media (max-width: 900px), (pointer: coarse) {
-  .away-scene::after { content: ''; position: absolute; inset: 0; pointer-events: none;
-    background: linear-gradient(to right, #000, transparent 4%, transparent 96%, #000), linear-gradient(to bottom, transparent 93%, #000); }
-}
 /* the crossing: both places at once, the Moon inside the circle --r about the orb, home outside it */
 body.crossing, body.crossing .fridge-viewport { background: #fff; }
 body.crossing .away-scene { display: block; z-index: 0; clip-path: circle(var(--r) at var(--sx) var(--sy)); will-change: clip-path; }

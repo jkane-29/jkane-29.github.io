@@ -3,7 +3,7 @@
 
     python _fridge/moon_publish.py [--quick]
 
-    fridge/moon.webp        the ground with the fridge's door shut (moon.py --closed)
+    fridge/moon.webp        the ground with the fridge's door shut (moon.py --closed); the sky left transparent
     fridge/moon-door.webp   the patch of it that changes when the door hangs open (its shadow), to lay on top
 Prints the patch's rectangle in photo pixels, for DOOR in js/away.js.
 """
@@ -24,35 +24,23 @@ closed = np.asarray(Image.open(os.path.join(HERE, '.build', f'moon-closed{sfx}.p
 H, W = closed.shape[:2]
 k = W / 4024                                                # picture pixels per photo pixel
 
+# the sky: the black that reaches the top of the picture. It is made transparent, so the page can
+# draw its own stars behind the ground (js/away.js: one for every visit)
+lab, _ = ndi.label(closed.max(-1) < 4)
+top = np.unique(lab[0]); sky = np.isin(lab, top[top > 0])
+land = np.clip(1 - ndi.gaussian_filter(sky.astype(float), 0.7), 0, 1)
+
 # the edges fall away into the dark, which the page continues
 yy, xx = np.mgrid[0:H, 0:W]
 t = lambda a, b, x: np.clip((x - a) / (b - a), 0, 1) ** 2 * (3 - 2 * np.clip((x - a) / (b - a), 0, 1))
 fade = (1 - t(0.90, 1.0, np.abs((xx + 0.5) / W * 2 - 1))) * (1 - t(0.93, 1.0, (yy + 0.5) / H))
 closed, opened = closed * fade[..., None], opened * fade[..., None]
 
-# stars: a few bright, most barely there, in the sky only (the black that reaches the top of the picture)
-lab, _ = ndi.label(closed.max(-1) < 4)
-sky = ndi.binary_erosion(np.isin(lab, np.unique(lab[0])[np.unique(lab[0]) > 0]), iterations=3)
-rs = np.random.default_rng(3)
-n = int(4200 * k * k)
-sx, sy = rs.uniform(0, W, n), rs.uniform(0, H, n)
-mag = 255 * 0.26 * (1 - rs.uniform(0, 1, n)) ** -0.55                      # brightness: a long tail
-tint = 1 + rs.normal(0, 0.10, (n, 1)) * np.array([1.0, 0.0, -1.0])           # some warm, some blue
-stars = np.zeros_like(closed)
-for dy in (0, 1):
-    for dx in (0, 1):                                                        # each star spread over the four pixels around it
-        xi, yi = np.clip(sx.astype(int) + dx, 0, W - 1), np.clip(sy.astype(int) + dy, 0, H - 1)
-        wgt = (1 - np.abs(sx - 0.5 - xi + 0.5)).clip(0, 1) * (1 - np.abs(sy - 0.5 - yi + 0.5)).clip(0, 1)
-        np.add.at(stars, (yi, xi), (np.minimum(mag, 900) * wgt)[:, None] * tint)
-stars = 2.4 * ndi.gaussian_filter(stars, (0.75 * k, 0.75 * k, 0)) + 1.5 * ndi.gaussian_filter(stars, (2.2 * k, 2.2 * k, 0))   # each a soft dot a couple of pixels across, with a little bloom
-stars *= (sky * fade)[..., None]
-closed, opened = np.clip(closed + stars, 0, 255), np.clip(opened + stars, 0, 255)
-
 def save(arr, name, **kw):
     dst = os.path.join(OUT, name)
     Image.fromarray(arr.round().astype(np.uint8)).save(dst, 'WEBP', method=6, **kw)
     print(f'{name}  {arr.shape[1]}×{arr.shape[0]}  {os.path.getsize(dst) // 1024} KB')
-save(closed, 'moon.webp', quality=86)
+save(np.dstack([closed, land * 255]), 'moon.webp', quality=86, alpha_quality=80)
 
 # where the stand-in door itself shows, keep the door-shut ground: the page draws the real door there
 HW, DOOR_H = 0.573 / 2, 811 * PX

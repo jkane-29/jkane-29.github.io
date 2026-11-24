@@ -18,7 +18,7 @@
   const DOOR  = { x: 995, y: 1233, w: 1529, h: 256 };  // from moon_publish.py:                            // the open door's shadow: a patch of the same picture
   const EARTH = { x: 952, y: 236, r: 122 };                // a third bigger than life (it is really 1.9° across from the Moon), to be seen properly
   const VIEW  = WORLD;                                     // how much of the picture is laid out: all of it
-  const V = '?v=5';
+  const V = '?v=6';
   const STILL = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   const el = (tag, cls, style) => { const e = document.createElement(tag); if (cls) e.className = cls; if (style) Object.assign(e.style, style); return e; };
@@ -176,6 +176,117 @@
     })();
   }
 
+  // ── The sky: one star for every visit to this page ──
+  // The page-view counter (js/live.js) says how many there have been. Star n is always put in the same
+  // place, so the sky is the same for everyone and only ever grows. Yours pulses; anyone who arrives
+  // while you are looking appears as you watch. There is no air on the Moon, so nothing twinkles.
+  const sky = el('canvas', 'away-stars');
+  sky.setAttribute('aria-hidden', 'true');
+  document.body.prepend(sky);                              // behind the whole page: the ground's sky is transparent
+  const tip = el('div', 'star-tip');
+  document.body.appendChild(tip);
+
+  let horizon = null;                                      // for each 1/512 of the picture's width, where the land begins
+  function readHorizon() {
+    if (horizon || !ground.naturalWidth) return horizon;
+    const n = 512, c = document.createElement('canvas');
+    c.width = n; c.height = Math.round(n * ground.naturalHeight / ground.naturalWidth);
+    const g = c.getContext('2d'); g.drawImage(ground, 0, 0, c.width, c.height);
+    let d; try { d = g.getImageData(0, 0, c.width, c.height).data; } catch (e) { return null; }
+    horizon = new Float32Array(n);
+    for (let x = 0; x < n; x++) { let y = 0; while (y < c.height && d[(y * n + x) * 4 + 3] < 128) y++; horizon[x] = WORLD.y + y / c.height * WORLD.h; }
+    return horizon;
+  }
+  const rand = (i, k) => {                                 // the same numbers for star i, everywhere, every time
+    let h = Math.imul(i ^ 0x2545f491, 0x9e3779b1) ^ Math.imul(k + 0x51ed27, 0x85ebca77);
+    h ^= h >>> 15; h = Math.imul(h, 0x2c1b3c6d); h ^= h >>> 12; h = Math.imul(h, 0x297a2d39); h ^= h >>> 15;
+    return (h >>> 0) / 4294967296;
+  };
+  const SKY = { l: WORLD.x + 250, r: WORLD.x + WORLD.w - 250, t: WORLD.y - 240 };   // as far as the view can be dragged
+  function starAt(i) {
+    for (let k = 0; k < 60; k += 4) {
+      const x = SKY.l + rand(i, k) * (SKY.r - SKY.l);
+      const ground_ = horizon[Math.min(511, Math.max(0, Math.floor((x - WORLD.x) / WORLD.w * 512)))] - 12;
+      const y = SKY.t + rand(i, k + 1) * (ground_ - SKY.t);
+      if (x > 225 && x < 800 && y > 80) continue;                         // behind the fridge
+      if (x > 770 && x < 1200 && y > 410) continue;                        // behind its open door
+      if (Math.hypot(x - EARTH.x, y - EARTH.y) < EARTH.r + 16) continue;    // behind the Earth
+      return { i, x, y, b: Math.pow(rand(i, k + 2), 3.2), warm: rand(i, k + 3) - 0.5 };
+    }
+    return null;
+  }
+  let list = [], born = new Map(), raf = 0;
+  function grow() {
+    const v = window.fridgeViews;
+    if (!v || !readHorizon()) return;
+    const first = !list.length, now = performance.now();
+    while (list.length < v.total) {
+      list.push(starAt(list.length + 1));
+      if (!first) born.set(list.length, now);              // arrived while you were here
+    }
+  }
+  addEventListener('fridge-views', grow);
+
+  function drawSky(now) {
+    raf = 0;
+    if (!away || document.hidden) return;
+    const dpr = devicePixelRatio || 1, W = innerWidth, H = innerHeight;
+    if (sky.width !== Math.round(W * dpr) || sky.height !== Math.round(H * dpr)) { sky.width = Math.round(W * dpr); sky.height = Math.round(H * dpr); }
+    const g = sky.getContext('2d'), f = fridge.getBoundingClientRect(), s = f.width / IMG.w;
+    const zf = Math.min(2.6, Math.max(0.8, Math.sqrt(s / 0.6)));           // zoom in and the stars grow a little
+    const mine = (window.fridgeViews || {}).mine;
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    g.clearRect(0, 0, W, H);
+    for (const st of list) {
+      if (!st) continue;
+      const x = f.left + st.x * s, y = f.top + st.y * s;
+      if (x < -20 || y < -20 || x > W + 20 || y > H + 20) continue;
+      const b = st.i === mine ? Math.max(st.b, 0.55) : st.b;   // yours is always one of the bright ones
+      let a = 0.42 + 0.58 * b, r = (0.55 + 1.5 * b) * zf;
+      const t0 = born.get(st.i);
+      if (t0 !== undefined) {                              // a new arrival: it swells in with a brief flare
+        const t = (now - t0) / 2600;
+        if (t >= 1) born.delete(st.i);
+        else { a *= Math.min(1, t * 2); r *= 1 + 2.2 * Math.max(0, 1 - t) * Math.min(1, t * 4); }
+      }
+      const c = st.warm > 0 ? `255,${Math.round(244 - 50 * st.warm)},${Math.round(228 - 110 * st.warm)}` : `${Math.round(225 + 60 * st.warm)},${Math.round(235 + 30 * st.warm)},255`;
+      if (b > 0.35 || t0 !== undefined) {               // the brightest have a little bloom
+        g.fillStyle = `rgba(${c},${0.10 * a})`;
+        g.beginPath(); g.arc(x, y, r * 3.2, 0, 6.2832); g.fill();
+      }
+      g.fillStyle = `rgba(${c},${a})`;
+      g.beginPath(); g.arc(x, y, r, 0, 6.2832); g.fill();
+      if (st.i === mine) {                                 // yours, in the orb's green
+        const p = STILL ? 0.5 : 0.5 + 0.5 * Math.sin(now / 900);
+        g.strokeStyle = `rgba(90,255,150,${0.35 + 0.45 * p})`;
+        g.lineWidth = 1.2;
+        g.beginPath(); g.arc(x, y, r + 4 + 3 * p * zf, 0, 6.2832); g.stroke();
+        g.fillStyle = `rgba(60,230,120,${0.10 + 0.10 * p})`;
+        g.beginPath(); g.arc(x, y, r + 10 * zf, 0, 6.2832); g.fill();
+      }
+    }
+    raf = requestAnimationFrame(drawSky);
+  }
+  const startSky = () => { if (away && !raf && !document.hidden) raf = requestAnimationFrame(drawSky); };
+  document.addEventListener('visibilitychange', startSky);
+
+  // Point at a star to see whose it is
+  document.addEventListener('mousemove', e => {
+    if (!away || document.body.classList.contains('crossing')) { tip.hidden = true; return; }
+    const f = fridge.getBoundingClientRect(), s = f.width / IMG.w, mine = (window.fridgeViews || {}).mine;
+    let best = null, bd = 11;
+    for (const st of list) {
+      if (!st) continue;
+      const d = Math.hypot(f.left + st.x * s - e.clientX, f.top + st.y * s - e.clientY);
+      if (d < bd) { bd = d; best = st; }
+    }
+    tip.hidden = !best;
+    if (!best) return;
+    tip.textContent = best.i === mine ? `You: visitor no. ${best.i.toLocaleString()}` : `Visitor no. ${best.i.toLocaleString()}`;
+    tip.style.left = e.clientX + 14 + 'px'; tip.style.top = e.clientY + 12 + 'px';
+  });
+  tip.hidden = true;
+
   // ── Going through, and coming back ──
   // The orb swells until it has passed over the whole screen, and the Moon is what is inside it.
   // Coming home it draws back in. (styles.css clips the two views to the circle --r about the orb.)
@@ -190,7 +301,7 @@
     if (window.fridgeReframe) window.fridgeReframe();
     way.setAttribute('aria-label', away ? 'Step back through the orb' : 'Step through the orb');
     clearInterval(clock);
-    if (away) clock = setInterval(drawEarth, 60000);
+    if (away) { clock = setInterval(drawEarth, 60000); grow(); startSky(); } else tip.hidden = true;
     busy = false;
   }
   async function go() {

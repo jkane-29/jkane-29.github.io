@@ -453,16 +453,7 @@ body:not(.edit-mode) .item[data-id="item_1786000000001"]:hover img {
 /* once loaded it is kept painted, as a pin-prick hidden behind the orb, so nothing has to be decoded when the orb is clicked */
 .away-scene.ready { display: block; clip-path: circle(1px at var(--sx) var(--sy)); }
 body.away .away-scene { clip-path: none; }
-body.away { background: #000; }
-/* settled on the Moon, the page is see-through down to the stars (js/away.js draws them behind everything) */
-body.away .fridge-viewport { background: transparent; }
-body.away:not(.crossing) .away-scene { background: transparent; }
-.away-stars { position: fixed; left: 0; top: 0; width: 100vw; height: 100vh; pointer-events: none; opacity: 0; }
-body.away:not(.crossing) .away-stars { opacity: 1; transition: opacity 3.5s ease-in 0.4s; }   /* your eyes adjusting to the dark */
-.star-tip { position: fixed; z-index: 60; pointer-events: none; white-space: nowrap; padding: 3px 8px; border-radius: 4px;
-  font: 12px/1.35 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; letter-spacing: 0.02em;
-  color: #e8fff0; background: rgba(0, 0, 0, 0.72); border: 1px solid rgba(120, 255, 170, 0.28); }
-.star-tip[hidden] { display: none; }
+body.away, body.away .fridge-viewport { background: #000; }
 body.away .away-scene { display: block; }
 body.away .away-cut { visibility: visible; }
 body.away .fridge > img.fridge-bg { visibility: hidden; }
@@ -479,4 +470,4 @@ body.crossing .door-floor { display: none; }
   background: radial-gradient(circle closest-side, transparent 78%, rgba(20, 200, 90, 0.10) 84%, rgba(30, 230, 110, 0.42) 89.6%,
     rgba(200, 255, 215, 0.98) 90.9%, rgba(30, 230, 110, 0.45) 92.2%, rgba(20, 200, 90, 0.12) 96%, transparent 100%); }
 body.crossing .away-rim { display: block; }
-@media (prefers-reduced-motion: reduce) { .away-door, body.away:not(.crossing) .away-stars { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .away-door { transition: none; } }

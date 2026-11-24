@@ -34,11 +34,6 @@ function initPageViews() {
   const show = n => { out.textContent = (n || 0).toLocaleString(); wrap.hidden = false; };
   const hide = () => { wrap.hidden = true; };   // denied/offline: no magnet at all
 
-  // The total is shared with js/away.js too, which puts a star in the Moon's sky for every visit.
-  const share = (total, mine) => {
-    window.fridgeViews = { total: total || 0, mine: mine != null ? mine : (window.fridgeViews || {}).mine };
-    dispatchEvent(new Event('fridge-views'));
-  };
   if (isEditMode) {                              // show the total but don't count
     ref.once('value', s => show(s.val()), hide);
     return;
@@ -48,8 +43,7 @@ function initPageViews() {
   ref.transaction(n => (n || 0) + 1, (err, committed, snap) => {
     if (err || !committed) return hide();
     show(snap.val());
-    share(snap.val(), snap.val());               // this visit's own number
-    ref.on('value', s => { show(s.val()); share(s.val()); }, hide);
+    ref.on('value', s => show(s.val()), hide);
   });
 }
 

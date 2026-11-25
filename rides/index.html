@@ -13,7 +13,8 @@
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     /* Red for routes, stars and the main action; flag blue only in the header stripe;
-       transit lines keep their own colors as small dots. Everything else is ink and gray. */
+       CTA lines keep their own colors; Metra and South Shore are one color each.
+       Everything else is ink and gray. */
     :root {
       --paper:  #ffffff;
       --ink:    #14181f;
@@ -163,26 +164,27 @@
     #view-map { position: fixed; top: calc(var(--head) + 6px); left: 0; right: 0; bottom: 0; z-index: 0; isolation: isolate; background: var(--mapbg); }
     #map { position: absolute; inset: 0; background: var(--mapbg); }
     /* Grey base map so rides and transit lines read first */
-    #map .leaflet-tile-pane { filter: grayscale(1) contrast(0.88) brightness(1.06); }
+    /* On the tiles, not the pane: Safari ignores a filter on the pane (its tiles are 3D-transformed) */
+    #map .leaflet-tile { filter: grayscale(1) contrast(0.88) brightness(1.06); }
     #map .leaflet-control-attribution { font-size: 9px; opacity: 0.7; }
     #map .leaflet-tooltip { font: 12px var(--sans); }
     /* Vector layers hide while the map flies to a ride (see expand) */
     .leaflet-rideLines-pane, .leaflet-rideDots-pane, .leaflet-transit-pane { transition: opacity 0.3s ease; }
+    /* With a ride open, transit steps back so the red route reads first */
+    .picked .leaflet-transit-pane { opacity: .4; }
     .flying .leaflet-rideLines-pane, .flying .leaflet-rideDots-pane, .flying .leaflet-transit-pane { opacity: 0; transition: none; }
 
     .map-toggles { position: absolute; top: 10px; left: 54px; z-index: 500; display: flex; gap: 6px; }
     .map-toggles .pill { box-shadow: 0 1px 4px rgba(20,24,31,.12); padding: 5px 12px; }
 
     #legend {
-      position: absolute; bottom: 28px; left: 16px; z-index: 500;
-      background: var(--paper); border-radius: 12px; box-shadow: 0 4px 16px rgba(20,24,31,.15);
-      padding: 12px 14px; font-size: 12px; max-height: calc(100% - 120px); overflow-y: auto;
+      position: absolute; bottom: 28px; left: 16px; z-index: 500; display: flex; gap: 14px;
+      background: var(--paper); border-radius: 999px; box-shadow: 0 1px 4px rgba(20,24,31,.12);
+      padding: 6px 14px; font-size: 13px;
     }
-    .legend-title { font-weight: 600; margin: 10px 0 5px; }
-    .legend-title:first-child { margin-top: 0; }
-    .legend-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
-    .legend-line { width: 20px; height: 3px; flex-shrink: 0; }
-    .legend-cols { display: grid; grid-template-columns: auto auto; column-gap: 14px; }
+    #legend[hidden] { display: none; }
+    .legend-row { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+    .legend-line { width: 18px; height: 4px; border-radius: 2px; background: var(--c); }
 
     #ride-card {
       position: absolute; top: 16px; right: 16px; z-index: 600; width: 330px;
@@ -278,6 +280,9 @@ const unit = (n, u) => `${n}<span class="unit">${u}</span>`;
 // Station lines are short codes ("Red", "UP-NW", "South Shore"); say them the way riders do
 const LINE = {};
 TRANSIT_LINES.forEach(l => { LINE[l.sys === 'southshore' ? 'South Shore' : l.short] = l; });
+// Riders know the CTA lines by color; Metra and South Shore lines by name, so those get one color per system
+const SYS_COLOR = { metra: '#25408f', southshore: '#7a1f3d' };
+const lineColor = l => SYS_COLOR[l.sys] || l.color;
 function lineName(code) {
   const l = LINE[code];
   if (!l) return code;
@@ -285,7 +290,7 @@ function lineName(code) {
 }
 const TRAIN_MAX = 5;   // mi; farther than this isn't "by train"
 const startStation = v => { const s = (v.start.stations || [])[0]; return s && s.mi <= TRAIN_MAX ? s : null; };
-const dot = code => `<i class="dot" style="--c:${(LINE[code] || {}).color || 'var(--faint)'}" aria-hidden="true"></i>`;
+const dot = code => `<i class="dot" style="--c:${LINE[code] ? lineColor(LINE[code]) : 'var(--faint)'}" aria-hidden="true"></i>`;
 
 /* ── List state: lives in the URL query, so refresh / back / sharing keep it ── */
 const LENGTHS = [
@@ -582,6 +587,7 @@ function initMap() {
     activeLayers = []; variantLayers = [];
     if (M.active) markers[M.active.id].setStyle(DOT);
     M.active = null;
+    map.getContainer().classList.remove('picked');
     card.classList.remove('open');
     if (updateHash) setHash(null);
   };
@@ -600,6 +606,7 @@ function initMap() {
   M.expand = ride => {
     M.collapse(false);
     M.active = ride;
+    map.getContainer().classList.add('picked');
     markers[ride.id].setStyle({ radius: 9, fillColor: '#fff', color: ROUTE_COLOR, weight: 3, fillOpacity: 1, opacity: 1 });
     const v = ride.variants[0];
     activeLayers.push(L.polyline(v.line, { pane: 'rideLines', color: '#fff', weight: 9, opacity: 0.9 }).addTo(map));
@@ -663,24 +670,27 @@ function initMap() {
   map.on('click', () => M.collapse());
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && view === 'map' && !dlg.open && M.active) M.collapse(); });
 
-  /* Transit: every CTA, Metra and South Shore line, with a legend while it's on */
+  /* Transit: every CTA, Metra and South Shore line. A white casing under all of them keeps
+     parallel lines apart downtown; CTA draws on top. Hover or tap a line for its name. */
   let transitOn = false, transitLayer = null;
   function buildTransit() {
     const g = L.layerGroup();
     const order = { metra: 0, southshore: 1, cta: 2 };
-    [...TRANSIT_LINES].sort((a, b) => order[a.sys] - order[b.sys]).forEach(l => {
-      L.polyline(l.coords, { pane: 'transit', color: l.color, weight: l.sys === 'cta' ? 4 : 3, opacity: 0.85 })
-        .bindTooltip(`${l.name} · ${SYS[l.sys]}`, { sticky: true }).addTo(g);
+    const lines = [...TRANSIT_LINES].sort((a, b) => order[a.sys] - order[b.sys]);
+    const weight = l => l.sys === 'cta' ? 3.5 : 2.5;
+    lines.forEach(l => L.polyline(l.coords, { pane: 'transit', color: '#fff', weight: weight(l) + 3, opacity: 1, interactive: false }).addTo(g));
+    lines.forEach(l => {
+      const name = l.sys === 'metra' && !l.name.startsWith('Metra') ? `Metra ${l.name}` : l.name;
+      L.polyline(l.coords, { pane: 'transit', color: lineColor(l), weight: weight(l), opacity: 1 })
+        .bindTooltip(name, { sticky: true }).addTo(g);
     });
     return g;
   }
   function renderLegend() {
-    const group = sys => TRANSIT_LINES.filter(l => l.sys === sys).map(l =>
-      `<div class="legend-row"><span class="legend-line" style="background:${l.color}"></span>${l.short}</div>`).join('');
-    $('legend').innerHTML = `
-      <div class="legend-title">CTA</div><div class="legend-cols">${group('cta')}</div>
-      <div class="legend-title">Metra</div><div class="legend-cols">${group('metra')}</div>
-      <div class="legend-title">South Shore</div><div class="legend-cols">${group('southshore')}</div>`;
+    const cta = TRANSIT_LINES.filter(l => l.sys === 'cta').map(l => l.color);
+    const stripes = `linear-gradient(90deg, ${cta.map((c, i) => `${c} ${i / cta.length * 100}% ${(i + 1) / cta.length * 100}%`).join(', ')})`;
+    $('legend').innerHTML = [['CTA', stripes], ['Metra', SYS_COLOR.metra], ['South Shore', SYS_COLOR.southshore]]
+      .map(([label, c]) => `<span class="legend-row"><span class="legend-line" style="--c:${c}"></span>${label}</span>`).join('');
   }
   const press = (btn, on) => { btn.classList.toggle('on', on); btn.setAttribute('aria-pressed', on); };
   $('btn-rides').onclick = function () {

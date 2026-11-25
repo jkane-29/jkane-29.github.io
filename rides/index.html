@@ -4,168 +4,124 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Best Rides Chi</title>
-  <meta name="description" content="Chicagoland's best bike rides in one place: distance, climbing, surface and the nearest train.">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <meta name="description" content="Chicagoland's best bike rides: how far, how much traffic, and the nearest train.">
   <!-- Ride details embed RideWithGPS; warm the connection before anyone clicks -->
   <link rel="preconnect" href="https://ridewithgps.com">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,500..800&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    /* Red for routes, stars and the main action; flag blue only in the header stripe;
+       transit lines keep their own colors as small dots. Everything else is ink and gray. */
     :root {
-      --paper:  #ffffff;   /* flag white */
-      --card:   #ffffff;
+      --paper:  #ffffff;
       --ink:    #14181f;
-      --mid:    #5f6672;
-      --faint:  #b5bbc4;
-      --line:   #dde2e8;
-      --hover:  #eef8fd;
+      --mid:    #636a75;
+      --faint:  #a3a9b2;
+      --line:   #e6e8ec;
+      --hover:  #f4f5f7;
+      --red:    #e4002b;   /* Chicago flag red */
       --flag:   #41b6e6;   /* Chicago flag light blue */
-      --flagdk: #0b6fa4;   /* same hue, dark enough for text */
-      --red:    #e4002b;   /* Chicago flag red (stars) */
       --mapbg:  #eceef1;
-      --mono:  'IBM Plex Mono', ui-monospace, Menlo, monospace;
-      --title: 'Space Mono', ui-monospace, Menlo, monospace;
-      --stripe: linear-gradient(to bottom, var(--flag) 0 36%, #fff 36% 64%, var(--flag) 64% 100%);
-      --head: 54px;        /* header bar, without the stripe */
+      --display: "Archivo", ui-sans-serif, system-ui, -apple-system, sans-serif;   /* names and numbers */
+      --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      --head: 56px;
       --ease: cubic-bezier(.2, .7, .2, 1);
     }
     html { scrollbar-gutter: stable; }
-    body { background: var(--paper); color: var(--ink); font: 12px/1.45 var(--mono); -webkit-font-smoothing: antialiased; }
+    body { background: var(--paper); color: var(--ink); font: 15px/1.45 var(--sans); font-variant-numeric: tabular-nums; -webkit-font-smoothing: antialiased; }
     body:has(dialog[open]), body[data-view="map"] { overflow: hidden; }
     a { color: inherit; }
-    :focus-visible { outline: 2px solid var(--flag); outline-offset: 2px; }
+    :focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+    [hidden] { display: none !important; }
+    button { font: inherit; color: inherit; }
 
-    /* ── Header: white bar + Chicago-flag stripe ── */
+    /* ── Header ── */
     header {
-      background: var(--paper); padding: 0 28px; height: var(--head);
-      display: flex; align-items: center; gap: 18px;
-      position: sticky; top: 0; z-index: 100;
+      position: sticky; top: 0; z-index: 100; height: var(--head); padding: 0 24px;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      background: var(--paper);
     }
-    header::after { content: ''; position: absolute; left: 0; right: 0; bottom: -12px; height: 12px; background: var(--stripe); }
+    /* Chicago flag stripe */
+    header::after { content: ''; position: absolute; left: 0; right: 0; bottom: -6px; height: 6px;
+                    background: linear-gradient(var(--flag) 0 2px, var(--paper) 2px 4px, var(--flag) 4px 6px); }
+    .site-title { font: 800 18px var(--display); font-stretch: 118%; letter-spacing: -0.01em; text-decoration: none; white-space: nowrap; }
     .stars { display: inline-flex; gap: 3px; margin-left: 8px; vertical-align: 2px; }
     .stars svg { fill: var(--red); }
-    .site-title { font: 700 17px var(--title); letter-spacing: -0.01em; color: var(--ink); text-decoration: none; white-space: nowrap; }
-    nav { display: flex; gap: 2px; margin: 0 auto; }
-    nav a {
-      color: var(--mid); font: 12px var(--mono); text-transform: lowercase;
-      padding: 5px 10px; border-radius: 3px; text-decoration: none; transition: color .12s, background-color .12s;
-    }
+    nav { display: flex; gap: 4px; }
+    nav a { color: var(--mid); text-decoration: none; padding: 6px 12px; border-radius: 999px; transition: color .12s, background-color .12s; }
     nav a:hover { color: var(--ink); }
-    nav a[aria-current="page"] { color: var(--paper); background: var(--ink); }
-    .wx { font-size: 12px; color: var(--mid); display: inline-flex; align-items: center; gap: 6px; min-width: 92px; justify-content: flex-end;
-          opacity: 0; transition: opacity .3s; }
-    .wx.show { opacity: 1; }
-    .wx b { color: var(--ink); font-weight: 600; }
-    .wx .warrow { display: inline-block; font-size: 11px; color: var(--red); }
-    @media (max-width: 640px) { .wx { display: none; } header { padding: 0 14px; gap: 10px; } nav { margin-right: 0; } }
+    nav a[aria-current="page"] { color: var(--ink); background: var(--hover); font-weight: 600; }
+    @media (max-width: 640px) { header { padding: 0 16px; } }
 
-    main { max-width: 1060px; margin: 0 auto; padding: 36px 24px 80px; }
-    [hidden] { display: none !important; }
+    main { max-width: 860px; margin: 0 auto; padding: 32px 24px 64px; }
 
-    /* ── Controls ── */
-    .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-bottom: 14px; }
-    .seg { display: flex; border: 1px solid var(--ink); border-radius: 3px; overflow: hidden; }
-    .seg button, .tog { font: 12px var(--mono); color: var(--ink); background: var(--card); border: none; cursor: pointer; padding: 6px 11px;
-                        transition: background-color .12s, color .12s, border-color .12s; }
-    .seg button + button { border-left: 1px solid var(--ink); }
-    .seg button:hover:not(.on) { background: var(--hover); }
-    .seg button.on { background: var(--ink); color: var(--paper); }
-    .seg .n { opacity: 0.5; margin-left: 4px; font-variant-numeric: tabular-nums; }
-    .filters { display: flex; gap: 6px; flex-wrap: wrap; }
-    .tog { border: 1px solid var(--line); border-radius: 3px; color: var(--mid); }
-    .tog:hover { border-color: var(--ink); color: var(--ink); }
-    .tog.on { background: var(--red); border-color: var(--red); color: #fff; }
-    .count { margin-left: auto; color: var(--mid); font-variant-numeric: tabular-nums; }
-
-    /* ── Table ── */
-    .table { background: var(--card); border: 1px solid var(--ink); border-radius: 3px; overflow: hidden; }
-    .row {
-      display: grid; align-items: center; gap: 0 14px;
-      grid-template-columns: 76px minmax(0, 1fr) 84px 56px 64px 64px 82px 170px;
-      padding: 9px 14px; border-top: 1px solid var(--line);
+    /* ── Filters ── */
+    .controls { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-bottom: 12px; }
+    .group { display: flex; flex-wrap: wrap; gap: 6px; }
+    .pill {
+      font-size: 14px; color: var(--mid); background: var(--paper); border: 1px solid var(--line); border-radius: 999px;
+      padding: 6px 14px; cursor: pointer; transition: color .12s, background-color .12s, border-color .12s;
     }
-    .row.head {
-      border-top: none; border-bottom: 1px solid var(--ink); padding-top: 4px; padding-bottom: 4px; background: var(--paper);
-      font-size: 10.5px; letter-spacing: 0.06em; color: var(--mid); text-transform: uppercase;
+    .pill:hover { color: var(--ink); border-color: var(--faint); }
+    .pill.on { color: var(--paper); background: var(--ink); border-color: var(--ink); }
+
+    /* ── Ride list: name and miles. Traffic and train are filters, and live in the detail ── */
+    .ride {
+      display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; align-items: baseline;
+      padding: 16px 12px; margin: 0 -12px; border-bottom: 1px solid var(--line);
+      text-decoration: none; cursor: pointer; transition: background-color .12s;
     }
-    .rows > .row:first-child { border-top: none; }
-    .head button { all: unset; cursor: pointer; user-select: none; white-space: nowrap; padding: 4px 0; }
-    .head button:hover { color: var(--ink); }
-    .head button:focus-visible { outline: 2px solid var(--flag); }
-    .head button.on { color: var(--red); font-weight: 600; }
-    .r { text-align: right; }
-    .ride { color: inherit; text-decoration: none; cursor: pointer; transition: background-color .12s; font-variant-numeric: tabular-nums; }
     .ride:hover { background: var(--hover); }
-    .ride:hover .name { color: var(--red); }
     .ride:focus-visible { outline-offset: -2px; }
-    .zero { color: var(--faint); }
-    .good { color: var(--flagdk); font-weight: 600; }  /* off-street ≥ 70% */
+    .name { font: 650 17px/1.3 var(--display); font-stretch: 104%; transition: color .1s; }
+    .ride:hover .name { color: var(--red); }
+    .mi { text-align: right; font: 700 22px/1.2 var(--display); }
+    .unit { font-family: var(--sans); }
+    .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--c); margin-right: 6px; vertical-align: 1px; }
+    .unit { font-size: 13px; font-weight: 400; color: var(--mid); margin-left: 3px; font-stretch: 100%; }
+    .empty { padding: 40px 0; text-align: center; }
+    footer { margin-top: 32px; font-size: 13px; }
+    footer a { color: var(--mid); }
+    footer a:hover { color: var(--ink); }
 
-    .thumb { display: block; width: 76px; height: 48px; border-radius: 2px; border: 1px solid var(--line);
-             background: var(--mapbg); object-fit: cover; }
-
-    .name { font: 700 14px/1.25 var(--title); color: var(--ink); transition: color 0.1s; }
-    .place { font-size: 11px; color: var(--mid); margin-top: 3px; }
-    .lens { color: var(--faint); }
-    .compact { display: none; }
-
-    .train { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
-    .train .d { color: var(--mid); }
-    .line {
-      display: inline-block; font: 600 9.5px var(--mono); letter-spacing: 0.02em;
-      padding: 1px 5px; border-radius: 2px; background: var(--lc); color: var(--lt);
-    }
-    .empty { padding: 36px; text-align: center; color: var(--mid); }
-    .empty button { font: inherit; color: var(--red); background: none; border: none; cursor: pointer; text-decoration: underline; margin-left: 6px; }
-
-    /* Mid widths: drop Type, slim the columns */
-    @media (max-width: 1000px) {
-      .row { grid-template-columns: 64px minmax(0, 1fr) 50px 58px 62px 76px 128px; gap: 0 10px; padding: 9px 10px; }
-      .row > :nth-child(3) { display: none; }
-      .thumb { width: 64px; height: 44px; }
-    }
-    @media (max-width: 760px) {
-      .row { grid-template-columns: 64px minmax(0, 1fr); padding: 10px 12px; }
-      .row.head { display: none; }
-      .row > .c { display: none; }
-      .compact { display: flex; flex-wrap: wrap; gap: 2px 10px; margin-top: 4px; font-size: 11px; color: var(--mid); }
-      .count { margin-left: 0; }
-      main { padding: 30px 12px 60px; }
+    @media (max-width: 640px) {
+      main { padding: 20px 16px 48px; }
+      .ride { padding: 14px 16px; margin: 0 -16px; }
     }
 
-    /* ── Data page ── */
-    .data { max-width: 780px; }
-    .data h2 { font: 700 15px var(--title); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 10px; }
-    .data table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--ink); margin-bottom: 28px; }
-    .data th, .data td { text-align: left; vertical-align: top; padding: 8px 12px; border-top: 1px solid var(--line); }
-    .data th { width: 170px; font-weight: 600; }
-    .data td { line-height: 1.55; }
-    .data a { color: var(--red); }
-    .data .stamp { color: var(--mid); }
+    /* ── Data notes ── */
+    .data { max-width: 720px; }
+    .data h2 { font-size: 17px; font-weight: 600; margin-bottom: 10px; }
+    .data table { width: 100%; border-collapse: collapse; margin-bottom: 32px; font-size: 14px; }
+    .data th, .data td { text-align: left; vertical-align: top; padding: 10px 0; border-top: 1px solid var(--line); }
+    .data th { width: 170px; font-weight: 600; padding-right: 16px; }
+    .data td { line-height: 1.55; color: var(--mid); }
+    .data a { color: var(--ink); }
+    .data .stamp { color: var(--mid); font-size: 13px; }
 
     /* ── Ride detail (native dialog) ── */
     dialog#ride {
-      width: min(94vw, 840px); max-width: none; max-height: 92vh; margin: auto; padding: 0;
-      background: var(--card); color: var(--ink); border: 1px solid var(--ink); border-radius: 4px;
-      box-shadow: 0 30px 80px rgba(20,24,31,0.4); overflow: hidden;
+      width: min(94vw, 820px); max-width: none; max-height: 92vh; margin: auto; padding: 0;
+      background: var(--paper); color: var(--ink); border: none; border-radius: 12px;
+      box-shadow: 0 24px 70px rgba(20,24,31,0.35); overflow: hidden;
       opacity: 0; transform: translateY(10px) scale(.985);
       transition: opacity .2s var(--ease), transform .2s var(--ease), overlay .2s allow-discrete, display .2s allow-discrete;
     }
     dialog#ride[open] { display: flex; flex-direction: column; opacity: 1; transform: none; }
     @starting-style { dialog#ride[open] { opacity: 0; transform: translateY(10px) scale(.985); } }
     dialog#ride::backdrop { background: rgba(20,24,31,0); transition: background-color .2s, overlay .2s allow-discrete, display .2s allow-discrete; }
-    dialog#ride[open]::backdrop { background: rgba(20,24,31,0.55); }
+    dialog#ride[open]::backdrop { background: rgba(20,24,31,0.5); }
     @starting-style { dialog#ride[open]::backdrop { background: rgba(20,24,31,0); } }
 
     #modal-bar {
-      height: 44px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; gap: 10px;
-      padding: 0 8px 0 16px; background: var(--paper); position: relative;
+      height: 52px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      padding: 0 8px 0 20px; border-bottom: 1px solid var(--line);
     }
-    #modal-bar::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 8px; background: var(--stripe); }
-    #modal-title { font: 700 14px var(--title); padding-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    #modal-close { border: none; background: none; font: 20px var(--mono); color: var(--mid); cursor: pointer; padding: 0 8px 8px; }
-    #modal-close:hover { color: var(--red); }
+    #modal-title { font: 700 17px var(--display); font-stretch: 108%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #modal-close { border: none; background: none; font-size: 24px; line-height: 1; color: var(--mid); cursor: pointer; padding: 4px 10px; border-radius: 999px; }
+    #modal-close:hover { color: var(--ink); background: var(--hover); }
     /* flex-basis auto, not flex: 1: the dialog has only a max-height, and Safari sizes a
        0-basis child of an indefinite-height column to nothing (just the title bar shows) */
     #modal-scroll { overflow-y: auto; flex: 1 1 auto; min-height: 0; overscroll-behavior: contain; }
@@ -178,95 +134,74 @@
     #modal-map iframe { position: absolute; inset: 0; width: 1px; min-width: 100%; height: 100%; border: 0; display: block;
                         opacity: 0; transition: opacity .35s ease; }
     #modal-map iframe.ready { opacity: 1; }
-    #modal-body { padding: 18px 20px 24px; }
+    #modal-body { padding: 20px 24px 24px; }
 
-    .variants { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
-    .kv { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--ink); border-radius: 3px; overflow: hidden; margin-bottom: -1px; }
-    .kv div { padding: 9px 12px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--card); }
-    .kv div:nth-child(4n) { border-right: none; }
-    .kv .k { display: block; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--mid); }
-    .kv .v { display: block; font-size: 16px; font-weight: 600; margin-top: 2px; font-variant-numeric: tabular-nums; }
-
-    .list { width: 100%; border-collapse: collapse; margin-top: 18px; }
-    .list th { text-align: left; font-weight: 600; width: 140px; padding: 7px 0; vertical-align: top; }
-    .list td { padding: 7px 0; line-height: 1.55; vertical-align: top; }
-    .list tr + tr th, .list tr + tr td { border-top: 1px solid var(--line); }
-    .list .muted { color: var(--mid); }
-
-    .actions { display: flex; gap: 8px; margin-top: 18px; flex-wrap: wrap; }
-    .btn { font: 600 12px var(--mono); padding: 8px 14px; border-radius: 3px; text-decoration: none; border: 1px solid var(--ink); cursor: pointer; }
+    .variants { margin-bottom: 16px; }
+    .facts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .facts div { font: 700 26px/1.2 var(--display); }
+    .facts .unit { font-size: 14px; }
+    .notes { margin-top: 18px; border-top: 1px solid var(--line); }
+    .notes p { padding: 10px 0; border-bottom: 1px solid var(--line); }
+    .notes b { font-weight: 600; }
+    .actions { display: flex; gap: 8px; margin-top: 20px; flex-wrap: wrap; }
+    .btn { font-size: 14px; font-weight: 600; padding: 9px 16px; border-radius: 999px; text-decoration: none; border: 1px solid var(--line); cursor: pointer; transition: background-color .12s, border-color .12s; }
     .btn.primary { background: var(--red); border-color: var(--red); color: #fff; }
-    .btn.secondary { background: var(--card); color: var(--ink); }
+    .btn.primary:hover { background: #c70026; border-color: #c70026; }
+    .btn.secondary { background: var(--paper); color: var(--ink); }
     .btn.secondary:hover { background: var(--hover); }
-    @media (max-width: 480px) { .kv { grid-template-columns: repeat(2, 1fr); } .kv div:nth-child(4n) { border-right: 1px solid var(--line); } .kv div:nth-child(2n) { border-right: none; } }
 
     /* Phones: the detail is a sheet that rises from the bottom */
     @media (max-width: 640px) {
-      dialog#ride { width: 100%; max-height: 92dvh; margin: auto 0 0; border-radius: 10px 10px 0 0; border-bottom: none;
-                    transform: translateY(40px); }
+      dialog#ride { width: 100%; max-height: 92dvh; margin: auto 0 0; border-radius: 14px 14px 0 0; transform: translateY(40px); }
       @starting-style { dialog#ride[open] { opacity: 0; transform: translateY(40px); } }
-      #modal-body { padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
+      #modal-map { height: 400px; }
+      #modal-body { padding: 18px 16px calc(24px + env(safe-area-inset-bottom)); }
+      .facts { grid-template-columns: repeat(2, 1fr); }
     }
 
     /* ── Map view ── */
-    #view-map { position: fixed; top: calc(var(--head) + 12px); left: 0; right: 0; bottom: 0; z-index: 0; isolation: isolate; background: var(--mapbg); }
+    #view-map { position: fixed; top: calc(var(--head) + 6px); left: 0; right: 0; bottom: 0; z-index: 0; isolation: isolate; background: var(--mapbg); }
     #map { position: absolute; inset: 0; background: var(--mapbg); }
     /* Grey base map so rides and transit lines read first */
     #map .leaflet-tile-pane { filter: grayscale(1) contrast(0.88) brightness(1.06); }
     #map .leaflet-control-attribution { font-size: 9px; opacity: 0.7; }
-    #map .leaflet-tooltip { font: 11px var(--mono); }
-    #map .leaflet-control-zoom a { font-family: var(--mono); }
+    #map .leaflet-tooltip { font: 12px var(--sans); }
     /* Vector layers hide while the map flies to a ride (see expand) */
     .leaflet-rideLines-pane, .leaflet-rideDots-pane, .leaflet-transit-pane { transition: opacity 0.3s ease; }
     .flying .leaflet-rideLines-pane, .flying .leaflet-rideDots-pane, .flying .leaflet-transit-pane { opacity: 0; transition: none; }
 
     .map-toggles { position: absolute; top: 10px; left: 54px; z-index: 500; display: flex; gap: 6px; }
-    .toggle-btn { font: 12px var(--mono); text-transform: lowercase; padding: 4px 10px; border-radius: 3px; cursor: pointer;
-                  border: 1px solid var(--line); color: var(--mid); background: var(--card); box-shadow: 0 1px 4px rgba(20,24,31,.12);
-                  transition: background-color .12s, color .12s, border-color .12s; }
-    .toggle-btn:hover { border-color: var(--ink); color: var(--ink); }
-    .toggle-btn.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+    .map-toggles .pill { box-shadow: 0 1px 4px rgba(20,24,31,.12); padding: 5px 12px; }
 
     #legend {
       position: absolute; bottom: 28px; left: 16px; z-index: 500;
-      background: var(--card); border: 1px solid var(--ink); border-radius: 3px;
-      padding: 10px 14px; font-size: 11px; max-height: calc(100% - 120px); overflow-y: auto;
+      background: var(--paper); border-radius: 12px; box-shadow: 0 4px 16px rgba(20,24,31,.15);
+      padding: 12px 14px; font-size: 12px; max-height: calc(100% - 120px); overflow-y: auto;
     }
-    .legend-title { font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--mid); margin: 8px 0 5px; }
+    .legend-title { font-weight: 600; margin: 10px 0 5px; }
     .legend-title:first-child { margin-top: 0; }
     .legend-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
     .legend-line { width: 20px; height: 3px; flex-shrink: 0; }
     .legend-cols { display: grid; grid-template-columns: auto auto; column-gap: 14px; }
-    .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin: 0 5px; }
 
     #ride-card {
-      position: absolute; top: 16px; right: 16px; z-index: 600; width: 340px;
-      background: var(--card); border: 1px solid var(--ink); border-radius: 3px;
-      padding: 14px 16px; box-shadow: 0 10px 30px rgba(20,24,31,0.25);
-      max-height: calc(100% - 32px); overflow-y: auto;
+      position: absolute; top: 16px; right: 16px; z-index: 600; width: 330px;
+      background: var(--paper); border-radius: 12px; box-shadow: 0 10px 30px rgba(20,24,31,0.22);
+      padding: 16px 18px; max-height: calc(100% - 32px); overflow-y: auto;
       opacity: 0; transform: translateY(-6px); pointer-events: none; visibility: hidden;
       transition: opacity .18s var(--ease), transform .18s var(--ease), visibility 0s .18s;
     }
     #ride-card.open { opacity: 1; transform: none; pointer-events: auto; visibility: visible; transition: opacity .18s var(--ease), transform .18s var(--ease); }
-    .card-close { position: absolute; top: 4px; right: 6px; cursor: pointer; font: 16px var(--mono); color: var(--mid); background: none; border: none; padding: 2px 6px; }
-    .card-close:hover { color: var(--red); }
-    .card-label { font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--mid); margin-bottom: 4px; }
-    .card-name { font: 700 15px/1.25 var(--title); margin-bottom: 3px; padding-right: 14px; }
-    .card-sub { font-size: 11px; color: var(--mid); margin-bottom: 10px; }
-    .card-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px 10px; border-top: 1px solid var(--line); padding-top: 9px; }
-    .card-stats div { font-size: 9.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--mid); }
-    .card-stats b { display: block; font-size: 15px; letter-spacing: 0; text-transform: none; color: var(--ink); font-weight: 600; margin-top: 1px; font-variant-numeric: tabular-nums; }
-    .card-section { margin-top: 10px; padding-top: 9px; border-top: 1px solid var(--line); font-size: 11px; line-height: 1.6; }
-    #ride-card .line { font-size: 9px; padding: 1px 4px; margin-right: 2px; vertical-align: 1px; }
-    .var-row { display: flex; align-items: center; gap: 7px; margin-top: 4px; cursor: pointer; }
-    .var-row:not(.on) { opacity: 0.4; }
-    .var-dash { width: 20px; flex-shrink: 0; border-top: 2px dashed var(--ink); }
-    .var-row.primary { cursor: default; }
-    .var-row.primary .var-dash { border-top: 3px solid var(--red); }
-    .card-links { margin-top: 12px; display: flex; gap: 8px; }
-    .card-links a, .card-links button { font: 600 11px var(--mono); color: #fff; background: var(--red); padding: 5px 10px; border-radius: 3px; text-decoration: none; border: 1px solid var(--red); cursor: pointer; }
-    .card-links .sec { background: var(--card); border: 1px solid var(--ink); color: var(--ink); }
-    .card-links .sec:hover { background: var(--hover); }
+    .card-close { position: absolute; top: 8px; right: 8px; cursor: pointer; font-size: 20px; line-height: 1; color: var(--mid); background: none; border: none; padding: 4px 8px; border-radius: 999px; }
+    .card-close:hover { color: var(--ink); background: var(--hover); }
+    .card-name { font: 700 18px/1.3 var(--display); margin-bottom: 4px; padding-right: 24px; }
+    .card-mi { font: 700 22px/1.2 var(--display); }
+    .card-vars { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+    .card-vars .pill { font-size: 13px; padding: 4px 10px; display: inline-flex; align-items: center; gap: 6px; }
+    .var-dash { width: 16px; border-top: 2px dashed currentColor; }
+    .pill.primary .var-dash { border-top: 3px solid var(--red); }
+    .card-links { margin-top: 14px; display: flex; gap: 8px; }
+    .card-links .btn { font-size: 13px; padding: 6px 12px; }
     @media (max-width: 640px) {
       #ride-card { top: auto; bottom: 10px; left: 10px; right: 10px; width: auto; max-height: 55%; transform: translateY(8px); }
       #view-map:has(#ride-card.open) #legend { display: none; }
@@ -290,23 +225,18 @@
   <nav id="nav" aria-label="Views">
     <a href="#" data-v="rides" aria-current="page">Rides</a>
     <a href="#map" data-v="map">Map</a>
-    <a href="#data" data-v="data">Data</a>
   </nav>
-  <span id="wx" class="wx" aria-label="Chicago weather now"></span>
 </header>
 
 <main>
   <section id="view-rides">
     <div class="controls">
-      <div class="seg" id="regions" role="group" aria-label="Region"></div>
-      <div class="filters" id="filters" role="group" aria-label="Filters"></div>
-      <div class="count" id="count" aria-live="polite"></div>
+      <div class="group" id="lengths" role="group" aria-label="Length"></div>
+      <div class="group" id="filters" role="group" aria-label="Filters"></div>
     </div>
-    <div class="table">
-      <div class="row head" id="head"></div>
-      <div class="rows" id="rows"></div>
-      <div class="empty" id="empty" hidden>No rides match.<button type="button" id="clear">Clear filters</button></div>
-    </div>
+    <div id="rows"></div>
+    <div class="empty" id="empty" hidden><button type="button" class="pill" id="clear">Show all rides</button></div>
+    <footer><a href="#data">About the data</a></footer>
   </section>
   <section id="view-data" class="data" hidden></section>
 </main>
@@ -314,10 +244,10 @@
 <section id="view-map" hidden>
   <div id="map"></div>
   <div class="map-toggles">
-    <button type="button" class="toggle-btn on" id="btn-rides" aria-pressed="true">rides</button>
-    <button type="button" class="toggle-btn" id="btn-transit" aria-pressed="false">transit</button>
+    <button type="button" class="pill on" id="btn-rides" aria-pressed="true">Rides</button>
+    <button type="button" class="pill" id="btn-transit" aria-pressed="false">Transit</button>
   </div>
-  <div id="legend"></div>
+  <div id="legend" hidden></div>
   <div id="ride-card" role="region" aria-label="Selected ride"><button type="button" class="card-close" id="card-close" aria-label="Close">×</button><div id="card-body"></div></div>
 </section>
 
@@ -329,155 +259,106 @@
 <script src="data/rides.js"></script>
 <script src="data/transit.js"></script>
 <script>
-const REGIONS = [['all', 'All'], ['city', 'Chicago'], ['suburbs', 'Suburbs'], ['indiana', 'Indiana']];
-const REGION_NAME = { city: 'Chicago', suburbs: 'Suburbs', indiana: 'Indiana' };
-const TYPE = { loop: 'Loop', out_and_back: 'Out & back', point_to_point: 'One way' };
+/* Best Rides Chi — one page, three views, all state in the URL.
+   #            ride list           #<ride>       list, with that ride's detail open
+   #map         map                 #map/<ride>   map, with that ride selected
+   #data        notes on the data
+   ?len=short|mid|long&only=trail,train   list filters
+   Data: RIDES (data/rides.js) and TRANSIT_LINES / BIKE_RULES (data/transit.js), both
+   generated by tools/build_rides.py. */
 const SYS = { cta: 'CTA', metra: 'Metra', southshore: 'South Shore' };
-const PACE = 14;   // mph, for time estimates
-const NEAR = 1.0;  // mi, "Station" filter
 const BY_ID = Object.fromEntries(RIDES.map(r => [r.id, r]));
 const STILL = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const $ = id => document.getElementById(id);
 
-// Transit line chips keep their official colors
-const LINE_COLOR = {};
-TRANSIT_LINES.forEach(l => { const k = l.sys === 'southshore' ? 'South Shore' : l.short; LINE_COLOR[k] = LINE_COLOR[k] || l.color; });
-function chip(name) {
-  const c = LINE_COLOR[name] || '#777';
-  const [r, g, b] = [1, 3, 5].map(i => parseInt(c.slice(i, i + 2), 16));
-  return `<span class="line" style="--lc:${c};--lt:${(0.299 * r + 0.587 * g + 0.114 * b) > 165 ? '#1b1f2a' : '#fff'}">${name}</span>`;
-}
-
+/* ── How rides are described ─────────────────────────────────────────── */
 const fmtMi = mi => mi >= 100 ? String(Math.round(mi)) : mi.toFixed(1);
-const pct = (n, cls = '') => `<span class="${n ? cls : 'zero'}">${n}%</span>`;
-const places = v => v.end ? `${v.start.label} → ${v.end.label}` : v.start.label;
+const unit = (n, u) => `${n}<span class="unit">${u}</span>`;
 
-function bestStation(v) {
-  let best = null;
-  [['start', v.start], ['finish', v.end]].filter(e => e[1]).forEach(([at, e]) =>
-    (e.stations || []).forEach(s => { if (!best || s.mi < best.mi) best = { ...s, at }; }));
-  return best;
+// Station lines are short codes ("Red", "UP-NW", "South Shore"); say them the way riders do
+const LINE = {};
+TRANSIT_LINES.forEach(l => { LINE[l.sys === 'southshore' ? 'South Shore' : l.short] = l; });
+function lineName(code) {
+  const l = LINE[code];
+  if (!l) return code;
+  return l.sys === 'cta' ? l.name : l.sys === 'metra' ? `Metra ${code}` : SYS[l.sys];
 }
-function trainCell(v) {
-  const s = bestStation(v);
-  if (!s || s.mi > 5) return '<span class="zero">—</span>';
-  return `<span class="train">${s.lines.slice(0, 3).map(chip).join('')}<span class="d">${s.mi.toFixed(1)} mi${s.at === 'finish' ? ' (end)' : ''}</span></span>`;
-}
-
-// One view-transition helper: animates where the browser supports it, instant elsewhere
-const transition = fn => (!STILL && document.startViewTransition) ? document.startViewTransition(fn) : (fn(), null);
+const TRAIN_MAX = 5;   // mi; farther than this isn't "by train"
+const startStation = v => { const s = (v.start.stations || [])[0]; return s && s.mi <= TRAIN_MAX ? s : null; };
+const dot = code => `<i class="dot" style="--c:${(LINE[code] || {}).color || 'var(--faint)'}" aria-hidden="true"></i>`;
 
 /* ── List state: lives in the URL query, so refresh / back / sharing keep it ── */
+const LENGTHS = [
+  ['any',   'Any length',  () => true],
+  ['short', 'Under 20 mi', mi => mi < 20],
+  ['mid',   '20–40 mi',    mi => mi >= 20 && mi < 40],
+  ['long',  '40+ mi',      mi => mi >= 40],
+];
 const FILTERS = [
-  ['train', `Station ≤ ${NEAR} mi`, v => { const s = bestStation(v); return s && s.mi <= NEAR; }],
-  ['paved', 'Paved', v => v.unpaved <= 10],
-  ['short', 'Under 30 mi', v => v.mi < 30],
+  ['trail', 'Trail',          v => v.comfort === 'trail'],   // build_rides.py: ≥70% off-street, <5% main roads
+  ['train', 'Train to start', v => { const s = startStation(v); return !!s && s.mi <= 1; }],
 ];
-const COLS = [
-  // key, label, value for sorting, right-aligned
-  ['name',    'Ride',          r => r.name.toLowerCase(), false],
-  ['type',    'Type',          r => r.variants[0].type, false],
-  ['mi',      'Miles',         r => r.variants[0].mi, true],
-  ['gain',    'Climb ft',      r => r.variants[0].gain, true],
-  ['unpaved', 'Unpaved',       r => r.variants[0].unpaved, true],
-  ['path',    'Off-street',    r => r.variants[0].mix.path, true],
-  ['train',   'Nearest train', r => (bestStation(r.variants[0]) || { mi: 99 }).mi, false],
-];
-const S = { region: 'all', only: new Set(), sort: null, dir: 1 };
+const S = { len: 'any', only: new Set() };
 (function readQuery() {
   const q = new URLSearchParams(location.search);
-  if (REGIONS.some(([id]) => id === q.get('region'))) S.region = q.get('region');
+  if (LENGTHS.some(([k]) => k === q.get('len'))) S.len = q.get('len');
   (q.get('only') || '').split(',').forEach(k => { if (FILTERS.some(f => f[0] === k)) S.only.add(k); });
-  const s = q.get('sort') || '';
-  if (COLS.some(c => c[0] === s.replace(/^-/, ''))) { S.sort = s.replace(/^-/, ''); S.dir = s.startsWith('-') ? -1 : 1; }
 })();
 function writeQuery() {
   const q = new URLSearchParams();
-  if (S.region !== 'all') q.set('region', S.region);
+  if (S.len !== 'any') q.set('len', S.len);
   if (S.only.size) q.set('only', [...S.only].join(','));
-  if (S.sort) q.set('sort', (S.dir < 0 ? '-' : '') + S.sort);
   const qs = q.toString().replace(/%2C/g, ',');
   history.replaceState(history.state, '', location.pathname + (qs ? '?' + qs : '') + location.hash);
 }
+const matches = r => {
+  const v = r.variants[0];
+  return LENGTHS.find(l => l[0] === S.len)[2](v.mi) && [...S.only].every(k => FILTERS.find(f => f[0] === k)[2](v));
+};
 
-const passes = r => [...S.only].every(k => FILTERS.find(f => f[0] === k)[2](r.variants[0]));
-function visibleRides() {
-  let rs = RIDES.filter(r => (S.region === 'all' || r.region === S.region) && passes(r));
-  if (S.sort) {
-    const fn = COLS.find(c => c[0] === S.sort)[2];
-    rs = [...rs].sort((a, b) => (fn(a) < fn(b) ? -1 : fn(a) > fn(b) ? 1 : 0) * S.dir || a.name.localeCompare(b.name));
-  }
-  return rs;
-}
-
-/* ── List: rows are built once, then filtered and reordered in place ──── */
+/* ── List: rows are built once, then shown or hidden in place ────────── */
 const rowEl = {};
 function buildRow(r) {
   const v = r.variants[0];
   const a = document.createElement('a');
-  a.className = 'row ride'; a.href = '#' + r.id; a.dataset.id = r.id;
+  a.className = 'ride'; a.href = '#' + r.id; a.dataset.id = r.id;
   a.innerHTML = `
-    <img class="thumb" src="data/thumbs/${r.id}.webp" width="76" height="48" alt="" loading="lazy" decoding="async">
-    <div>
-      <div class="name">${r.name}</div>
-      <div class="place">${places(v)}${r.variants.length > 1 ? ` <span class="lens">· ${r.variants.length} lengths</span>` : ''}</div>
-      <div class="compact"><span>${fmtMi(v.mi)} mi</span><span>${v.gain.toLocaleString()} ft</span><span>${v.unpaved}% unpaved</span>${trainCell(v)}</div>
-    </div>
-    <div class="c">${TYPE[v.type] || ''}</div>
-    <div class="c r">${fmtMi(v.mi)}</div>
-    <div class="c r">${v.gain.toLocaleString()}</div>
-    <div class="c r">${pct(v.unpaved)}</div>
-    <div class="c r">${pct(v.mix.path, v.mix.path >= 70 ? 'good' : '')}</div>
-    <div class="c">${trainCell(v)}</div>`;
+    <div class="name">${r.name}</div>
+    <div class="mi">${unit(Math.round(v.mi), 'mi')}</div>`;
   return a;
 }
 RIDES.forEach(r => { rowEl[r.id] = buildRow(r); $('rows').appendChild(rowEl[r.id]); });
 
-$('head').innerHTML = '<div></div>' + COLS.map(([k, l, , right]) =>
-  `<span class="${right ? 'r' : ''}"><button type="button" data-k="${k}">${l}</button></span>`).join('');
-$('filters').innerHTML = FILTERS.map(([k, l]) => `<button type="button" class="tog" data-f="${k}" aria-pressed="false">${l}</button>`).join('');
+$('lengths').innerHTML = LENGTHS.map(([k, l]) => `<button type="button" class="pill" data-len="${k}">${l}</button>`).join('');
+$('filters').innerHTML = FILTERS.map(([k, l]) => `<button type="button" class="pill" data-f="${k}">${l}</button>`).join('');
 
-function paintControls(rs) {
-  const n = id => RIDES.filter(r => (id === 'all' || r.region === id) && passes(r)).length;
-  $('regions').innerHTML = REGIONS.map(([id, l]) =>
-    `<button type="button" data-g="${id}" class="${S.region === id ? 'on' : ''}" aria-pressed="${S.region === id}">${l}<span class="n">${n(id)}</span></button>`).join('');
-  $('filters').querySelectorAll('.tog').forEach(b => {
-    const on = S.only.has(b.dataset.f); b.classList.toggle('on', on); b.setAttribute('aria-pressed', on);
-  });
-  $('head').querySelectorAll('button').forEach(b => {
-    const on = b.dataset.k === S.sort, label = COLS.find(c => c[0] === b.dataset.k)[1];
-    b.classList.toggle('on', on);
-    b.textContent = label + (on ? (S.dir > 0 ? ' ↑' : ' ↓') : '');
-    b.parentNode.setAttribute('aria-sort', on ? (S.dir > 0 ? 'ascending' : 'descending') : 'none');
-  });
-  $('count').textContent = `${rs.length} of ${RIDES.length}`;
-  $('empty').hidden = rs.length > 0;
+function paintControls(shown) {
+  $('lengths').querySelectorAll('.pill').forEach(b => { const on = b.dataset.len === S.len; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+  $('filters').querySelectorAll('.pill').forEach(b => { const on = S.only.has(b.dataset.f); b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+  $('empty').hidden = shown > 0;
 }
 
-// Rows slide to their new places on sort / filter (View Transitions where supported)
+// Rows slide into place as filters change (View Transitions where supported)
 function updateList(animate = true) {
-  const rs = visibleRides(), show = new Set(rs.map(r => r.id));
+  const show = new Set(RIDES.filter(matches).map(r => r.id));
   const apply = () => {
-    rs.forEach(r => $('rows').appendChild(rowEl[r.id]));
     for (const id in rowEl) rowEl[id].hidden = !show.has(id);
-    paintControls(rs);
+    paintControls(show.size);
   };
   const named = animate && document.startViewTransition && !STILL && view === 'rides'
     ? Object.values(rowEl).filter(el => !el.hidden || show.has(el.dataset.id)) : [];
   named.forEach(el => { el.style.viewTransitionName = 'r-' + el.dataset.id; });
   const t = named.length ? document.startViewTransition(apply) : (apply(), null);
-  t && t.finished.finally(() => named.forEach(el => { el.style.viewTransitionName = ''; }));
+  if (t) {
+    t.ready.catch(() => {});   // a quick second click interrupts the first animation; that's fine
+    t.finished.finally(() => named.forEach(el => { el.style.viewTransitionName = ''; }));
+  }
   writeQuery();
 }
 
-$('regions').onclick = e => { const b = e.target.closest('button'); if (b && b.dataset.g !== S.region) { S.region = b.dataset.g; updateList(); } };
+$('lengths').onclick = e => { const b = e.target.closest('button'); if (b && b.dataset.len !== S.len) { S.len = b.dataset.len; updateList(); } };
 $('filters').onclick = e => { const b = e.target.closest('button'); if (!b) return; const k = b.dataset.f; S.only.has(k) ? S.only.delete(k) : S.only.add(k); updateList(); };
-$('head').onclick = e => {
-  const b = e.target.closest('button[data-k]'); if (!b) return;
-  if (S.sort === b.dataset.k) { if (S.dir < 0) S.sort = null; S.dir = -S.dir; } else { S.sort = b.dataset.k; S.dir = 1; }
-  updateList();
-};
-$('clear').onclick = () => { S.region = 'all'; S.only.clear(); updateList(); };
+$('clear').onclick = () => { S.len = 'any'; S.only.clear(); updateList(); };
 $('rows').addEventListener('click', e => {
   const a = e.target.closest('a.ride');
   if (!a || e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;   // let new-tab clicks through
@@ -489,10 +370,17 @@ $('rows').addEventListener('click', e => {
 const dlg = $('ride');
 let dlgRide = null;
 
-function stationRow(label, e) {
+// "Red Line Thorndale, 0.3 mi from the start"
+function stationNote(e, where) {
   const s = (e.stations || [])[0];
-  if (!s || s.mi > 5) return '';
-  return `<tr><th>${label}</th><td>${s.name} ${s.lines.map(chip).join(' ')} <span class="muted">${s.mi.toFixed(1)} mi</span></td></tr>`;
+  if (!s || s.mi > TRAIN_MAX) return '';
+  return `<p><b>${dot(s.lines[0])}${s.lines.map(lineName).join(' / ')}</b> ${s.name}, ${s.mi.toFixed(1)} mi from the ${where}</p>`;
+}
+function trafficNote(v) {
+  const roads = (v.busyRoads || []).filter(r => r.mi >= 0.5).slice(0, 3).map(r => `${r.name} (${r.mi} mi)`);
+  if (!roads.length) return '';
+  const list = roads.length > 1 ? roads.slice(0, -1).join(', ') + ' and ' + roads.at(-1) : roads[0];
+  return `<p><b>Traffic</b> on ${list}</p>`;
 }
 
 // The route, drawn straight away in the map slot while the RideWithGPS embed loads
@@ -528,26 +416,23 @@ function renderDetail(ride, i) {
   frame.src = `https://ridewithgps.com/embeds?type=route&id=${v.rwgps}&sampleGraph=true`;
   box.appendChild(frame);
 
-  const kv = (k, val) => `<div><span class="k">${k}</span><span class="v">${val}</span></div>`;
   $('modal-body').innerHTML = `
-    ${ride.variants.length > 1 ? `<div class="variants" role="group" aria-label="Length">${ride.variants.map((x, j) =>
-      `<button type="button" class="tog${j === i ? ' on' : ''}" data-i="${j}" aria-pressed="${j === i}">${fmtMi(x.mi)} mi</button>`).join('')}</div>` : ''}
-    <div class="kv">
-      ${kv('Miles', fmtMi(v.mi))}
-      ${kv('Climb ft', v.gain.toLocaleString())}
-      ${kv('Unpaved', v.unpaved + '%')}
-      ${kv('Off-street', v.mix.path + '%')}
+    ${ride.variants.length > 1 ? `<div class="group variants" role="group" aria-label="Length">${ride.variants.map((x, j) =>
+      `<button type="button" class="pill${j === i ? ' on' : ''}" data-i="${j}" aria-pressed="${j === i}">${fmtMi(x.mi)} mi</button>`).join('')}</div>` : ''}
+    <div class="facts">
+      <div>${unit(fmtMi(v.mi), 'mi')}</div>
+      <div>${unit(v.gain.toLocaleString(), 'ft climb')}</div>
+      <div>${unit(v.mix.path + '%', 'trail')}</div>
+      <div>${unit(v.unpaved + '%', 'unpaved')}</div>
     </div>
-    <table class="list">
-      <tr><th>${TYPE[v.type]}</th><td>${places(v)}</td></tr>
-      ${stationRow('Train at start', v.start)}
-      ${v.end ? stationRow('Train at end', v.end) : ''}
-    </table>
+    <div class="notes">
+      ${stationNote(v.start, 'start')}${v.end ? stationNote(v.end, 'finish') : ''}${trafficNote(v)}
+    </div>
     <div class="actions">
-      <a class="btn primary" href="https://ridewithgps.com/routes/${v.rwgps}" target="_blank" rel="noopener">RideWithGPS ↗</a>
-      <a class="btn secondary" href="#map/${ride.id}">Map</a>
+      <a class="btn primary" href="https://ridewithgps.com/routes/${v.rwgps}" target="_blank" rel="noopener">Open in RideWithGPS ↗</a>
+      <a class="btn secondary" href="#map/${ride.id}">Show on map</a>
     </div>`;
-  $('modal-body').querySelectorAll('.variants .tog').forEach(b => b.onclick = () => renderDetail(ride, +b.dataset.i));
+  $('modal-body').querySelectorAll('.variants .pill').forEach(b => b.onclick = () => renderDetail(ride, +b.dataset.i));
   $('modal-scroll').scrollTop = 0;
 }
 
@@ -578,7 +463,7 @@ function dismissDetail() {
 $('modal-close').onclick = dismissDetail;
 dlg.addEventListener('cancel', e => { e.preventDefault(); dismissDetail(); });         // Esc
 dlg.addEventListener('click', e => { if (e.target === dlg) dismissDetail(); });       // backdrop
-dlg.addEventListener('click', e => {                                                  // "Map" inside the detail
+dlg.addEventListener('click', e => {                                                  // "Show on map" inside the detail
   const a = e.target.closest('a[href^="#map"]'); if (!a) return;
   e.preventDefault();
   history.replaceState(null, '', location.pathname + location.search + a.getAttribute('href'));
@@ -586,9 +471,6 @@ dlg.addEventListener('click', e => {                                            
 });
 
 /* ── Views + routing ─────────────────────────────────────────────────── */
-// #            ride list          #<ride>        list, with that ride open
-// #map         map                #map/<ride>    map, with that ride selected
-// #data        data notes
 const TITLES = { rides: 'Best Rides Chi', map: 'Map — Best Rides Chi', data: 'Data — Best Rides Chi' };
 let view = null;
 
@@ -597,6 +479,14 @@ function route() {
   if (h === 'map' || h.startsWith('map/')) return { view: 'map', mapRide: BY_ID[h.slice(4)] || null };
   if (h === 'data') return { view: 'data' };
   return { view: 'rides', ride: BY_ID[h] || null };
+}
+
+// One view-transition helper: animates where the browser supports it, instant elsewhere
+function transition(fn) {
+  if (STILL || !document.startViewTransition) return fn(), null;
+  const t = document.startViewTransition(fn);
+  t.ready.catch(() => {});   // interrupted by the next navigation: fine
+  return t;
 }
 
 // Resolves once the new view is actually in the page (a view transition swaps it a frame later)
@@ -696,12 +586,6 @@ function initMap() {
     if (updateHash) setHash(null);
   };
 
-  function stationLine(tag, end) {
-    const s = (end.stations || [])[0];
-    if (!s || s.mi > 5) return '';
-    return `<div>${s.name} ${s.lines.slice(0, 3).map(chip).join('')} ${s.mi.toFixed(1)} mi${tag === 'Finish' ? ' (end)' : ''}</div>`;
-  }
-
   // Start fetching the tiles the map will land on as the flight begins, so it
   // arrives sharp instead of showing stretched, blurry tiles while they load.
   function prefetchTiles(center, zoom) {
@@ -732,29 +616,23 @@ function initMap() {
     }
 
     cardBody.innerHTML = `
-      <div class="card-label">${REGION_NAME[ride.region]} · ${TYPE[v.type] || 'Ride'}</div>
       <div class="card-name">${ride.name}</div>
-      <div class="card-sub">${places(v)}</div>
-      <div class="card-stats">
-        <div>Miles<b>${fmtMi(v.mi)}</b></div><div>Climb ft<b>${v.gain.toLocaleString()}</b></div><div>Unpaved<b>${v.unpaved}%</b></div><div>Off-street<b>${v.mix.path}%</b></div>
-      </div>
-      ${(() => { const t = stationLine('Start', v.start) + (v.end ? stationLine('Finish', v.end) : ''); return t ? `<div class="card-section">${t}</div>` : ''; })()}
-      ${ride.variants.length > 1 ? `<div class="card-section">
-        <div class="var-row on primary"><span class="var-dash"></span>${fmtMi(v.mi)} mi</div>
-        ${ride.variants.slice(1).map((x, i) => `<div class="var-row on" data-i="${i}" role="button" tabindex="0"><span class="var-dash"></span>${fmtMi(x.mi)} mi</div>`).join('')}
+      ${ride.variants.length > 1 ? '' : `<div class="card-mi">${unit(fmtMi(v.mi), 'mi')}</div>`}
+      ${ride.variants.length > 1 ? `<div class="card-vars">
+        <span class="pill on primary"><span class="var-dash"></span>${fmtMi(v.mi)} mi</span>
+        ${ride.variants.slice(1).map((x, i) => `<button type="button" class="pill" data-i="${i}" aria-pressed="true"><span class="var-dash"></span>${fmtMi(x.mi)} mi</button>`).join('')}
       </div>` : ''}
       <div class="card-links">
-        <a href="https://ridewithgps.com/routes/${v.rwgps}" target="_blank" rel="noopener">RideWithGPS ↗</a>
-        <button type="button" class="sec" id="card-details">Details</button>
+        <a class="btn primary" href="https://ridewithgps.com/routes/${v.rwgps}" target="_blank" rel="noopener">RideWithGPS ↗</a>
+        <button type="button" class="btn secondary" id="card-details">Details</button>
       </div>`;
     card.classList.add('open');
     card.scrollTop = 0;
-    cardBody.querySelectorAll('.var-row[data-i]').forEach(row => row.onclick = row.onkeydown = e => {
-      if (e.type === 'keydown' && e.key !== 'Enter' && e.key !== ' ') return;
-      e.preventDefault();
-      const g = variantLayers[+row.dataset.i];
+    cardBody.querySelectorAll('.card-vars button').forEach(b => b.onclick = () => {
+      const g = variantLayers[+b.dataset.i];
       map.hasLayer(g) ? map.removeLayer(g) : map.addLayer(g);
-      row.classList.toggle('on', map.hasLayer(g));
+      b.setAttribute('aria-pressed', map.hasLayer(g));
+      b.style.opacity = map.hasLayer(g) ? '' : '.45';
     });
     $('card-details').onclick = () => showRide(ride.id);   // detail opens over the map
 
@@ -785,7 +663,7 @@ function initMap() {
   map.on('click', () => M.collapse());
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && view === 'map' && !dlg.open && M.active) M.collapse(); });
 
-  /* Transit: every CTA, Metra and South Shore line */
+  /* Transit: every CTA, Metra and South Shore line, with a legend while it's on */
   let transitOn = false, transitLayer = null;
   function buildTransit() {
     const g = L.layerGroup();
@@ -797,19 +675,12 @@ function initMap() {
     return g;
   }
   function renderLegend() {
-    const rideRows = `
-      <div class="legend-title">Rides</div>
-      <div class="legend-row"><span class="legend-dot" style="background:#14181f;border:2px solid #fff"></span>Ride start</div>`;
-    if (!transitOn) {
-      $('legend').innerHTML = rideRows + `<div class="legend-row"><span class="legend-line" style="border-top:2px dashed #14181f;height:0"></span>Other lengths</div>`;
-      return;
-    }
     const group = sys => TRANSIT_LINES.filter(l => l.sys === sys).map(l =>
       `<div class="legend-row"><span class="legend-line" style="background:${l.color}"></span>${l.short}</div>`).join('');
     $('legend').innerHTML = `
-      <div class="legend-title">CTA 'L'</div><div class="legend-cols">${group('cta')}</div>
+      <div class="legend-title">CTA</div><div class="legend-cols">${group('cta')}</div>
       <div class="legend-title">Metra</div><div class="legend-cols">${group('metra')}</div>
-      <div class="legend-title">South Shore</div><div class="legend-cols">${group('southshore')}</div>` + rideRows;
+      <div class="legend-title">South Shore</div><div class="legend-cols">${group('southshore')}</div>`;
   }
   const press = (btn, on) => { btn.classList.toggle('on', on); btn.setAttribute('aria-pressed', on); };
   $('btn-rides').onclick = function () {
@@ -821,25 +692,23 @@ function initMap() {
     transitOn = !this.classList.contains('on'); press(this, transitOn);
     if (transitOn) { transitLayer = transitLayer || buildTransit(); transitLayer.addTo(map); }
     else if (transitLayer) map.removeLayer(transitLayer);
-    renderLegend();
+    if (transitOn && !$('legend').innerHTML) renderLegend();
+    $('legend').hidden = !transitOn;
   };
-  renderLegend();
   return M;
 }
 
-/* ── Data page: what each column means and where it comes from ───────── */
+/* ── Data page: what each number means and where it comes from ───────── */
 function renderData() {
   $('view-data').innerHTML = `
-    <h2>Columns</h2>
+    <h2>What's shown</h2>
     <table>
-      <tr><th>Miles, Type</th><td>RideWithGPS route.</td></tr>
-      <tr><th>Climb ft</th><td>RideWithGPS total, minus jumps in its elevation data (≥ 4 m within 20 m of travel).</td></tr>
-      <tr><th>Unpaved</th><td>RideWithGPS route.</td></tr>
-      <tr><th>Off-street</th><td>Share of distance on bike paths and trails, including separated paths beside a road. RideWithGPS road type, checked against OpenStreetMap.</td></tr>
-      <tr><th>Main roads</th><td>Share of distance on tertiary-or-larger roads (detail view), split by whether OpenStreetMap shows a bike lane.</td></tr>
-      <tr><th>Nearest train</th><td>Closest station that allows bikes, to the start or end. Straight-line distance. CTA, Metra and South Shore GTFS.</td></tr>
-      <tr><th>Time</th><td>Distance ÷ ${PACE} mph, no stops.</td></tr>
-      <tr><th>Biggest climb, Steepest</th><td>From the cleaned elevation profile. Steepest = steepest 150 m.</td></tr>
+      <tr><th>Miles</th><td>RideWithGPS route.</td></tr>
+      <tr><th>Trail filter</th><td>At least 70% on bike paths and trails, and under 5% on main (tertiary-or-larger) roads. RideWithGPS road type, checked against OpenStreetMap.</td></tr>
+      <tr><th>Train to start</th><td>A station that allows bikes within 1 mi of the start, straight-line. The detail shows the closest one within ${TRAIN_MAX} mi of the start and finish. CTA, Metra and South Shore GTFS.</td></tr>
+      <tr><th>Climb</th><td>RideWithGPS total, minus jumps in its elevation data (≥ 4 m within 20 m of travel).</td></tr>
+      <tr><th>% trail</th><td>Share of distance on bike paths and trails, including separated paths beside a road.</td></tr>
+      <tr><th>Traffic on</th><td>Main roads with the most distance on the route.</td></tr>
     </table>
     <h2>Bikes on trains</h2>
     <table>
@@ -850,20 +719,9 @@ function renderData() {
     <table>
       <tr><th>Routes</th><td><a href="https://ridewithgps.com/partners/great-rides-chicago" target="_blank" rel="noopener">Great Rides Chicago</a>, Great Rides Schererville and other public routes on RideWithGPS</td></tr>
       <tr><th>Roads, places, maps</th><td><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors</td></tr>
-      <tr><th>Weather</th><td><a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a></td></tr>
     </table>
     <p class="stamp">Built ${BUILD_DATE}</p>`;
 }
-
-/* ── Weather ─────────────────────────────────────────────────────────── */
-const COMPASS = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
-fetch('https://api.open-meteo.com/v1/forecast?latitude=41.88&longitude=-87.63&current=temperature_2m,wind_speed_10m,wind_direction_10m&temperature_unit=fahrenheit&wind_speed_unit=mph')
-  .then(r => r.json())
-  .then(d => {
-    const c = d.current, wx = $('wx');
-    wx.innerHTML = `<b>${Math.round(c.temperature_2m)}°</b> · <span class="warrow" style="transform:rotate(${c.wind_direction_10m + 90}deg)">➤</span><b>${COMPASS[Math.round(c.wind_direction_10m / 22.5) % 16]} ${Math.round(c.wind_speed_10m)}</b>`;
-    wx.classList.add('show');
-  }).catch(() => {});
 
 updateList(false);
 sync(false);

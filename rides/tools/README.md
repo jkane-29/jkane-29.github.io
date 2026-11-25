@@ -17,13 +17,8 @@ The site never hard-codes ride stats. Everything on the Rides and Map pages come
 
    Downloads are cached in `.cache/` (gitignored), so re-runs are fast. Add `--refresh` to
    re-download routes, transit schedules and OpenStreetMap checks.
-3. Re-render the list thumbnails (grey OpenStreetMap base + the route in red):
 
-   ```bash
-   python3 rides/tools/build_thumbs.py
-   ```
-
-   Writes `rides/data/thumbs/<ride id>.webp`; map tiles are cached in `.cache/tiles/`.
+To remove a ride, delete its entry from `rides.config.json` and rebuild.
 
 ## What gets computed, and from where
 

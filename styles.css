@@ -388,10 +388,10 @@ body:not(.edit-mode) .item[data-id="item_email_me"]:hover img {
    just changes font-size. */
 #views-magnet {
   position: absolute;
-  top: 61%;
-  left: 26%;
+  top: 49.04%;
+  left: 28.75%;
   z-index: 4;
-  font-size: 1.3cqw;
+  font-size: 1.35cqw;
   display: flex;
   flex-direction: column;
   align-items: center;

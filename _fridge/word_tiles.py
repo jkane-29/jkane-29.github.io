@@ -5,7 +5,7 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
 SRC = Image.open('items/writing.png').convert('RGBA').crop((161, 84, 604, 246))
-FONT = ImageFont.truetype('/System/Library/Fonts/Supplemental/Georgia.ttf', 72)
+FONT = ImageFont.truetype('/System/Library/Fonts/Supplemental/Times New Roman Bold.ttf', 86)  # closest to items/writing.png
 
 
 def blank_tile(width):
@@ -24,7 +24,7 @@ def blank_tile(width):
 
 def tile(word):
     l, t, r, b = FONT.getbbox(word)
-    im = blank_tile(max(r - l + 70, 120))
+    im = blank_tile(max(r - l + 100, 120))
     im = im.resize((im.width, round(im.height * 0.7)), Image.LANCZOS)   # flatter, like the real tiles
     d = ImageDraw.Draw(im)
     d.text(((im.width - (r - l)) / 2 - l, (im.height - (b - t)) / 2 - t - 2), word, font=FONT, fill=(22, 22, 22, 255))

@@ -101,21 +101,6 @@
       font-style: italic;
     }
 
-    /* "To" line: the address a postcard is sent to, as a real mailto link */
-    .to-line {
-      position: absolute;
-      top: 35%;
-      left: 56%;
-      right: 6%;
-      z-index: 5;
-      font-family: 'Special Elite', 'Courier New', monospace;
-      font-size: clamp(13px, 1.5vw, 19px);
-      color: #4a3a25;
-      line-height: 1.5;
-    }
-    .to-line a { color: #1a1a1a; text-decoration: underline; text-decoration-color: #b8893a; text-underline-offset: 3px; }
-    .to-line a:hover { color: #000; text-decoration-color: #1a1a1a; }
-
     /* On desktop, action-bar sits absolutely over the right side of the card
        FROM + email render as horizontal address lines, Send sits below */
     .action-bar {
@@ -251,8 +236,6 @@
       }
 
       /* No stamp on mobile */
-      .to-line { position: static; font-family: inherit; font-size: 15px; color: #8a8478; margin: 0 0 12px; }
-      .to-line a { color: #1c1c1e; }
       .stamp-placeholder,
       .stamp-overlay,
       .stamp-overlay.visible { display: none; }
@@ -360,7 +343,6 @@
       <img class="postcard-img" src="updated-postcard.webp" alt="Postcard back">
       <div id="stamp-placeholder" class="stamp-placeholder"></div>
       <img id="stamp-overlay" class="stamp-overlay" alt="Selected stamp">
-      <div class="to-line">To: <a href="mailto:[email removed]">[email removed]</a><br>or write below and press send</div>
       <textarea
         id="msg"
         class="message-input"

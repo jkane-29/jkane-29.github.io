@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hacker Fonts</title>
+<meta name="description" content="The main font on each YC company's website at launch, 2005–2026.">
+<link rel="canonical" href="https://www.jackkane.me/hacker-fonts/">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<script>
+// The page is set in Verdana. A link lets the reader swap in a font YC companies actually used.
+// [family, companies using it as primary font, median batch year]
+window.YCTI_FONTS = [["Inter",708,2024],["Open Sans",175,2018],["Roboto",148,2021],["Montserrat",125,2021],["Lato",122,2018],["Poppins",117,2022],["Geist",115,2026],["DM Sans",95,2023],["Manrope",43,2024],["Plus Jakarta Sans",41,2024],["Raleway",33,2017],["Space Grotesk",30,2024],["Instrument Sans",27,2025],["Rubik",25,2020],["Outfit",24,2023],["Work Sans",22,2020],["IBM Plex Sans",22,2023],["Nunito",20,2022],["Mulish",18,2020],["Nunito Sans",14,2019],["Merriweather",13,2017],["JetBrains Mono",12,2026],["Roboto Slab",11,2018],["Heebo",11,2021],["Inter Tight",11,2025],["Figtree",11,2025],["Quicksand",10,2021],["Sora",10,2024],["Archivo",10,2026],["Lora",9,2018],["Karla",9,2023],["Geist Mono",9,2026],["Hanken Grotesk",9,2026],["Lexend",8,2024],["Jost",8,2025],["Playfair Display",8,2025],["Urbanist",8,2024]];
+// f = { family, note, load (fetch from Google Fonts), stack (optional full CSS stack) } or null for Verdana
+window.YCTI_applyFont = function (f) {
+  const root = document.documentElement;
+  if (!f) { root.style.removeProperty("--body"); window.YCTI_current = null; }
+  else {
+    if (f.load) {
+      const q = encodeURIComponent(f.family).replace(/%20/g, "+");
+      let l = document.getElementById("visitor-font");
+      if (!l) { l = document.createElement("link"); l.id = "visitor-font"; l.rel = "stylesheet"; document.head.appendChild(l); }
+      l.onerror = () => { l.onerror = null; l.href = `https://fonts.googleapis.com/css2?family=${q}&display=swap`; };
+      l.href = `https://fonts.googleapis.com/css2?family=${q}:wght@400;700&display=swap`;
+    }
+    root.style.setProperty("--body", f.stack || `"${f.family.replace(/"/g, "")}", Verdana, Geneva, sans-serif`);
+    window.YCTI_current = f;
+  }
+  document.dispatchEvent(new CustomEvent("ycti-font", { detail: window.YCTI_current }));
+};
+</script>
+<style>
+:root {
+  --bg: #f6f6ef; --surface: #f6f6ef; --ink: #000000; --ink-2: #3c3c38; --muted: #828282; --rule: #dcdcd2;
+  --accent: #ff6600; --link: #000000;
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100;
+  --body: Verdana, Geneva, sans-serif;
+  --mono: ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #1b1b18; --surface: #1b1b18; --ink: #eceae3; --ink-2: #c4c2ba; --muted: #8f8d85; --rule: #34332e;
+  --accent: #ff7a2b; --link: #eceae3;
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #1b1b18; --surface: #1b1b18; --ink: #eceae3; --ink-2: #c4c2ba; --muted: #8f8d85; --rule: #34332e;
+  --accent: #ff7a2b; --link: #eceae3;
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; color-scheme: dark }
+* { box-sizing: border-box }
+html { border-top: 3px solid var(--accent) }
+body { background: var(--bg); color: var(--ink); font: 14px/1.55 var(--body); margin: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 56px }
+.wrap { max-width: 840px; margin: 0 auto; display: grid; gap: 40px }
+header { padding-top: 28px; display: grid; gap: 8px }
+h1 { font: 700 22px/1.2 var(--body); margin: 0 }
+h1 span { color: var(--accent) }
+h2 { font: 700 15px/1.3 var(--body); margin: 0 }
+.lede { margin: 0; max-width: 66ch }
+.sub, .note, .facts { color: var(--muted); font-size: 12px }
+.facts { margin: 0 }
+nav { font-size: 12px; color: var(--muted) }
+nav a { color: var(--muted) }
+a { color: var(--link) }
+a:hover { color: var(--accent) }
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
+button.link { font: inherit; color: var(--muted); background: none; border: 0; padding: 0; text-decoration: underline; cursor: pointer }
+button.link:hover { color: var(--accent) }
+section { display: grid; gap: 12px; min-width: 0 }
+.sec-head { display: grid; gap: 4px; max-width: 66ch }
+.sec-head p { margin: 0; color: var(--ink-2) }
+
+/* findings: plain sentences */
+.items { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; max-width: 66ch }
+
+/* winners: the year, then the font set in itself */
+.strip { display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 18px 16px }
+.cell { min-width: 0 }
+.cell .yr { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; display: flex; justify-content: space-between }
+.cell .fn { font-size: 20px; line-height: 1.2; overflow-wrap: anywhere }
+.approx { text-decoration: underline dotted var(--muted); text-underline-offset: 4px }
+
+/* sparklines, one scale for all */
+.multiples { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 22px 28px }
+.mult { min-width: 0 }
+.mult svg { display: block; width: 100%; height: auto; overflow: visible }
+.mult .t .fn { font-size: 16px; line-height: 1.25 }
+#tip { position: fixed; pointer-events: none; z-index: 20; background: var(--ink); color: var(--bg); font: 12px/1.45 var(--body); padding: 6px 8px; border-radius: 3px; max-width: 260px }
+
+/* tables */
+.tscroll { overflow-x: auto }
+table { border-collapse: collapse; width: 100%; font-size: 13px }
+th { text-align: left; font-size: 11px; font-weight: 400; color: var(--muted); padding: 8px 10px 6px 0; border-bottom: 1px solid var(--rule); white-space: nowrap; position: sticky; top: 0; background: var(--bg) }
+td { padding: 4px 10px 4px 0; vertical-align: baseline }
+a.quiet { color: inherit; text-decoration: none }
+a.quiet:hover { color: var(--accent); text-decoration: underline }
+td.num { font-variant-numeric: tabular-nums; color: var(--ink-2); white-space: nowrap }
+.chips { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline }
+.chip { font-size: 16px; white-space: nowrap }
+.chip small { font-size: 11px; color: var(--muted); margin-left: 4px }
+td .face { font-size: 16px; white-space: nowrap }
+.src { font-size: 11px; color: var(--ink-2); white-space: nowrap }
+.src i { display: inline-block; width: 7px; height: 7px; border-radius: 2px; margin-right: 5px }
+.controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center }
+.controls input, .controls select { font: 13px var(--body); color: var(--ink); background: var(--bg); border: 1px solid var(--rule); border-radius: 2px; padding: 5px 7px; min-width: 0 }
+.controls input { flex: 1 1 220px }
+.controls .count { font-size: 12px; color: var(--muted); margin-left: auto }
+.try { font-size: 12px; color: var(--muted) }
+.pick { font-size: 12px; color: var(--muted); display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px }
+.pick label { display: inline-flex; align-items: center; gap: 6px }
+.pick input { font: 12px var(--body); color: var(--ink); background: var(--bg); border: 1px solid var(--rule); border-radius: 2px; padding: 3px 6px; width: 220px; max-width: 100% }
+.try button { margin-right: 8px }
+details summary { cursor: pointer; font-weight: 700; font-size: 15px }
+details[open] summary { margin-bottom: 10px }
+.method { display: grid; gap: 6px; max-width: 66ch; color: var(--muted); font-size: 12px }
+.method h2 { color: var(--ink-2); font-size: 12px }
+.method p { margin: 0 }
+.dim { color: var(--muted) }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1>Hacker Fonts</h1>
+    <p class="lede">The main font on each Y Combinator company's website at launch, 2005–2026. Often the founders didn't choose it: their framework did.</p>
+    <div class="pick"><span id="setin"></span><label>or a company's: <input id="coPick" list="coList" placeholder="Stripe, Airbnb, Brex…" autocomplete="off"><datalist id="coList"></datalist></label></div>
+  </header>
+
+  <section id="changed">
+    <h2>What changed</h2>
+    <ul class="items">
+      <li>2005–2011: most sites used fonts already on the visitor's computer, like Arial and Verdana. Stripe launched in Verdana, the font of Hacker News.</li>
+      <li>2012–2017: Helvetica Neue was the most common font each year.</li>
+      <li>2019–2021: the most common choice was no font at all, just the operating system's own, which is what Bootstrap and Tailwind use by default.</li>
+      <li>Inter went from 8% of sites in 2020 to 33% in 2025.</li>
+      <li>Geist, the Next.js default since late 2024, went from 0% in 2022 to 12% in 2026, and Inter fell for the first time, to 26%.</li>
+      <li>Google Fonts copied into the site's own files, which Next.js does automatically, went from 10% of sites in 2021 to 43% in 2026.</li>
+      <li>Monospace body text went from 0% of sites in 2023 to 4.6% in 2026.</li>
+    </ul>
+  </section>
+
+  <section id="charts">
+    <div class="sec-head">
+      <h2>The most common font each year</h2>
+    </div>
+    <div class="strip" id="strip"></div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <h2>The twelve most common fonts, 2005–2026</h2>
+    </div>
+    <div class="multiples" id="mults"></div>
+  </section>
+
+  <section id="lookup">
+    <div class="sec-head">
+      <h2>Look up a company</h2>
+    </div>
+    <div class="try" hidden><span id="tryList"></span></div>
+    <div class="controls">
+      <input id="q" type="search" placeholder="Company or font" aria-label="Search companies or fonts">
+      <select id="fBatch" aria-label="Filter by batch" hidden><option value="">All batches</option></select>
+      <select id="fFont" aria-label="Filter by font" hidden><option value="">All fonts</option></select>
+      <select id="fStatus" aria-label="Filter by result" hidden>
+        <option value="found">Font found</option><option value="">All companies</option><option value="missing">No font found</option>
+      </select>
+      <span class="count" id="count"></span>
+    </div>
+    <div class="tscroll"><table id="idx"><thead><tr><th>Company</th><th>Batch</th><th>Font</th><th>Archived</th></tr></thead><tbody></tbody></table></div>
+    <div><button class="link" id="more" type="button">More</button></div>
+  </section>
+
+  <section class="method" id="method">
+    <h2>Method</h2>
+    <p>The companies, batches and websites come from YC's startup directory. For each company, the Internet Archive capture of its homepage closest to its batch's Demo Day was parsed, along with up to four of its stylesheets, for <code>font-family</code> rules.</p>
+    <p class="note" id="gen"></p>
+  </section>
+</div>
+<div id="tip" hidden></div>
+
+<script>
+(function () {
+  const el = document.getElementById("setin");
+  const escH = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const render = f => {
+    el.innerHTML = f
+      ? `set in <b>${escH(f.family)}</b> (${escH(f.note)}) · <button class="link" id="reroll">another</button> · <button class="link" id="reset">back to Verdana</button>`
+      : `<button class="link" id="reroll">set this page in a random YC font</button>`;
+    el.querySelector("#reroll").onclick = () => {
+      const others = YCTI_FONTS.filter(x => !YCTI_current || x[0] !== YCTI_current.family);
+      const x = others[Math.floor(Math.random() * others.length)];
+      YCTI_applyFont({ family: x[0], load: true, note: `main font of ${x[1]} YC sites` });
+    };
+    const r = el.querySelector("#reset"); if (r) r.onclick = () => { document.getElementById("coPick").value = ""; YCTI_applyFont(null); };
+  };
+  render(null);
+  document.addEventListener("ycti-font", e => render(e.detail));
+})();
+(async function () {
+  const $ = s => document.querySelector(s);
+  let D;
+  try { D = await (await fetch("data.json")).json(); }
+  catch (e) { $("#strip").textContent = "The data didn't load. Reload to try again."; return; }
+  const T = D.trends, C = D.cols, rows = D.rows.map(r => Object.fromEntries(C.map((c, i) => [c, r[i]])));
+  const GF = new Set(D.gf), loaded = new Set();
+  const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const LOCAL = new Set(["Arial", "Helvetica", "Helvetica Neue", "Verdana", "Georgia", "Times", "Tahoma", "Trebuchet MS", "Courier", "Palatino", "Lucida Grande"]);
+  const yl = l => l.replace("2005–09", "'05–09").replace(/^20/, "'");
+
+  function loadFonts(names) {
+    const need = [...new Set(names)].filter(n => n && GF.has(n) && !loaded.has(n));
+    for (let i = 0; i < need.length; i += 12) {
+      const chunk = need.slice(i, i + 12); chunk.forEach(n => loaded.add(n));
+      const l = document.createElement("link"); l.rel = "stylesheet";
+      l.href = "https://fonts.googleapis.com/css2?" + chunk.map(n => "family=" + encodeURIComponent(n).replace(/%20/g, "+")).join("&") + "&display=swap";
+      document.head.appendChild(l);
+    }
+  }
+  function face(name, cls = "fn") {
+    if (!name) return `<span class="${cls} dim">—</span>`;
+    const real = GF.has(name) || LOCAL.has(name);
+    const stack = name === "System UI" ? `-apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif` : `"${name.replace(/"/g, "")}", var(--body)`;
+    return `<span class="${cls}${real || name === "System UI" ? "" : " approx"}" style='font-family:${esc(stack)}' ${real ? "" : 'title="Not a free font, shown in a stand-in"'}>${esc(name)}</span>`;
+  }
+
+  const total = rows.length, found = rows.filter(r => r.status === "ok").length;
+  const distinct = new Set(rows.filter(r => r.primary_font).map(r => r.primary_font)).size;
+  $("#gen").textContent = `Data gathered ${D.generated}.`;
+
+  loadFonts(Object.values(T.top_by_year).flatMap(l => l.map(x => x[0])).concat(T.top_fonts));
+  $("#strip").innerHTML = T.years.map((y, i) => {
+    const t = T.top_by_year[y][0]; if (!t) return "";
+    return `<div class="cell"><div class="yr"><span>${T.labels[i]}</span><span>${Math.round(t[2])}%</span></div>${face(t[0])}</div>`;
+  }).join("");
+
+  const tip = $("#tip");
+  function showTip(e, html) { tip.innerHTML = html; tip.hidden = false; const w = tip.offsetWidth, h = tip.offsetHeight;
+    let x = e.clientX + 14, y = e.clientY - h - 10; if (x + w > innerWidth - 8) x = e.clientX - w - 14; if (y < 8) y = e.clientY + 16;
+    tip.style.left = x + "px"; tip.style.top = y + "px"; }
+  const hideTip = () => tip.hidden = true;
+
+  (function () {
+    const fonts = T.top_fonts.slice(0, 12), n = T.years.length;
+    const top = Math.max(5, ...fonts.flatMap(f => T.font_share[f]));
+    const W = 240, H = 52, L = 2, R = 34, Tp = 14, B = 3;
+    const x = i => L + (W - L - R) * i / (n - 1), y = v => Tp + (H - Tp - B) * (1 - v / top);
+    const lbl = 'style="fill:var(--muted);font:10px var(--body)"';
+    $("#mults").innerHTML = fonts.map(f => {
+      const s = T.font_share[f], pk = s.indexOf(Math.max(...s)), last = s[n - 1];
+      const pts = s.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
+      const pkLabel = pk === n - 1 ? "" :
+        `<circle cx="${x(pk)}" cy="${y(s[pk])}" r="2" style="fill:var(--accent)"/>
+         <text x="${x(pk)}" y="${y(s[pk]) - 5}" text-anchor="middle" ${lbl}>${Math.round(s[pk])}%</text>`;
+      return `<div class="mult"><div class="t">${face(f)}</div>
+        <svg viewBox="0 0 ${W} ${H}" data-font="${esc(f)}" aria-label="${esc(f)}: peak ${s[pk]}% in ${T.labels[pk]}, ${last}% in ${T.labels[n - 1]}">
+          <polyline points="${pts}" fill="none" style="stroke:var(--accent)" stroke-width="1.6" stroke-linejoin="round"/>
+          ${pkLabel}
+          <circle cx="${x(n - 1)}" cy="${y(last)}" r="2.2" style="fill:var(--accent)"/>
+          <text x="${x(n - 1) + 5}" y="${y(last) + 3.5}" ${lbl}>${Math.round(last)}%</text>
+          <circle class="dot" r="2.5" cx="0" cy="0" visibility="hidden" style="fill:var(--ink)"/>
+          <rect x="0" y="0" width="${W}" height="${H}" fill="transparent" class="hit"/>
+        </svg></div>`;
+    }).join("");
+    document.querySelectorAll(".mult svg").forEach(svg => {
+      const f = svg.dataset.font, s = T.font_share[f], dot = svg.querySelector(".dot");
+      svg.querySelector(".hit").addEventListener("mousemove", e => {
+        const b = svg.getBoundingClientRect(), i = Math.max(0, Math.min(n - 1, Math.round(((e.clientX - b.left) / b.width * W - L) / (W - L - R) * (n - 1))));
+        dot.setAttribute("cx", x(i)); dot.setAttribute("cy", y(s[i])); dot.setAttribute("visibility", "visible");
+        showTip(e, `<b>${esc(f)}</b><br>${T.labels[i]}: ${s[i]}% of ${T.n[T.years[i]]} sites`);
+      });
+      svg.querySelector(".hit").addEventListener("mouseleave", () => { hideTip(); dot.setAttribute("visibility", "hidden"); });
+    });
+  })();
+
+  const batches = [...new Set(rows.map(r => r.batch).filter(Boolean))];
+  $("#fBatch").innerHTML += batches.slice().reverse().map(b => `<option>${esc(b)}</option>`).join("");
+  const fc = {}; rows.forEach(r => r.primary_font && (fc[r.primary_font] = (fc[r.primary_font] || 0) + 1));
+  $("#fFont").innerHTML += Object.entries(fc).sort((a, b) => b[1] - a[1]).map(([f, c]) => `<option value="${esc(f)}">${esc(f)} (${c})</option>`).join("");
+  let list = [], shown = 0;
+  const ordered = rows.slice().reverse();
+  function filter() {
+    const q = $("#q").value.trim().toLowerCase(), b = $("#fBatch").value, f = $("#fFont").value, st = $("#fStatus").value;
+    list = ordered.filter(r => (!b || r.batch === b) && (!f || r.primary_font === f) &&
+      (!st || (st === "found" ? !!r.primary_font : !r.primary_font)) &&
+      (!q || (r.name || "").toLowerCase().includes(q) || (r.primary_font || "").toLowerCase().includes(q) || (r.heading_font || "").toLowerCase().includes(q)));
+    shown = 0; $("#idx tbody").innerHTML = ""; more();
+  }
+  const reason = { no_snapshot: "never archived", snapshot_empty: "archived page was empty", no_fonts_found: "styles weren't archived", no_batch_or_site: "no website listed", cdx_fail: "archive lookup failed", ok_unverified_domain: "domain may be unrelated" };
+  function more() {
+    const page = list.slice(shown, shown + (shown ? 50 : 15)); shown += page.length;
+    loadFonts(page.map(r => r.primary_font));
+    $("#idx tbody").insertAdjacentHTML("beforeend", page.map(r => `<tr>
+      <td><a class="quiet" href="https://www.ycombinator.com/companies/${esc(r.slug)}" target="_blank" rel="noopener">${esc(r.name)}</a></td>
+      <td class="num">${esc((r.batch || "").replace("Winter ", "W").replace("Summer ", "S").replace("Spring ", "X").replace("Fall ", "F"))}</td>
+      <td>${r.primary_font ? face(r.primary_font, "face") : `<span class="dim">${esc(reason[r.status] || r.status || "—")}</span>`}</td>
+      <td class="num">${r.snapshot_url ? `<a class="quiet" href="${esc(r.snapshot_url)}" target="_blank" rel="noopener">${esc(r.snapshot_date.slice(0, 4))}</a>` : "—"}</td></tr>`).join(""));
+    $("#count").textContent = `${list.length.toLocaleString()} companies`;
+    $("#more").hidden = shown >= list.length;
+  }
+  ["#q", "#fBatch", "#fFont", "#fStatus"].forEach(s => $(s).addEventListener("input", filter));
+  $("#more").addEventListener("click", more);
+  // set the whole page in one company's font
+  const withFont = rows.filter(r => r.primary_font);
+  const byName = new Map(withFont.map(r => [r.name.toLowerCase(), r]));
+  $("#coList").innerHTML = withFont.map(r => `<option value="${esc(r.name)}">${esc(r.primary_font)}</option>`).join("");
+  $("#coPick").addEventListener("change", e => {
+    const r = byName.get(e.target.value.trim().toLowerCase()); if (!r) return;
+    const f = r.primary_font, note = `${r.name}'s font, ${r.batch}`;
+    if (f === "System UI") YCTI_applyFont({ family: f, note, stack: `-apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif` });
+    else if (GF.has(f)) YCTI_applyFont({ family: f, note, load: true });
+    else if (LOCAL.has(f)) YCTI_applyFont({ family: f, note });
+    else YCTI_applyFont({ family: f, note: `${note}; commercial font, shown only if installed` });
+  });
+
+  const TRY = ["Dropbox", "Stripe", "Heroku", "Coinbase", "DoorDash", "Brex", "Weebly", "Disqus"];
+  $("#tryList").innerHTML = TRY.map(t => `<button class="link" type="button">${t}</button>`).join("");
+  $("#tryList").addEventListener("click", e => { if (e.target.tagName === "BUTTON") { $("#q").value = e.target.textContent; $("#fStatus").value = ""; filter(); } });
+  filter();
+})();
+</script>
+</body>
+</html>

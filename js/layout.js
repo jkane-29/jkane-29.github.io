@@ -16,9 +16,9 @@ let ITEMS = [
   {"id":"item_rides_map","embed":"/rides/fridge.html?v=86b965a3","fluid":true,"aspect":"4 / 5","top":35.67,"left":53.68,"width":17.2,"rotate":0,"href":"https://www.jackkane.me/rides/","hoverLabel":"Best Rides Chi","square":true},
   {"id":"item_amtrak","embed":"/amtrak/map.html?embed=1&v=3489060a","fluid":true,"aspect":"50 / 33","top":9.759,"left":26.152,"width":23,"rotate":0,"windowEmbed":"/amtrak/map.html?v=3489060a","windowTitle":"Live Amtrak","hoverLabel":"Live Amtrak"},
   {"id":"item_1781393177283","src":"items/shopping.png","top":38.729,"left":38.306,"width":2,"rotate":0,"href":null,"hoverLabel":null},
-  {"id":"item_1786000000001","src":"items/writing.png","top":17.798,"left":23.77,"width":12.5,"rotate":0,"href":"writing/writing.html","hoverLabel":null,"windowTitle":"Writing"},
+  {"id":"item_1786000000001","src":"items/writing.png","top":17.993,"left":24.271,"width":11.5,"rotate":0,"href":"writing/writing.html","hoverLabel":null,"windowTitle":"Writing"},
   {"id":"item_clockclock24","embed":"/ClockClock24/index.html?v=2448fcd5","aspect":"8 / 3","top":23.345,"left":46.158,"width":29.2,"rotate":0,"href":"https://github.com/ArnaudSpanneut/ClockClock24","hoverLabel":null},
-  {"id":"item_email_me","src":"items/send-a-note.webp","top":20.7,"left":48.4,"width":15.66,"rotate":0,"href":"postcard/postcard.html","hoverLabel":null,"windowTitle":"Send a Note"},
+  {"id":"item_email_me","src":"items/send-a-note.webp","top":20.977,"left":62.285,"width":11.66,"rotate":0,"href":"postcard/postcard.html","hoverLabel":null,"windowTitle":"Send a Note"},
   {"id":"item_1788007465835","src":"items/shopping.png","top":36.957,"left":61.821,"width":2,"rotate":0,"href":null,"hoverLabel":null}
 ];
 

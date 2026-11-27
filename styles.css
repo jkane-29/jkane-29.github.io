@@ -81,19 +81,33 @@ img {
 }
 body:not(.edit-mode) .item:hover .item-hover-label { display: block; }
 
-/* Hovering anywhere on the About Me postcard makes its "about me" label magnet
-   pop, so it's clear the card is clickable — without touching the card itself.
-   The "writing" label magnet pops the same way when it's hovered directly. */
+/* Word magnets ("about me", "writing", "send a note") lift a little off the
+   door on hover, as a real magnet would when you get a fingernail under it:
+   a small rise, a shadow that grows softer and falls further, then settling
+   back when pressed. Hovering anywhere on the About Me postcard lifts its
+   "about me" label, so it's clear the card is clickable. */
 body:not(.edit-mode) .item[data-id="item_1781388702732"] img,
 body:not(.edit-mode) .item[data-id="item_1786000000001"] img,
 body:not(.edit-mode) .item[data-id="item_email_me"] img {
-  transition: transform 0.12s ease, filter 0.12s ease; transform-origin: center;
+  transform-origin: center;
+  filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0));
+  transition: transform 0.28s cubic-bezier(.2, .8, .25, 1), filter 0.28s cubic-bezier(.2, .8, .25, 1);
 }
 body:not(.edit-mode) .item[data-id="item_1779583643716"]:hover ~ .item[data-id="item_1781388702732"] img,
 body:not(.edit-mode) .item[data-id="item_1786000000001"]:hover img,
 body:not(.edit-mode) .item[data-id="item_email_me"]:hover img {
-  transform: scale(1.1);
-  filter: brightness(1.06) drop-shadow(0 3px 7px rgba(0, 0, 0, 0.55));
+  transform: translateY(-1.5px) scale(1.03);
+  filter: drop-shadow(0 4px 5px rgba(0, 0, 0, 0.4));
+}
+body:not(.edit-mode) .item[data-id="item_1779583643716"]:active ~ .item[data-id="item_1781388702732"] img,
+body:not(.edit-mode) .item[data-id="item_1786000000001"]:active img,
+body:not(.edit-mode) .item[data-id="item_email_me"]:active img {
+  transform: translateY(0) scale(1.005);
+  filter: drop-shadow(0 1px 1.5px rgba(0, 0, 0, 0.35));
+  transition-duration: 0.08s;
+}
+@media (prefers-reduced-motion: reduce) {
+  body:not(.edit-mode) .item img { transition: none; }
 }
 
 /* ── Fridge OS Window ── */

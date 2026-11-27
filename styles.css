@@ -17,12 +17,17 @@ body {
    (The fridge door, and the orb and the Moon behind it, are desktop only: see js/door.js.) */
 @media (max-width: 900px), (pointer: coarse) {
   html, body { overflow-x: hidden; }
-  body { padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); }
+  body { padding: 0; min-height: 100svh; justify-content: center; }
   /* The fridge photo has wide white margins (its body spans 23–77% across,
-     6–93% down). Size it so the body is 94% of the screen, keep it centred,
-     and trim the white above and below. */
+     6–93% down). Show the whole fridge on load: as wide as fits 94% of the
+     screen's width or ~94% of its height (with Safari's bars showing),
+     centred, with the white above and below trimmed. */
   .fridge-viewport { overflow: hidden; }
-  .fridge { width: 177vw; flex-shrink: 0; margin: -13vw 0 -16vw; }
+  .fridge {
+    --fw: min(177vw, 72svh);
+    width: var(--fw); flex-shrink: 0;
+    margin: calc(var(--fw) * -0.08) 0 calc(var(--fw) * -0.095);
+  }
 }
 @media (pointer: coarse) {
   html { touch-action: pan-x pan-y; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
@@ -216,6 +221,11 @@ body:not(.edit-mode) .item[data-id="item_email_me"]:active img {
     padding: 0;
     align-items: flex-start;
   }
+  /* While a window is open the fridge is hidden outright (once the window has
+     faded in), so nothing of it shows through Safari's see-through bars; what
+     shows there is the page beneath, which js/window.js paints the window's colour. */
+  .fridge-viewport { transition: visibility 0s; }
+  body:has(#os-overlay.open) .fridge-viewport { visibility: hidden; transition-delay: 0.2s; }
 }
 .tl-close { background: #ff5f57; }
 .tl-min   { background: #febc2e; }

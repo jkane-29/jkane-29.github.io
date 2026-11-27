@@ -18,7 +18,7 @@ let ITEMS = [
   {"id":"item_1781393177283","src":"items/shopping.png","top":38.729,"left":38.306,"width":2,"rotate":0,"href":null,"hoverLabel":null},
   {"id":"item_1786000000001","src":"items/writing.png","top":17.798,"left":23.77,"width":12.5,"rotate":0,"href":"writing/writing.html","hoverLabel":null,"windowTitle":"Writing"},
   {"id":"item_clockclock24","embed":"/ClockClock24/index.html?v=2448fcd5","aspect":"8 / 3","top":23.345,"left":46.158,"width":29.2,"rotate":0,"href":"https://github.com/ArnaudSpanneut/ClockClock24","hoverLabel":null},
-  {"id":"item_email_me","src":"items/send-a-note.png","top":20.75,"left":63.24,"width":9.14,"rotate":0,"href":"postcard/postcard.html","hoverLabel":null,"windowTitle":"Send a Note"},
+  {"id":"item_email_me","src":"items/send-a-note.webp","top":20.7,"left":48.4,"width":15.66,"rotate":0,"href":"postcard/postcard.html","hoverLabel":null,"windowTitle":"Send a Note"},
   {"id":"item_1788007465835","src":"items/shopping.png","top":36.957,"left":61.821,"width":2,"rotate":0,"href":null,"hoverLabel":null}
 ];
 

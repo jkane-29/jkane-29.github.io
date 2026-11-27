@@ -12,12 +12,20 @@ body {
 .fridge-viewport { width: 100%; display: flex; justify-content: center; }
 .fridge { position: relative; width: min(700px, 92vw); user-select: none; container-type: inline-size; }
 
-/* Mobile / touch: enter zoomed-in so just the center of the fridge fills the screen.
+/* Mobile / touch: the fridge fills the screen's width and the page only scrolls
+   up and down: no zoom, no sideways panning, no text auto-sizing.
    (The fridge door, and the orb and the Moon behind it, are desktop only: see js/door.js.) */
 @media (max-width: 900px), (pointer: coarse) {
-  body { align-items: flex-start; }
-  .fridge-viewport { width: max-content; justify-content: flex-start; }
-  .fridge { width: 130vw; }
+  html, body { overflow-x: hidden; }
+  body { padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); }
+  /* The fridge photo has wide white margins (its body spans 23–77% across,
+     6–93% down). Size it so the body is 94% of the screen, keep it centred,
+     and trim the white above and below. */
+  .fridge-viewport { overflow: hidden; }
+  .fridge { width: 177vw; flex-shrink: 0; margin: -13vw 0 -16vw; }
+}
+@media (pointer: coarse) {
+  html { touch-action: pan-x pan-y; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 }
 
 /* ── Desktop: zoom/pan canvas ── */

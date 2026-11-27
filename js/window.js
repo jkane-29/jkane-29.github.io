@@ -17,21 +17,11 @@
          : 'generic';
   };
 
-  // A full-screen OS window on touch should stay pinned to the screen. Pinch-zoom
-  // would shrink that "full screen" window and reveal the fridge behind it, so we
-  // lock zoom while a window is open (and release it after, leaving the fridge
-  // itself zoomable). user-scalable=no is ignored by iOS Safari, so we also block
-  // its pinch gesture events directly.
-  const viewportMeta = document.querySelector('meta[name="viewport"]');
-  const VIEWPORT_FREE   = 'width=device-width, initial-scale=1.0, viewport-fit=cover';
-  const VIEWPORT_LOCKED = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover';
-  const blockGesture = e => e.preventDefault();
-  function lockZoom(on) {
-    if (viewportMeta) viewportMeta.setAttribute('content', on ? VIEWPORT_LOCKED : VIEWPORT_FREE);
-    const method = on ? 'addEventListener' : 'removeEventListener';
-    document[method]('gesturestart', blockGesture, { passive: false });
-    document[method]('gesturechange', blockGesture, { passive: false });
-  }
+  // Phones never zoom, on the fridge or in a window (the viewport meta asks for
+  // that, and CSS touch-action blocks pinch and double-tap). iOS Safari ignores
+  // user-scalable=no, so its pinch gesture events are blocked here too.
+  if (IS_TOUCH) for (const ev of ['gesturestart', 'gesturechange'])
+    document.addEventListener(ev, e => e.preventDefault(), { passive: false });
 
   // Phones: Safari's toolbars are see-through and take their tint from the
   // page beneath them. A window runs under them in its page colour, and the
@@ -60,7 +50,7 @@
   function showWindow(title) {
     if (cleanup) { cleanup(); cleanup = null; }
     // On touch: push history state so the back button closes the window
-    if (IS_TOUCH) { history.pushState({ fridgeWindow: true }, '', ''); lockZoom(true); }
+    if (IS_TOUCH) { history.pushState({ fridgeWindow: true }, '', ''); }
     $('os-window-title').textContent = title || 'Jack Kane';
     // Reset any inline sizing left by a previous window; each window type sizes itself
     $('os-window').style.width = '';
@@ -236,7 +226,6 @@
   function closeWindow() {
     if (document.fullscreenElement || document.webkitFullscreenElement) (document.exitFullscreen || document.webkitExitFullscreen).call(document);
     if (cleanup) { cleanup(); cleanup = null; }
-    lockZoom(false);
     $('os-overlay').classList.remove('open');
     syncChrome();
     document.body.style.overflow = '';   // restore background scroll

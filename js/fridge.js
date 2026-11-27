@@ -120,18 +120,6 @@ if (!IS_TOUCH) {
   } catch (e) {}
 }
 
-// ── Phones: center the scroll on the fridge once it has laid out ──
-if (IS_TOUCH && !FINE_POINTER) {
-  const centerScroll = () => {
-    const r = $('fridge').getBoundingClientRect();
-    scrollTo(r.left + scrollX + r.width / 2 - innerWidth / 2, r.top + scrollY + r.height / 2 - innerHeight / 2);
-  };
-  const bg = document.querySelector('.fridge-bg');
-  if (bg && bg.complete) requestAnimationFrame(centerScroll);
-  else if (bg) bg.addEventListener('load', centerScroll);
-  else addEventListener('load', centerScroll);
-}
-
 // ── Desktop: wheel to zoom, drag the fridge to pan ──
 if (FINE_POINTER) {
   const zFridge = $('fridge');

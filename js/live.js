@@ -72,7 +72,8 @@ function initPageViews() {
   const show = n => { out.textContent = (n || 0).toLocaleString(); wrap.hidden = false; };
   const hide = () => { wrap.hidden = true; };   // denied/offline: no magnet at all
 
-  if (isEditMode) {                              // show the total but don't count
+  // Edit mode and local previews show the total but don't count
+  if (isEditMode || /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)) {
     read('pageViews').then(r => show(r.val), hide);
     return;
   }

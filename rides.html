@@ -273,7 +273,7 @@
       const src = `https://ridewithgps.com/embeds?type=${type}&id=${rwgps.id}&sampleGraph=true`;
       // Eager-load so all maps warm up in the background as soon as the page opens,
       // and are already rendered by the time a row is expanded.
-      return `<iframe class="ride-embed" scrolling="no" src="${src}"></iframe>`;
+      return `<iframe class="ride-embed" scrolling="no" loading="lazy" src="${src}"></iframe>`;
     }
 
     // Each photo comes 1000px wide plus a 2000px "@2x" copy; the browser picks
@@ -282,7 +282,7 @@
     const srcset = p => `${p} 1000w, ${p.replace(/\.webp$/, '@2x.webp')} 2000w`;
     const fitPhotos = new ResizeObserver(entries => entries.forEach(e => {
       const img = e.target.querySelector('.ride-photo');
-      if (img) img.sizes = Math.ceil(e.contentRect.width) + 'px';
+      if (img && e.contentRect.width) img.sizes = Math.ceil(e.contentRect.width) + 'px';   // 0 while the ride is collapsed
     }));
 
     // Photo carousel under the bullet notes — shows one photo at a time.
@@ -291,7 +291,7 @@
       const single = photos.length < 2 ? ' single' : '';
       return `<div class="ride-carousel${single}">
         <div class="ride-photo-frame">
-          <img class="ride-photo" src="${photos[0]}" srcset="${srcset(photos[0])}" sizes="600px" alt="">
+          <img class="ride-photo" src="${photos[0]}" srcset="${srcset(photos[0])}" sizes="(max-width: 700px) 100vw, 480px" loading="lazy" alt="">
           <button class="ride-arrow prev" type="button" aria-label="Previous photo">‹</button>
           <button class="ride-arrow next" type="button" aria-label="Next photo">›</button>
           <div class="ride-photo-count">1 / ${photos.length}</div>

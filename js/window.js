@@ -33,6 +33,19 @@
     document[method]('gesturechange', blockGesture, { passive: false });
   }
 
+  // Phones: Safari colours its top and bottom bars from the page. While a
+  // window is open, hand it the window's colour (and put it behind the page
+  // too, for overscroll), so the bars match the page instead of showing grey.
+  const themeMeta = document.querySelector('meta[name="theme-color"]') ||
+    document.head.appendChild(Object.assign(document.createElement('meta'), { name: 'theme-color' }));
+  function syncChrome() {
+    const open = IS_TOUCH && $('os-overlay').classList.contains('open');
+    const colour = open ? getComputedStyle($('os-overlay')).backgroundColor : '#ffffff';
+    themeMeta.content = colour;
+    document.documentElement.style.backgroundColor = open ? colour : '';
+  }
+  if (IS_TOUCH) new MutationObserver(syncChrome).observe($('os-content-inner'), { childList: true });
+
   // Shared start for both kinds of window
   function showWindow(title) {
     if (cleanup) { cleanup(); cleanup = null; }
@@ -44,6 +57,7 @@
     $('os-window').style.height = '';
     $('os-injected-style').textContent = '';
     $('os-overlay').classList.add('open');
+    syncChrome();
     document.body.style.overflow = 'hidden';   // lock background scroll while open
   }
 
@@ -214,6 +228,7 @@
     if (cleanup) { cleanup(); cleanup = null; }
     lockZoom(false);
     $('os-overlay').classList.remove('open');
+    syncChrome();
     document.body.style.overflow = '';   // restore background scroll
     const win = $('os-window');
     setTimeout(() => {

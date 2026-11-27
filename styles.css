@@ -181,14 +181,18 @@ body:not(.edit-mode) .item[data-id="item_email_me"]:active img {
     max-width: 100vw !important;
     border-radius: 0;
     border: none;
-    /* The window fills the screen with no chrome, so its own background is what
-       shows in the status-bar strip at the very top. Default to white and match
-       it to each page below so the page colour reaches the top edge. */
-    background: #ffffff;
+    /* The window fills the screen with no chrome. Its colour (--os-page, set
+       per page below) also goes on the backdrop and, via js/window.js, on
+       Safari's top and bottom bars, so the page colour runs edge to edge
+       instead of the dimmed backdrop showing grey around the toolbars. */
+    background: var(--os-page);
   }
-  #os-window:has(.nx-app) { background: #faf9f7; }          /* Writing notes — warm off-white */
-  #os-window:has(.terminal-container) { background: #0c0c0c; } /* Decisions terminal — dark */
-  #os-window:has(.postcard), #os-content:has(.postcard) { background: #d9d2c3; } /* Postcard — the desk */
+  #os-overlay { --os-page: #ffffff; background: var(--os-page); }
+  #os-overlay:has(.nx-app) { --os-page: #faf9f7; }              /* Writing notes — warm off-white */
+  #os-overlay:has(.terminal-container) { --os-page: #0c0c0c; }  /* Decisions terminal — dark */
+  #os-overlay:has(.postcard) { --os-page: #d9d2c3; }            /* Postcard — the desk */
+  #os-overlay:has(#ws-slide) { --os-page: #000000; }            /* Woodshop slideshow */
+  #os-content:has(.postcard) { background: #d9d2c3; }
   /* Match the scroll container too, so an overscroll bounce doesn't flash white */
   #os-content:has(.nx-app) { background: #faf9f7; }
   #os-overlay {
@@ -274,11 +278,10 @@ body:not(.edit-mode) .item[data-id="item_email_me"]:active img {
   display: flex;
   flex-direction: column;
 }
-/* On touch the postcard becomes a scrolling Apple-note form, so let it scroll
-   (the desktop card is a fixed, non-scrolling image). */
+/* On touch too the postcard stays put: it's sized to the screen and only the
+   note itself scrolls (see the phone rules in postcard/postcard.html). */
 @media (pointer: coarse) {
-  #os-content:has(.postcard) { overflow: auto; -webkit-overflow-scrolling: touch; }
-  #os-content-inner:has(.postcard) { height: auto; min-height: 100%; overflow: visible; }
+  #os-content:has(.postcard) { overscroll-behavior: none; }
 }
 
 /* Woodshop slideshow */

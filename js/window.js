@@ -45,9 +45,14 @@
     if (colour === chromeColour) return;
     chromeColour = colour;
     document.documentElement.style.backgroundColor = colour;
-    const x = scrollX, y = scrollY;
-    scrollTo(x, y > 0 ? y - 1 : y + 1);
-    requestAnimationFrame(() => scrollTo(x, y));
+    document.body.style.backgroundColor = colour;
+    // Re-read once the window has finished fading in (0.2s), so Safari sees
+    // the page, not the fridge behind a still-transparent window.
+    setTimeout(() => {
+      const x = scrollX, y = scrollY;
+      scrollTo(x, y > 0 ? y - 1 : y + 1);
+      requestAnimationFrame(() => scrollTo(x, y));
+    }, 260);
   }
   if (IS_TOUCH) new MutationObserver(syncChrome).observe($('os-content-inner'), { childList: true });
 

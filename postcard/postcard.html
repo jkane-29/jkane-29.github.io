@@ -251,28 +251,31 @@
         text-align: left;
         text-indent: 0;
         margin: 4px 0 18px;
-        font: 600 22px 'Cinzel', Georgia, serif;
-        letter-spacing: 0.14em;
+        min-height: 90px;           /* the note starts below the stamp */
+        font: 600 20px 'Cinzel', Georgia, serif;
+        letter-spacing: 0.12em;
         color: var(--gold);
       }
-      .pc-stamp { top: 12px; right: 12px; width: 84px; height: 96px; padding: 2px; }
-      .pc-postmark { top: 16px; right: 0; width: 172px; }
-      /* Faint ruled lines, so it reads as somewhere to write */
+      .pc-stamp { top: 12px; right: 12px; width: 124px; height: 130px; padding: 2px; }
+      .pc-postmark { top: 22px; right: 0; width: 200px; }
+      /* A short note box (three lines) that grows into the blank paper as you
+         write; when it meets the address it scrolls inside instead. */
       .pc-message {
         position: static;
-        flex: 1;
+        flex: 0 1 auto;
         width: 100%;
-        min-height: 102px;          /* at least three lines on the smallest phones */
+        height: 102px;
+        min-height: 102px;
         padding: 0 2px;
         font-size: 20px;
         line-height: 34px;
+        margin-bottom: 18px;
         overflow-y: auto;
         overscroll-behavior: contain;
-        background: repeating-linear-gradient(to bottom, transparent 0 33px, rgba(120, 100, 70, 0.22) 33px 34px) 0 0 / 100% 34px local;
       }
       .pc-address {
         position: static;
-        margin-top: 18px;
+        margin-top: auto;           /* address and Send stay at the bottom of the card */
         padding-top: 16px;
         border-top: 1.5px solid #2a2622;   /* the card's centre rule, turned flat */
         gap: 16px;
@@ -392,6 +395,28 @@
     newStamp();
     $('pc-stamp').addEventListener('click', newStamp);
 
+    // Phones: every stamp gets about the same area, so tall ones don't loom
+    // over wide ones, and none is allowed to run into the POST CARD heading.
+    const stampBtn = $('pc-stamp'), heading = card.querySelector('.pc-print');
+    const phoneCard = matchMedia('(max-width: 600px), (pointer: coarse)');
+    function sizeStamp() {
+      stampBtn.style.width = stampBtn.style.height = '';
+      const w = stampImg.naturalWidth, h = stampImg.naturalHeight;
+      if (!phoneCard.matches || !w || !h) return;
+      const range = document.createRange();
+      range.selectNodeContents(heading);
+      const room = stampBtn.getBoundingClientRect().right - range.getBoundingClientRect().right - 14;
+      const AREA = 96 * 88, ar = w / h;
+      let sw = Math.sqrt(AREA * ar), sh = Math.sqrt(AREA / ar);
+      const fit = Math.min(1, 112 / sw, 108 / sh, room / sw);
+      sw *= fit; sh *= fit;
+      stampBtn.style.width = Math.round(sw + 4) + 'px';    // + the button's 2px padding each side
+      stampBtn.style.height = Math.round(sh + 4) + 'px';
+    }
+    stampImg.addEventListener('load', sizeStamp);
+    addEventListener('resize', sizeStamp);
+    if (document.fonts) document.fonts.ready.then(sizeStamp);   // the heading's width depends on Cinzel
+
     // "To" address, assembled here rather than written in the page, so
     // scrapers reading the HTML don't pick it up
     const to = $('pc-to');
@@ -438,7 +463,19 @@
       newStamp();
       rollPostmark();
     }
-    msg.addEventListener('input', () => { fresh(); if (status.classList.contains('error')) say(''); });
+    // Phones: the note box grows with its text (CSS stops it at the screen)
+    const phone = matchMedia('(max-width: 600px), (pointer: coarse)');
+    // A postcard is a short note: on phones keep it to a postcard's length,
+    // so the box never has to scroll
+    const MAX_PHONE = 200;
+    const capLength = () => phone.matches ? msg.setAttribute('maxlength', MAX_PHONE) : msg.removeAttribute('maxlength');
+    capLength();
+    phone.addEventListener('change', capLength);
+    function grow() {
+      msg.style.height = '';
+      if (phone.matches && msg.value) msg.style.height = Math.max(102, msg.scrollHeight) + 'px';
+    }
+    msg.addEventListener('input', () => { fresh(); grow(); if (status.classList.contains('error')) say(''); });
     [from, email].forEach(f => f.addEventListener('input', fresh));
 
     card.addEventListener('submit', async e => {
@@ -479,6 +516,7 @@
         card.classList.add('sent');
         send.textContent = 'Sent';
         msg.value = ''; from.value = ''; email.value = '';
+        grow();
       } else {
         send.disabled = false;
         send.textContent = 'Send';
@@ -489,7 +527,6 @@
     // Phones: keep Send reachable above the on-screen keyboard. The padding sits
     // on the postcard's own wrapper, so it goes away when the window closes.
     const wrap = card.parentElement, vv = window.visualViewport;
-    const phone = matchMedia('(max-width: 600px), (pointer: coarse)');
     if (vv) {
       const inset = () => {
         if (!wrap.isConnected) { vv.removeEventListener('resize', inset); vv.removeEventListener('scroll', inset); return; }

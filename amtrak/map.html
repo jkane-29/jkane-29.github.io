@@ -350,7 +350,10 @@ function drawIcons() {                       // put the artwork's icons back on 
 }
 
 base.onload = () => { baseReady = true; buildTheme(); draw(); };
-base.src = "map-base.png";
+// The fridge magnet is ~220px wide: a half-size copy of the artwork is plenty
+// there (a third of the bytes, a quarter of the recolouring work). Nearest-
+// neighbour halving keeps the exact palette colours the themes key off.
+base.src = new URLSearchParams(location.search).has('embed') ? "map-base-sm.png" : "map-base.png";
 if (document.fonts && document.fonts.load)
   document.fonts.load('32px ChiKareGo2').then(() => draw()).catch(() => {});
 
@@ -364,7 +367,7 @@ function draw() {
   if (!baseReady) return;
   ctx.clearRect(0, 0, cv.width, cv.height);
   document.querySelector('.stage').classList.toggle('solid', !theme.bare);
-  ctx.drawImage(themedBase || base, 0, 0);
+  ctx.drawImage(themedBase || base, 0, 0, cv.width, cv.height);   // the small copy is drawn up to full size
   drawAdded(document.getElementById('showAdded').checked);
   drawIcons();
   const nums = document.getElementById('showNums').checked;

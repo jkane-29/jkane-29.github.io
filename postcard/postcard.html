@@ -3,487 +3,490 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Postcard - Jack Kane</title>
-  <link href="https://fonts.googleapis.com/css2?family=Tangerine:wght@400;700&family=Special+Elite&family=Cinzel:wght@500;700&display=swap" rel="stylesheet">
+  <title>Send a Note - Jack Kane</title>
+  <link rel="icon" href="/favicon.ico?v=33a546f3" sizes="any">
+  <!-- Nothing You Could Do: the handwriting. Cinzel: the
+       gold "printed" labels, matching the card's POST CARD lettering. -->
+  <link href="https://fonts.googleapis.com/css2?family=Nothing+You+Could+Do&family=Cinzel:wght@500;600&display=swap" rel="stylesheet">
+  <script>
+    // Opened on its own (not inside the fridge window): centre the card on a page.
+    if (!document.getElementById('os-window')) document.documentElement.classList.add('pc-standalone');
+  </script>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    /* Every rule is scoped to .pc-… or .postcard: inside the fridge these styles
+       are injected into the main page, so nothing here may be global. */
+    .pc-standalone body { margin: 0; background: #e4ded1; }
+    .pc-standalone .pc-wrap { height: 100vh; height: 100dvh; padding: 5vmin; }
 
-    body {
-      background: #ffffff;
-      height: 100%;
-      width: 100%;
-      overflow: hidden;
-      font-family: 'Special Elite', 'Courier New', monospace;
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* Wrapper holds both the card and the action bar;
-       on desktop it's the positioned ancestor for .action-bar */
-    .card-wrapper {
+    .pc-wrap {
+      --ink: #26221c;
+      --pen: #1e2a4f;   /* blue-black fountain-pen ink */
+      --gold: #a87b2c;
+      --rule: rgba(38, 34, 28, 0.55);
       flex: 1;
       min-height: 0;
-      position: relative;
-      width: 100%;
+      box-sizing: border-box;
+      container-type: size;
+      display: grid;
+      place-items: center;
     }
 
+    /* The card: always the photo's shape, as large as fits. Everything inside
+       is sized in cqw (1cqw = 1% of the card's width) so it scales as one. */
     .postcard {
       position: relative;
-      width: 100%;
-      height: 100%;
+      width: min(100cqw, 100cqh * 1568 / 1003);
+      aspect-ratio: 1568 / 1003;
+      container-type: inline-size;
+      color: var(--ink);
     }
-
+    /* In the fridge window (sized to the card) fill it edge to edge */
+    html:not(.pc-standalone) #os-window:not(.is-full) .postcard { width: 100cqw; height: 100cqh; aspect-ratio: auto; background: #e4dcc8; }
+    #os-window.is-full .pc-wrap { background: #d9d2c3; padding: 4vmin; }   /* full screen: the card on a desk */
+    #os-window.is-full .postcard { filter: drop-shadow(0 1.2vmin 2.5vmin rgba(60, 45, 20, 0.25)); }
+    .pc-standalone .postcard { filter: drop-shadow(0 1.2vmin 2.5vmin rgba(60, 45, 20, 0.25)); }
     .postcard-img {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
       display: block;
       pointer-events: none;
+      user-select: none;
     }
-
-    /* ── ADJUST THESE 4 VALUES TO MATCH THE PRINTED PLACE STAMP HERE BOX ── */
-    .stamp-placeholder,
-    .stamp-overlay {
+    /* Printed heading, set in type (the scan's own lettering was misprinted) */
+    .pc-print {
       position: absolute;
-      top: 6%;
-      right: 4%;
-      width: 20%;
-      height: 24.5%;
+      top: 11%; left: 22.5%; width: 43.6%;
+      text-align: center;
+      white-space: nowrap;
+      font: 500 5cqw/1 'Cinzel', Georgia, serif;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      text-indent: 0.2em;   /* balance the trailing letter-spacing */
+      color: #b08431;
+      mix-blend-mode: multiply;
+      user-select: none;
     }
-    /* ────────────────────────────────────────────────────────────────── */
 
-    .stamp-placeholder {
-      background: transparent;
-      border: 1.5px dashed #a8804a;
-      border-radius: 3px;
+    /* Stamp: random from /postcard/stamps/, click to swap */
+    .pc-stamp {
+      position: absolute;
+      top: 4.8%; right: 3.6%;            
+      width: 15cqw; height: 17.5cqw;
+      padding: 0.35cqw; border: 0; background: none;
+      box-sizing: border-box;
       cursor: pointer;
-      transition: border-color 0.15s, box-shadow 0.15s;
+      z-index: 2;
+    }
+    .pc-stamp img {
+      width: 100%; height: 100%;
+      object-fit: contain; object-position: top right;
+      filter: drop-shadow(0 0.08cqw 0.12cqw rgba(60, 45, 20, 0.35));   /* cut-out stamps: a little lift off the card */
+      transition: transform 0.15s ease;
+    }
+    .pc-stamp:hover img { transform: scale(1.03); }
+    .pc-stamp:focus-visible { outline: 2px dashed var(--gold); outline-offset: 4px; }
+
+    /* Postmark: a rubber-stamp cancellation struck across the stamp on send.
+       Ink texture comes from the SVG filter; angle, offset and texture are
+       re-rolled each time so no two strikes look the same. */
+    .pc-postmark {
+      position: absolute;
+      top: 7%; right: 0%;
+      width: 33cqw;
+      color: #262536;
+      opacity: 0;
+      transform: translate(var(--pm-x, 0), var(--pm-y, 0)) rotate(var(--pm-r, -8deg)) scale(1.06);
+      mix-blend-mode: multiply;
+      pointer-events: none;
       z-index: 3;
     }
-    .stamp-placeholder:hover {
-      border-color: #6e5630;
-      box-shadow: 0 0 0 2px rgba(168, 128, 74, 0.25);
+    .postcard.sent .pc-postmark {
+      opacity: 0.86;
+      transform: translate(var(--pm-x, 0), var(--pm-y, 0)) rotate(var(--pm-r, -8deg)) scale(1);
+      transition: opacity 0.07s ease-out, transform 0.09s ease-out;
     }
-    .stamp-placeholder.hidden { display: none; }
-
-    .stamp-overlay {
-      object-fit: contain;
-      display: none;
-      /* Stamps are scanned on white; multiply drops that white into the
-         cream postcard while keeping the ink. */
-      mix-blend-mode: multiply;
-      z-index: 4;
-      cursor: pointer;
+    .pc-postmark text {
+      font-family: 'Arial Narrow', 'Helvetica Neue', Arial, sans-serif;
+      font-weight: 700;
+      fill: currentColor;
     }
-    .stamp-overlay.visible { display: block; }
+    @keyframes pc-thump { 40% { transform: translateY(1px) scale(0.998); } }
+    .postcard.sent { animation: pc-thump 0.14s ease-out; }
 
-    .message-input {
+    /* Handwriting looks like pen ink: blue-black, a touch of bleed into the
+       paper, and a slight wobble from the #pc-pen filter */
+    .pc-message, .pc-line input, .pc-to a {
+      color: var(--pen);
+      text-shadow: 0 0 0.05em rgba(30, 42, 79, 0.35);
+      filter: url(#pc-pen);
+      caret-color: var(--pen);
+    }
+    .pc-defs { position: absolute; width: 0; height: 0; }
+
+    /* Printed matter (heading, labels, Send box) gets a letterpress
+       texture: soft edges and a little ink starvation */
+    .pc-print, .pc-line span, .pc-send { filter: url(#pc-press); }
+
+
+    /* Message side */
+    .pc-message {
       position: absolute;
-      top: 26%;
-      left: 6%;
-      width: 50%;
-      height: 60%;
-      background: transparent;
-      border: none;
-      resize: none;
-      outline: none;
-      font-family: 'Trattatello', 'Trattarello', 'Tangerine', cursive;
-      font-weight: 400;
-      font-size: clamp(18px, 3vw, 34px);
-      line-height: 0.9;
-      color: #4a3a25;
-      padding: 4px;
-    }
-    .message-input::placeholder {
-      color: rgba(74, 58, 37, 0.4);
-      font-style: italic;
-    }
-
-    /* On desktop, action-bar sits absolutely over the right side of the card
-       FROM + email render as horizontal address lines, Send sits below */
-    .action-bar {
-      position: absolute;
-      top: 70%;
-      transform: translateY(-50%);
-      left: 56%;
-      right: 6%;
-      display: flex;
-      flex-direction: column;
-      align-items: stretch;
-      gap: 14px;
-      z-index: 5;
-    }
-    .action-row {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-    .return-address-input,
-    .email-input-optional,
-    .address-line-extra {
-      width: 100%;
+      top: 23%; left: 5.5%;
+      width: 46%; bottom: 6%;
       box-sizing: border-box;
+      margin: 0; padding: 0.4cqw;
+      border: 0; outline: 0; resize: none;
       background: transparent;
-      border: none;
-      border-bottom: 1.5px solid #1a1a1a;
-      border-radius: 0;
-      outline: none;
-      font-family: 'Trattatello', 'Trattarello', 'Tangerine', cursive;
-      font-weight: 400;
-      font-size: clamp(16px, 2.4vw, 28px);
-      line-height: 0.75;
-      letter-spacing: 0;
-      color: #1a1a1a;
-      padding: 4px 4px 0;
-      transition: border-color 0.15s;
+      font: 400 2.1cqw/1.55 'Nothing You Could Do', 'Bradley Hand', cursive;
     }
-    .return-address-input::placeholder,
-    .email-input-optional::placeholder,
-    .address-line-extra::placeholder {
-      color: rgba(26, 26, 26, 0.35);
-      font-style: italic;
+    .pc-message::placeholder { color: rgba(38, 34, 28, 0.38); }
+
+    /* Address side */
+    .pc-address {
+      position: absolute;
+      top: 36%; left: 59%; right: 5%;
+      display: flex;
+      flex-direction: column;
+      gap: 2.2cqw;
     }
-    .return-address-input:focus,
-    .email-input-optional:focus,
-    .address-line-extra:focus {
-      border-bottom-color: #000;
+    .pc-line {
+      display: flex;
+      align-items: baseline;
+      gap: 1cqw;
+      border-bottom: 1px solid rgba(150, 110, 40, 0.55);
     }
-    .send-btn {
-      align-self: stretch;
-      width: 100%;
-      margin-top: 30px;
+    .pc-line span {
+      flex: none;
+      font: 600 1.2cqw 'Cinzel', Georgia, serif;
+      letter-spacing: 0.14em;
+      color: var(--gold);
+    }
+    .pc-line input {
+      flex: 1; min-width: 0;
+      margin: 0; padding: 0.2cqw 0.2cqw 0.1cqw;
+      border: 0; outline: 0;
       background: transparent;
-      color: #1a1a1a;
-      border: 1.5px dashed #b8893a;
-      font-family: 'Trattatello', 'Trattarello', 'Tangerine', cursive;
-      font-weight: 400;
-      font-size: clamp(18px, 2.4vw, 28px);
-      letter-spacing: 0;
-      text-transform: none;
-      padding: 8px 14px;
+      font: 400 1.8cqw/1.5 'Nothing You Could Do', 'Bradley Hand', cursive;
+    }
+    .pc-line input::placeholder { color: rgba(38, 34, 28, 0.32); }
+    .pc-line:focus-within { border-bottom-color: var(--ink); }
+    /* "To": Jack's address, written in the same hand; opens the mail app */
+    .pc-to a {
+      flex: 1; min-width: 0;
+      padding: 0.2cqw 0.2cqw 0.1cqw;
+      font: 400 1.8cqw/1.5 'Nothing You Could Do', 'Bradley Hand', cursive;
+      text-decoration: none;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      transition: color 0.15s;
+    }
+    .pc-to a:hover, .pc-to a:focus-visible { color: #1f5fbf; outline: 0; }
+
+    .pc-send {
+      margin-top: 1.6cqw;
+      padding: 0.9cqw 0;
+      border: 3px double var(--gold);
+      background: transparent;
+      font: 600 1.4cqw 'Cinzel', Georgia, serif;
+      letter-spacing: 0.3em;
+      color: var(--gold);
       cursor: pointer;
       transition: background-color 0.15s, color 0.15s;
     }
-    .send-btn:hover {
-      background: #1a1a1a;
-      color: #ffffff;
+    .pc-send:hover:not(:disabled) { background: var(--gold); color: #f4ecd9; filter: none; }
+    .pc-send:disabled { cursor: default; opacity: 0.7; }
+    .pc-status {
+      min-height: 1.3em;
+      margin: -0.6cqw 0 0;
+      text-align: center;
+      font: 400 1.6cqw/1.4 'Nothing You Could Do', 'Bradley Hand', cursive;
+      color: var(--ink);
     }
-    .send-icon {
-      font-size: 1.6em;
-      vertical-align: middle;
-      line-height: 0;
-      position: relative;
-      top: -0.3em;
-    }
+    .pc-status.error { color: #9b2c1f; }
 
-    /* Mobile-only heading + date; hidden on desktop where the postcard shows */
-    .mobile-form-title { display: none; }
-    .note-date { display: none; }
+    /* Honeypot: invisible to people, tempting to bots */
+    .pc-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
 
-    /* ── Mobile: drop the postcard and render the compose form as an Apple Note —
-       white paper, system font, centered date, bold title, borderless body. ── */
+    @keyframes pc-nudge { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+    .postcard.nudge { animation: pc-nudge 0.25s 2; }
+
+    /* ── Phones: the same postcard, stood upright — paper, printed labels,
+       handwriting — rather than a separate design. ── */
     @media (max-width: 600px), (pointer: coarse) {
-      body {
-        overflow-y: auto;
-        height: auto;
-        min-height: 100vh;
-        min-height: 100dvh; /* dynamic vh: accounts for iOS toolbar */
-        justify-content: flex-start;
-        background: #ffffff;
-        color: #1c1c1e;
-        font-family: -apple-system, BlinkMacSystemFont, system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        -webkit-font-smoothing: antialiased;
-        padding: 16px 20px 40px;
-      }
-
-      .card-wrapper {
-        flex: none;
+      .pc-standalone .pc-wrap { height: auto; min-height: 100vh; min-height: 100dvh; padding: 16px; }
+      .pc-wrap { container-type: inline-size; display: block; padding: 14px; }
+      .postcard, html:not(.pc-standalone) #os-window:not(.is-full) .postcard {
         width: 100%;
-        display: flex;
-        flex-direction: column;
-        gap: 0;
-      }
-
-      .note-date {
-        display: block;
-        text-align: center;
-        font-size: 11px;
-        color: #b0a99c;
-        margin-bottom: 14px;
-      }
-      .mobile-form-title {
-        display: block;
-        font-family: inherit;
-        font-size: 22px;
-        font-weight: 700;
-        letter-spacing: 0;
-        color: #1c1c1e;
-        margin-bottom: 4px;
-      }
-
-      /* No postcard image on mobile — just stack the note */
-      .postcard-img { display: none; }
-      .postcard {
-        position: static;
         height: auto;
         aspect-ratio: auto;
-        flex: none;
+        box-sizing: border-box;
+        padding: 22px 18px 18px;
+        border-radius: 10px;
+        /* a blank stretch of the real card, for its paper texture */
+        background: #ebe3cf url(/postcard/card.webp) 80% 62% / 520% no-repeat;
+        box-shadow: 0 6px 18px rgba(60, 45, 20, 0.18);
         display: flex;
         flex-direction: column;
-        gap: 0;
       }
-
-      /* No stamp on mobile */
-      .stamp-placeholder,
-      .stamp-overlay,
-      .stamp-overlay.visible { display: none; }
-
-      /* Message = the note body: borderless text on white */
-      .message-input {
+      .pc-standalone .postcard { filter: none; }
+      .postcard-img { display: none; }
+      .pc-print {
+        position: static;
+        width: auto;
+        text-align: left;
+        text-indent: 0;
+        letter-spacing: 0.14em;
+        margin: 4px 0 18px;
+        font: 600 22px 'Cinzel', Georgia, serif;
+        letter-spacing: 0.14em;
+        color: var(--gold);
+      }
+      .pc-stamp { top: 12px; right: 12px; width: 84px; height: 96px; padding: 2px; }
+      .pc-postmark { top: 14px; right: 0; width: 200px; }
+      .pc-message {
         position: static;
         width: 100%;
-        box-sizing: border-box;
-        font-family: inherit;
-        font-weight: 400;
-        font-size: 16px;         /* 16px keeps iOS Safari from auto-zooming on focus */
-        line-height: 1.55;
-        letter-spacing: 0;
-        color: #1c1c1e;
-        background: transparent;
-        border: none;
-        border-radius: 0;
-        padding: 4px 0 0;
-        text-align: left;
-        height: auto;
-        min-height: 170px;
-        resize: none;
+        min-height: 190px;
+        padding: 2px 0;
+        font-size: 20px;
         overflow: hidden;
       }
-      .message-input::placeholder { color: #c2bcae; font-style: normal; }
-
-      /* Metadata rows below a hairline — clean, borderless with a light rule */
-      .action-bar {
+      .pc-address {
         position: static;
-        transform: none;
-        top: auto; right: auto; bottom: auto; left: auto;
-        display: flex;
-        flex-direction: column;
-        align-items: stretch;
-        gap: 0;
-        margin-top: 16px;
-        padding-top: 4px;
-        border-top: 0.5px solid #e5e0d5;
+        margin-top: 14px;
+        padding-top: 16px;
+        border-top: 1.5px solid #2a2622;   /* the card's centre rule, turned flat */
+        gap: 16px;
       }
-      .action-row { display: flex; flex-direction: column; gap: 0; }
-      .email-input-optional { display: block; }
-
-      .return-address-input,
-      .email-input-optional,
-      .address-line-extra {
-        position: static;
-        width: 100%;
-        box-sizing: border-box;
-        font-family: inherit;
-        font-weight: 400;
-        font-size: 16px;
-        line-height: 1.4;
-        letter-spacing: 0;
-        color: #1c1c1e;
-        background: transparent;
-        border: none;
-        border-bottom: 0.5px solid #ece7dc;
-        border-radius: 0;
-        padding: 13px 2px;
-        text-align: left;
-      }
-      .address-line-extra { border-bottom: none; }
-      .return-address-input::placeholder,
-      .email-input-optional::placeholder,
-      .address-line-extra::placeholder { color: #a79f8c; font-style: normal; }
-      .return-address-input:focus,
-      .email-input-optional:focus,
-      .address-line-extra:focus { border-bottom-color: #d1a000; }
-
-      /* iOS-style filled send button */
-      .send-btn {
-        width: 100%;
-        margin-top: 22px;
-        box-sizing: border-box;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        font-family: inherit;
-        font-weight: 600;
-        font-size: 16px;
-        letter-spacing: 0;
-        text-transform: none;
-        color: #ffffff;
-        background: #1c1c1e;
-        border: none;
-        border-radius: 10px;
-        padding: 14px;
-        min-height: 50px;
-        white-space: nowrap;
-      }
-      .send-btn:hover { background: #1c1c1e; color: #ffffff; }
-      .send-btn .send-icon { position: static; top: 0; font-size: 1.2em; line-height: 1; }
+      .pc-line span { font-size: 12px; }
+      .pc-line input, .pc-to a { font-size: 18px; padding: 2px 2px 0; }
+      .pc-send { margin-top: 6px; padding: 12px 0; font-size: 15px; }
+      .pc-status { margin: 0; font-size: 17px; }
     }
 
+    @media (prefers-reduced-motion: reduce) {
+      .postcard.sent .pc-postmark { transition: none; }
+      .postcard.nudge { animation: none; }
+    }
   </style>
 </head>
 <body>
 
-  <div class="card-wrapper">
-    <div class="note-date" id="note-date"></div>
-    <div class="mobile-form-title">Send a note</div>
-    <div class="postcard" id="postcard">
-      <img class="postcard-img" src="updated-postcard.webp" alt="Postcard back">
-      <div id="stamp-placeholder" class="stamp-placeholder"></div>
-      <img id="stamp-overlay" class="stamp-overlay" alt="Selected stamp">
-      <textarea
-        id="msg"
-        class="message-input"
-        placeholder="Write a note…"
-        autofocus
-        spellcheck="false"
-      ></textarea>
-    </div>
+  <div class="pc-wrap">
+    <form class="postcard" id="postcard" autocomplete="on" novalidate>
+      <svg class="pc-defs" aria-hidden="true" focusable="false">
+        <filter id="pc-pen" x="-2%" y="-10%" width="104%" height="120%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="5" result="n"/>
+          <feDisplacementMap in="SourceGraphic" in2="n" scale="1.3" xChannelSelector="R" yChannelSelector="G"/>
+        </filter>
+        <filter id="pc-press" x="-2%" y="-10%" width="104%" height="120%">
+          <feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="1" seed="11" result="g"/>
+          <feDisplacementMap in="SourceGraphic" in2="g" scale="0.9" result="r"/>
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="1" seed="3" result="s"/>
+          <feColorMatrix in="s" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -5 0 0 0 3.9" result="m"/>
+          <feComposite in="r" in2="m" operator="in"/>
+        </filter>
+      </svg>
+      <img class="postcard-img" src="/postcard/card.webp" alt="" draggable="false">
+      <div class="pc-print" aria-hidden="true">Post Card</div>
 
-    <div class="action-bar">
-      <div class="action-row">
-        <input id="return-email" class="return-address-input" type="text" placeholder="from" autocomplete="name" spellcheck="false">
-        <input id="reply-email" class="email-input-optional" type="email" placeholder="email (optional)" autocomplete="email" spellcheck="false">
-        <input id="address-extra" class="address-line-extra" type="text" placeholder="website (optional)" autocomplete="url" spellcheck="false">
+      <button type="button" class="pc-stamp" id="pc-stamp" title="Another stamp" aria-label="Choose another stamp">
+        <img id="pc-stamp-img" alt="">
+      </button>
+
+      <svg class="pc-postmark" viewBox="0 0 224 104" aria-hidden="true">
+        <defs>
+          <path id="pc-arc-top" d="M 16 52 A 34 34 0 0 1 84 52"/>
+          <path id="pc-arc-bot" d="M 12 52 A 38 38 0 0 0 88 52"/>
+          <!-- Rubber-stamp ink: wobbly edges, a heavier and a lighter side,
+               and small gaps where the ink didn't take -->
+          <filter id="pc-ink" x="-5%" y="-10%" width="110%" height="120%">
+            <feTurbulence class="pc-seed" type="fractalNoise" baseFrequency="0.7" numOctaves="2" seed="2" result="grain"/>
+            <feDisplacementMap in="SourceGraphic" in2="grain" scale="2.4" result="rough"/>
+            <feTurbulence class="pc-seed" type="fractalNoise" baseFrequency="0.035 0.05" numOctaves="2" seed="9" result="press"/>
+            <feColorMatrix in="press" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -3 0 0 0 2.5" result="pressMask"/>
+            <feTurbulence class="pc-seed" type="fractalNoise" baseFrequency="1.6" numOctaves="1" seed="4" result="speck"/>
+            <feColorMatrix in="speck" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -9 0 0 0 6.1" result="speckMask"/>
+            <feComposite in="rough" in2="pressMask" operator="in" result="pressed"/>
+            <feComposite in="pressed" in2="speckMask" operator="in"/>
+          </filter>
+        </defs>
+        <g filter="url(#pc-ink)">
+          <g fill="none" stroke="currentColor">
+            <circle cx="50" cy="52" r="45" stroke-width="2.6"/>
+            <path stroke-width="3" stroke-linecap="round" d="
+              M100 22 q10 -6 20 0 t20 0 t20 0 t20 0 t20 0 t20 0
+              M100 34 q10 -6 20 0 t20 0 t20 0 t20 0 t20 0 t20 0
+              M100 46 q10 -6 20 0 t20 0 t20 0 t20 0 t20 0 t20 0
+              M100 58 q10 -6 20 0 t20 0 t20 0 t20 0 t20 0 t20 0
+              M100 70 q10 -6 20 0 t20 0 t20 0 t20 0 t20 0 t20 0
+              M100 82 q10 -6 20 0 t20 0 t20 0 t20 0 t20 0 t20 0"/>
+          </g>
+          <text font-size="11.5" letter-spacing="1.2"><textPath href="#pc-arc-top" startOffset="50%" text-anchor="middle">CHICAGO IL</textPath></text>
+          <text font-size="10" letter-spacing="1.4"><textPath href="#pc-arc-bot" startOffset="50%" text-anchor="middle" dominant-baseline="hanging">606</textPath></text>
+          <text id="pc-pm-day" x="50" y="50" font-size="14.5" stroke="currentColor" stroke-width="0.4" text-anchor="middle"></text>
+          <text id="pc-pm-year" x="50" y="64" font-size="12.5" stroke="currentColor" stroke-width="0.3" text-anchor="middle"></text>
+          <text x="50" y="75" font-size="8" letter-spacing="0.6" text-anchor="middle" id="pc-pm-ampm"></text>
+        </g>
+      </svg>
+
+      <textarea id="pc-message" class="pc-message" placeholder="Write a note…" aria-label="Your note" spellcheck="true" autofocus></textarea>
+
+      <div class="pc-address">
+        <div class="pc-line pc-to"><span>To</span>
+          <a id="pc-to" href="#">Jack Kane</a>
+        </div>
+        <label class="pc-line"><span>From</span>
+          <input id="pc-from" type="text" placeholder="your name" autocomplete="name">
+        </label>
+        <label class="pc-line"><span>Reply to</span>
+          <input id="pc-email" type="email" placeholder="your email (optional)" autocomplete="email">
+        </label>
+        <input class="pc-hp" id="pc-hp" type="text" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <button type="submit" class="pc-send" id="pc-send">Send</button>
+        <p class="pc-status" id="pc-status" role="status"></p>
       </div>
-      <button id="send" class="send-btn">Send</button>
-    </div>
+    </form>
   </div>
 
   <script>
   (function () {
-    const ACCESS_KEY = '798f7e5e-4b89-4fa6-8b1c-1bb7631cec37';
-    // Root-relative path so it resolves correctly whether the postcard is
-    // loaded standalone OR injected into the OS window from index.html.
-    const STAMPS_DIR = '/postcard/stamps2/';
-    const STAMP_KEY  = 'postcardStamp2';
+    const ACCESS_KEY  = '798f7e5e-4b89-4fa6-8b1c-1bb7631cec37';   // Web3Forms: public by design
+    const STAMPS      = '/postcard/stamps/';                          // 01.webp … NN.webp
+    const STAMP_COUNT = 21;
+    const opened = Date.now();
 
-    const msg         = document.getElementById('msg');
-    const btn         = document.getElementById('send');
-    const overlay     = document.getElementById('stamp-overlay');
-    const placeholder = document.getElementById('stamp-placeholder');
-    const originalLabel = btn.textContent;
+    const $ = id => document.getElementById(id);
+    const card = $('postcard'), msg = $('pc-message'), from = $('pc-from'),
+          email = $('pc-email'), send = $('pc-send'), status = $('pc-status'),
+          stampImg = $('pc-stamp-img');
+    if (!card) return;
 
-    // Clear any stale edit-mode localStorage values from earlier testing
-    try { localStorage.removeItem('stampBoxPos'); } catch (e) {}
+    // Stamp: a random one, click for another
+    let stamp = 0;
+    function newStamp() {
+      let n;
+      do { n = 1 + Math.floor(Math.random() * STAMP_COUNT); } while (STAMP_COUNT > 1 && n === stamp);
+      stamp = n;
+      stampImg.src = STAMPS + String(n).padStart(2, '0') + '.webp';
+    }
+    newStamp();
+    $('pc-stamp').addEventListener('click', newStamp);
 
-    // Mobile Apple-note date stamp (hidden on desktop)
-    const noteDate = document.getElementById('note-date');
-    if (noteDate) {
-      const d = new Date();
-      noteDate.textContent =
-        d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) +
-        ' at ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    // "To" address, assembled here rather than written in the page, so
+    // scrapers reading the HTML don't pick it up
+    const to = $('pc-to');
+    if (to) {
+      const addr = ['jkane29', 'icloud.com'].join('@');
+      to.textContent = addr;
+      to.href = 'mailto:' + addr;
     }
 
-    // Mobile only: grow the note body with its content, like Apple Notes.
-    // (Desktop keeps its fixed absolutely-positioned textarea.)
-    const mobileMQ = window.matchMedia('(max-width: 600px), (pointer: coarse)');
-    function autoGrow() {
-      if (!mobileMQ.matches) return;
+    // Postmark carries today's date
+    const d = new Date();
+    $('pc-pm-day').textContent = d.toLocaleDateString('en-US', { month: 'short' }).toUpperCase() + ' ' + d.getDate();
+    $('pc-pm-year').textContent = d.getFullYear();
+    $('pc-pm-ampm').textContent = d.getHours() < 12 ? 'AM' : 'PM';
+
+    // Each strike lands a little differently: angle, position, ink
+    const postmark = card.querySelector('.pc-postmark');
+    function rollPostmark() {
+      const r = (lo, hi) => lo + Math.random() * (hi - lo);
+      postmark.style.setProperty('--pm-r', r(-15, -3).toFixed(1) + 'deg');
+      postmark.style.setProperty('--pm-x', r(-1.2, 1.2).toFixed(2) + 'cqw');
+      postmark.style.setProperty('--pm-y', r(-0.8, 1.6).toFixed(2) + 'cqw');
+      postmark.querySelectorAll('.pc-seed').forEach(t => t.setAttribute('seed', Math.floor(r(1, 999))));
+    }
+    rollPostmark();
+
+    function say(text, isError) {
+      status.textContent = text;
+      status.classList.toggle('error', !!isError);
+    }
+    function nudge(field, text) {
+      say(text, true);
+      card.classList.remove('nudge'); void card.offsetWidth; card.classList.add('nudge');
+      field.focus();
+    }
+
+    // Phones: let the note grow with its text
+    const phone = matchMedia('(max-width: 600px), (pointer: coarse)');
+    function grow() {
+      if (!phone.matches) { msg.style.height = ''; return; }
       msg.style.height = 'auto';
       msg.style.height = msg.scrollHeight + 'px';
     }
-    msg.addEventListener('input', autoGrow);
-    requestAnimationFrame(autoGrow);
 
-    // Keep the Send button reachable above the on-screen keyboard: pad the form
-    // by however much the keyboard covers so it can scroll clear. The padding
-    // lives on the postcard's own wrapper (removed when the window closes) so it
-    // never leaks into the fridge shell.
-    const cardWrap = document.querySelector('.card-wrapper');
-    const vv = window.visualViewport;
-    if (vv && cardWrap) {
-      const syncKeyboardInset = () => {
-        if (!mobileMQ.matches || !cardWrap.isConnected) { cardWrap.style.paddingBottom = ''; return; }
-        const covered = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
-        cardWrap.style.paddingBottom = covered ? covered + 'px' : '';
-      };
-      vv.addEventListener('resize', syncKeyboardInset);
-      vv.addEventListener('scroll', syncKeyboardInset);
+    // Writing again after sending starts a fresh card
+    function fresh() {
+      if (!card.classList.contains('sent')) return;
+      card.classList.remove('sent');
+      send.disabled = false;
+      send.textContent = 'Send';
+      say('');
+      newStamp();
+      rollPostmark();
     }
+    msg.addEventListener('input', () => { fresh(); grow(); if (status.classList.contains('error')) say(''); });
+    [from, email].forEach(f => f.addEventListener('input', fresh));
 
-    let selectedStamp = null;
-    let allStamps = [];
-
-    function placeStamp(src) {
-      selectedStamp = src;
-      overlay.src = src;
-      overlay.classList.add('visible');
-      placeholder.classList.add('hidden');
-    }
-
-    // No picker — a stamp is chosen at random. Click it to shuffle to another.
-    function randomStamp() {
-      if (!allStamps.length) return;
-      let pick;
-      do { pick = allStamps[Math.floor(Math.random() * allStamps.length)]; }
-      while (allStamps.length > 1 && pick === selectedStamp);
-      placeStamp(pick);
-    }
-
-    placeholder.addEventListener('click', randomStamp);
-    overlay.addEventListener('click', randomStamp);
-
-    fetch(STAMPS_DIR + 'stamps.json', { cache: 'no-store' })
-      .then(r => r.ok ? r.json() : [])
-      .then(stamps => {
-        allStamps = (stamps || [])
-          .filter(name => name && !name.startsWith('_'))
-          .map(n => STAMPS_DIR + n);
-        randomStamp();   // drop a random stamp on the card
-      })
-      .catch(() => {});
-
-    btn.addEventListener('click', async () => {
+    card.addEventListener('submit', async e => {
+      e.preventDefault();
       const body = msg.value.trim();
-      if (!body) return;
-      const fromName  = document.getElementById('return-email').value.trim();
-      const replyMail = document.getElementById('reply-email').value.trim();
-      const website   = document.getElementById('address-extra').value.trim();
-      btn.disabled = true;
-      btn.textContent = 'Sending…';
-      try {
-        const payload = {
-          access_key: ACCESS_KEY,
-          subject:    'Postcard from your fridge',
-          from_name:  fromName || 'Fridge Postcard',
-          message:    body,
-          stamp:      selectedStamp || '(no stamp selected)',
-          website:    website || '(none)'
-        };
-        // reply_to defaults to the email; if a name is also set, use "Name <email>"
-        if (replyMail) {
-          payload.reply_to = fromName ? `${fromName} <${replyMail}>` : replyMail;
-        }
-        const r = await fetch('https://api.web3forms.com/submit', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        const data = await r.json().catch(() => ({}));
-        if (r.ok && data.success !== false) {
-          btn.textContent = 'Sent ✓';
-          msg.value = '';
-          document.getElementById('return-email').value = '';
-          document.getElementById('reply-email').value = '';
-          document.getElementById('address-extra').value = '';
-        } else { btn.textContent = 'Failed'; }
-      } catch (e) { btn.textContent = 'Failed'; }
-      setTimeout(() => { btn.textContent = originalLabel; btn.disabled = false; }, 2500);
+      if (!body) return nudge(msg, 'Write something first.');
+      if (email.value && !email.checkValidity()) return nudge(email, 'That email doesn’t look quite right.');
+
+      send.disabled = true;
+      send.textContent = 'Sending…';
+      say('');
+
+      // Bots fill hidden fields and submit instantly: quietly pretend it worked
+      const bot = $('pc-hp').value || Date.now() - opened < 2500;
+      let ok = bot;
+      if (!bot) {
+        try {
+          const name = from.value.trim(), reply = email.value.trim();
+          const payload = {
+            access_key: ACCESS_KEY,
+            subject: 'Postcard from your fridge',
+            from_name: name || 'Fridge postcard',
+            message: body,
+            stamp: String(stamp).padStart(2, '0'),
+          };
+          if (reply) payload.reply_to = name ? `${name} <${reply}>` : reply;
+          const r = await fetch('https://api.web3forms.com/submit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            body: JSON.stringify(payload),
+          });
+          const data = await r.json().catch(() => ({}));
+          ok = r.ok && data.success !== false;
+        } catch (err) { ok = false; }
+      }
+
+      if (ok) {
+        card.classList.add('sent');
+        send.textContent = 'Sent';
+        msg.value = ''; from.value = ''; email.value = '';
+        grow();
+      } else {
+        send.disabled = false;
+        send.textContent = 'Send';
+        say('Couldn’t send that. Your note is still here; try again in a moment.', true);
+      }
     });
+
+    // Phones: keep Send reachable above the on-screen keyboard. The padding sits
+    // on the postcard's own wrapper, so it goes away when the window closes.
+    const wrap = card.parentElement, vv = window.visualViewport;
+    if (vv) {
+      const inset = () => {
+        if (!wrap.isConnected) { vv.removeEventListener('resize', inset); vv.removeEventListener('scroll', inset); return; }
+        const covered = phone.matches ? Math.max(0, innerHeight - vv.height - vv.offsetTop) : 0;
+        wrap.style.paddingBottom = covered ? covered + 'px' : '';
+      };
+      vv.addEventListener('resize', inset);
+      vv.addEventListener('scroll', inset);
+    }
   })();
   </script>
 </body>

@@ -24,7 +24,6 @@
   const CAMERA = 5466;                                  // the photo's camera distance, in photo px (6 m)
   const STILL  = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const SWING_MS = STILL ? 0 : 560, FADE_MS = STILL ? 0 : 200, CLOSE_MS = STILL ? 0 : 460;
-  const V = '?v=4';
 
   const pct = r => ({ left: r.x / IMG.w * 100 + '%', top: r.y / IMG.h * 100 + '%',
                       width: r.w / IMG.w * 100 + '%', height: r.h / IMG.h * 100 + '%' });
@@ -51,8 +50,8 @@
 
   // The renders are ~0.5 MB: fetch them once the page is idle (or the moment the handle is touched)
   let loaded = null;
-  const load = () => loaded = loaded || Promise.all([[interior, 'fridge/interior.webp'], [openView, 'fridge/open.webp']].map(([img, src]) => {
-    img.src = src + V;
+  const load = () => loaded = loaded || Promise.all([[interior, 'fridge/interior.webp?v=d1e47485'], [openView, 'fridge/open.webp?v=47725e58']].map(([img, src]) => {
+    img.src = src;
     return img.decode().catch(() => {});
   }));
   whenIdle(load, 4000);

@@ -143,19 +143,20 @@ body:not(.edit-mode) .item[data-id="item_email_me"]:hover img {
 #os-window .resize-sw { left: 0;   bottom: 0; width: 14px; height: 14px; cursor: nesw-resize; }
 
 .traffic-lights { display: flex; align-items: center; gap: 8px; z-index: 1; }
+/* macOS window buttons: 12px discs with a hairline rim; on hover the glyphs
+   are drawn as vector strokes (not text), tinted darker shades of each colour */
 .tl-btn {
-  width: 14px; height: 14px; border-radius: 50%; border: none; cursor: pointer;
+  width: 12px; height: 12px; padding: 0; border-radius: 50%; border: none; cursor: pointer;
   position: relative;
-  display: flex; align-items: center; justify-content: center;
-  transition: filter 0.1s;
+  box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.18);
   flex-shrink: 0;
 }
 /* Larger invisible hit area so hover/click is easy to land */
 .tl-btn::before {
   content: ''; position: absolute;
-  top: -9px; bottom: -9px; left: -5px; right: -5px;
+  top: -10px; bottom: -10px; left: -4px; right: -4px;
 }
-.tl-btn:hover { filter: brightness(1.15); }
+.tl-btn:active { filter: brightness(0.85); }
 @media (pointer: coarse) {
   /* Full-screen OS window, no titlebar on touch */
   #os-titlebar { display: none; }
@@ -184,12 +185,32 @@ body:not(.edit-mode) .item[data-id="item_email_me"]:hover img {
 .tl-min   { background: #febc2e; }
 .tl-max   { background: #28c840; }
 .tl-btn::after {
-  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-  font-family: -apple-system, BlinkMacSystemFont, system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  font-size: 10px; font-weight: 700; line-height: 1;
-  color: rgba(0,0,0,0.82);
+  content: ''; position: absolute; inset: 0;
+  background: no-repeat center / 12px 12px;
+  opacity: 0; transition: opacity 0.08s;
 }
-#os-titlebar:hover .tl-btn::after { content: attr(data-glyph); }
+.tl-close::after { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M3.6 3.6l4.8 4.8M8.4 3.6l-4.8 4.8' stroke='%237d1a12' stroke-width='1.15' stroke-linecap='round'/%3E%3C/svg%3E"); }
+.tl-min::after   { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.9 6h6.2' stroke='%238a5410' stroke-width='1.25' stroke-linecap='round'/%3E%3C/svg%3E"); }
+.tl-max::after   { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M3.5 3.5h3.2L3.5 6.7zM8.5 8.5H5.3l3.2-3.2z' fill='%230f5d16'/%3E%3C/svg%3E"); }
+#os-window.is-full .tl-max::after { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M5.4 5.4H2.6l2.8-2.8zM6.6 6.6h2.8L6.6 9.4z' fill='%230f5d16'/%3E%3C/svg%3E"); }
+.traffic-lights:hover .tl-btn::after { opacity: 1; }
+
+/* Green button: the window in real full screen (inline sizes are overridden) */
+#os-window.is-full {
+  width: 100vw !important; height: 100vh !important;
+  border-radius: 0; transform: none; box-shadow: none;
+}
+#os-window.is-full .resize-handle { display: none; }
+/* In full screen the browser shows its own window controls at the top edge
+   (Safari's traffic lights, Chrome's exit button), just as macOS apps do, so
+   ours step aside rather than doubling up. Esc or the browser's controls exit. */
+#os-window.is-full #os-titlebar { display: none; }
+/* Yellow button: shrink away toward the bottom, then close */
+#os-window.minimising {
+  transform: translateY(40vh) scale(0.08) !important;
+  opacity: 0;
+  transition: transform 0.26s cubic-bezier(.5,0,.75,0), opacity 0.26s ease-in;
+}
 
 #os-window-title {
   position: absolute; left: 50%; transform: translateX(-50%);

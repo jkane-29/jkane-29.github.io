@@ -112,7 +112,7 @@
         terminal ? wrap.appendChild(document.adoptNode(terminal)) : adoptAll(wrap);
         contentEl.innerHTML = '';
         contentEl.appendChild(wrap);
-        await loadScript('js/decisions.js?v=1');
+        await loadScript('js/decisions.js?v=0d210145');
         if (contentEl.contains(wrap)) cleanup = startDecisionsGame();   // unless closed meanwhile
         return;   // the game replaces the page's own script
       }
@@ -210,6 +210,7 @@
   }
 
   function closeWindow() {
+    if (document.fullscreenElement || document.webkitFullscreenElement) (document.exitFullscreen || document.webkitExitFullscreen).call(document);
     if (cleanup) { cleanup(); cleanup = null; }
     lockZoom(false);
     $('os-overlay').classList.remove('open');
@@ -223,9 +224,33 @@
     }, 250);
   }
 
+  // ── Traffic lights, as on a Mac ──
+  // Green: real full screen (the Fullscreen API on the window itself), green
+  // again or Esc to come back. Yellow: minimise, which tucks the window away
+  // toward the bottom of the screen. Double-clicking the title bar zooms too.
+  const win = $('os-window');
+  const fsEl = () => document.fullscreenElement || document.webkitFullscreenElement;
+  function toggleFullscreen() {
+    if (fsEl()) (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+    else (win.requestFullscreen || win.webkitRequestFullscreen || (() => {})).call(win);
+  }
+  const syncFull = () => {
+    win.classList.toggle('is-full', fsEl() === win);
+  };
+  document.addEventListener('fullscreenchange', syncFull);
+  document.addEventListener('webkitfullscreenchange', syncFull);
+  function minimiseWindow() {
+    if (fsEl()) { toggleFullscreen(); return; }   // like macOS: leave full screen first
+    win.classList.add('minimising');
+    setTimeout(() => { closeWindow(); win.classList.remove('minimising'); }, 260);
+  }
+  $('tl-max').addEventListener('click', toggleFullscreen);
+  $('tl-min').addEventListener('click', minimiseWindow);
+  $('os-titlebar').addEventListener('dblclick', e => { if (!e.target.closest('.tl-btn')) toggleFullscreen(); });
+
   $('tl-close').addEventListener('click', closeWindow);
   $('os-overlay').addEventListener('click', e => { if (e.target === $('os-overlay')) closeWindow(); });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeWindow(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !fsEl()) closeWindow(); });
   // Back button closes the window on mobile
   addEventListener('popstate', () => { if ($('os-overlay').classList.contains('open')) closeWindow(); });
 

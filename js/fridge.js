@@ -106,7 +106,7 @@ function createItemEl(item) {
   });
 })();
 
-if (isEditMode) loadScript('js/editor.js?v=1');
+if (isEditMode) loadScript('js/editor.js?v=f44da57a');
 
 // On desktop, restore the webring position + size saved in edit mode. On
 // touch, CSS pins the webring above the ventilation strip, so skip it there.

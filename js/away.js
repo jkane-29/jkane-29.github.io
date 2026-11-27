@@ -18,7 +18,6 @@
   const DOOR  = { x: 995, y: 1233, w: 1529, h: 256 };  // from moon_publish.py:                            // the open door's shadow: a patch of the same picture
   const EARTH = { x: 952, y: 236, r: 122 };                // a third bigger than life (it is really 1.9° across from the Moon), to be seen properly
   const VIEW  = WORLD;                                     // how much of the picture is laid out: all of it
-  const V = '?v=5';
   const STILL = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   const el = (tag, cls, style) => { const e = document.createElement(tag); if (cls) e.className = cls; if (style) Object.assign(e.style, style); return e; };
@@ -48,8 +47,8 @@
   // The pictures are fetched the first time the fridge is opened, so they are there by the time the orb is clicked
   let loaded = null;
   const map = new Image();
-  const load = () => loaded = loaded || Promise.all([[ground, 'fridge/moon.webp'], [shadow, 'fridge/moon-door.webp'], [cut, 'fridge/fridge-cut.webp'], [map, 'fridge/earth.jpg']]
-    .map(([img, src]) => { img.src = src + V; return img.decode().catch(() => {}); }))
+  const load = () => loaded = loaded || Promise.all([[ground, 'fridge/moon.webp?v=bf2fd246'], [shadow, 'fridge/moon-door.webp?v=d3fe1c56'], [cut, 'fridge/fridge-cut.webp?v=0daa8d96'], [map, 'fridge/earth.jpg?v=87239037']]
+    .map(([img, src]) => { img.src = src; return img.decode().catch(() => {}); }))
     .then(() => { place(); scene.classList.add('ready'); drawEarth(); });   // decoded, laid out (a pin-prick behind the orb) and the Earth drawn, all ahead of time
   new MutationObserver(() => { if (fridge.classList.contains('fridge-open')) load(); })
     .observe(fridge, { attributes: true, attributeFilter: ['class'] });

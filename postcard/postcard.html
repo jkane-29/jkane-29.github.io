@@ -223,10 +223,10 @@
         height: 100%;
         min-height: 0;
         overflow: hidden;
-        padding: max(10px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom));
+        padding: 0 12px 12px;   /* the window keeps clear of Safari's bars (styles.css) */
         background: #d9d2c3;
       }
-      .pc-standalone .pc-wrap { height: 100vh; height: 100dvh; }
+      .pc-standalone .pc-wrap { height: 100vh; height: 100dvh; padding-top: max(10px, env(safe-area-inset-top)); }
       .pc-standalone body { overflow: hidden; }
       .postcard, html:not(.pc-standalone) #os-window:not(.is-full) .postcard {
         flex: 1;

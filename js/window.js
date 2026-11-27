@@ -23,8 +23,8 @@
   // itself zoomable). user-scalable=no is ignored by iOS Safari, so we also block
   // its pinch gesture events directly.
   const viewportMeta = document.querySelector('meta[name="viewport"]');
-  const VIEWPORT_FREE   = 'width=device-width, initial-scale=1.0';
-  const VIEWPORT_LOCKED = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+  const VIEWPORT_FREE   = 'width=device-width, initial-scale=1.0, viewport-fit=cover';
+  const VIEWPORT_LOCKED = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover';
   const blockGesture = e => e.preventDefault();
   function lockZoom(on) {
     if (viewportMeta) viewportMeta.setAttribute('content', on ? VIEWPORT_LOCKED : VIEWPORT_FREE);
@@ -33,16 +33,21 @@
     document[method]('gesturechange', blockGesture, { passive: false });
   }
 
-  // Phones: Safari colours its top and bottom bars from the page. While a
-  // window is open, hand it the window's colour (and put it behind the page
-  // too, for overscroll), so the bars match the page instead of showing grey.
-  const themeMeta = document.querySelector('meta[name="theme-color"]') ||
-    document.head.appendChild(Object.assign(document.createElement('meta'), { name: 'theme-color' }));
+  // Phones: Safari's toolbars are see-through and take their tint from the
+  // page beneath them. A window runs under them in its page colour, and the
+  // page behind (seen when overscrolling) takes that colour too. Safari only
+  // re-reads the tint on scroll, and opening a window doesn't scroll the page,
+  // so nudge it by a pixel and back.
+  let chromeColour = '';
   function syncChrome() {
     const open = IS_TOUCH && $('os-overlay').classList.contains('open');
-    const colour = open ? getComputedStyle($('os-overlay')).backgroundColor : '#ffffff';
-    themeMeta.content = colour;
-    document.documentElement.style.backgroundColor = open ? colour : '';
+    const colour = open ? getComputedStyle($('os-overlay')).backgroundColor : '';
+    if (colour === chromeColour) return;
+    chromeColour = colour;
+    document.documentElement.style.backgroundColor = colour;
+    const x = scrollX, y = scrollY;
+    scrollTo(x, y > 0 ? y - 1 : y + 1);
+    requestAnimationFrame(() => scrollTo(x, y));
   }
   if (IS_TOUCH) new MutationObserver(syncChrome).observe($('os-content-inner'), { childList: true });
 

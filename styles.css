@@ -177,22 +177,31 @@ body:not(.edit-mode) .item[data-id="item_email_me"]:active img {
   #os-window {
     width: 100vw !important;
     height: 100vh !important;
-    height: 100dvh !important; /* dynamic vh: accounts for iOS toolbar */
+    height: 100lvh !important; /* the full screen, under Safari's see-through toolbars */
     max-width: 100vw !important;
     border-radius: 0;
     border: none;
-    /* The window fills the screen with no chrome. Its colour (--os-page, set
-       per page below) also goes on the backdrop and, via js/window.js, on
-       Safari's top and bottom bars, so the page colour runs edge to edge
-       instead of the dimmed backdrop showing grey around the toolbars. */
+    /* The window fills the screen with no chrome, running beneath Safari's
+       translucent bars like a native page. Its colour (--os-page, set per page
+       below) is on the backdrop too, so nothing grey shows at the edges. */
     background: var(--os-page);
   }
-  #os-overlay { --os-page: #ffffff; background: var(--os-page); }
+  #os-overlay { --os-page: #ffffff; background: var(--os-page); bottom: auto; height: 100vh; height: 100lvh; }
   #os-overlay:has(.nx-app) { --os-page: #faf9f7; }              /* Writing notes — warm off-white */
   #os-overlay:has(.terminal-container) { --os-page: #0c0c0c; }  /* Decisions terminal — dark */
   #os-overlay:has(.postcard) { --os-page: #d9d2c3; }            /* Postcard — the desk */
   #os-overlay:has(#ws-slide) { --os-page: #000000; }            /* Woodshop slideshow */
   #os-content:has(.postcard) { background: #d9d2c3; }
+  /* A band of the page colour along the top edge, which the content scrolls
+     beneath: Safari tints its toolbar from whatever touches the top of the
+     screen, so this keeps it the page colour (not, say, the open ride's
+     yellow header on Rides). */
+  #os-content {
+    border-top: max(12px, env(safe-area-inset-top)) solid var(--os-page);
+    /* keep the last of the page (and the postcard's Send) above the bottom
+       toolbar and home indicator, while the page colour runs on beneath them */
+    padding-bottom: max(env(safe-area-inset-bottom), calc(100lvh - 100dvh));
+  }
   /* Match the scroll container too, so an overscroll bounce doesn't flash white */
   #os-content:has(.nx-app) { background: #faf9f7; }
   #os-overlay {

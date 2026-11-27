@@ -524,18 +524,16 @@
       }
     });
 
-    // Phones: keep Send reachable above the on-screen keyboard. The padding sits
-    // on the postcard's own wrapper, so it goes away when the window closes.
-    const wrap = card.parentElement, vv = window.visualViewport;
-    if (vv) {
-      const inset = () => {
-        if (!wrap.isConnected) { vv.removeEventListener('resize', inset); vv.removeEventListener('scroll', inset); return; }
-        const covered = phone.matches ? Math.max(0, innerHeight - vv.height - vv.offsetTop) : 0;
-        wrap.style.paddingBottom = covered ? covered + 'px' : '';
-      };
-      vv.addEventListener('resize', inset);
-      vv.addEventListener('scroll', inset);
-    }
+    // Phones: the card itself never moves or reflows while you type. Safari
+    // slides the whole view up to show the field above the keyboard; when the
+    // keyboard goes away, put the view back exactly where it was.
+    let restore = null;
+    card.addEventListener('focusin', () => { if (phone.matches && !restore) restore = [scrollX, scrollY]; });
+    card.addEventListener('focusout', () => setTimeout(() => {
+      if (!restore || card.contains(document.activeElement)) return;   // moving between fields
+      scrollTo(restore[0], restore[1]);
+      restore = null;
+    }, 50));
   })();
   </script>
 </body>

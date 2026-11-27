@@ -203,6 +203,8 @@
     }
     .pc-status.error { color: #9b2c1f; }
 
+    .pc-back { display: none; }
+
     /* Honeypot: invisible to people, tempting to bots */
     .pc-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
 
@@ -212,9 +214,34 @@
     /* ── Phones: the same postcard, stood upright — paper, printed labels,
        handwriting — rather than a separate design. ── */
     @media (max-width: 600px), (pointer: coarse) {
-      .pc-standalone .pc-wrap { height: auto; min-height: 100vh; min-height: 100dvh; padding: 16px; }
-      .pc-wrap { container-type: inline-size; display: block; padding: 14px; }
+      /* The card on a desk, filling the screen: note on top, address and
+         Send at the bottom, a way back above it all. */
+      .pc-wrap, .pc-standalone .pc-wrap {
+        container-type: inline-size;
+        display: flex;
+        flex-direction: column;
+        height: auto;
+        min-height: 100vh; min-height: 100dvh;
+        padding: max(10px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom));
+        background: #d9d2c3;
+      }
+      .pc-back {
+        display: inline-flex;
+        align-self: flex-start;
+        align-items: center;
+        gap: 6px;
+        margin: 0 0 8px -4px;
+        padding: 8px 8px;
+        font: 600 13px 'Cinzel', Georgia, serif;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #6f5a35;
+        text-decoration: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .pc-back::before { content: '‹'; font: 400 24px/0.6 Georgia, serif; margin-top: -3px; }
       .postcard, html:not(.pc-standalone) #os-window:not(.is-full) .postcard {
+        flex: 1;
         width: 100%;
         height: auto;
         aspect-ratio: auto;
@@ -234,35 +261,38 @@
         width: auto;
         text-align: left;
         text-indent: 0;
-        letter-spacing: 0.14em;
         margin: 4px 0 18px;
         font: 600 22px 'Cinzel', Georgia, serif;
         letter-spacing: 0.14em;
         color: var(--gold);
       }
       .pc-stamp { top: 12px; right: 12px; width: 84px; height: 96px; padding: 2px; }
-      .pc-postmark { top: 14px; right: 0; width: 200px; }
+      .pc-postmark { top: 16px; right: 0; width: 172px; }
+      /* Faint ruled lines, so it reads as somewhere to write */
       .pc-message {
         position: static;
+        flex: 1;
         width: 100%;
-        min-height: 190px;
-        padding: 2px 0;
+        min-height: 204px;          /* six lines */
+        padding: 0 2px;
         font-size: 20px;
+        line-height: 34px;
         overflow: hidden;
+        background: repeating-linear-gradient(to bottom, transparent 0 33px, rgba(120, 100, 70, 0.22) 33px 34px) 0 0 / 100% 34px local;
       }
       .pc-address {
         position: static;
-        margin-top: 14px;
+        margin-top: 18px;
         padding-top: 16px;
         border-top: 1.5px solid #2a2622;   /* the card's centre rule, turned flat */
         gap: 16px;
       }
       .pc-line span { font-size: 12px; }
       .pc-line input, .pc-to a { font-size: 18px; padding: 2px 2px 0; }
-      .pc-send { margin-top: 6px; padding: 12px 0; font-size: 15px; }
+      .pc-send { margin-top: 6px; padding: 14px 0; font-size: 15px; }
       .pc-status { margin: 0; font-size: 17px; }
+      .pc-status:empty { display: none; }
     }
-
     @media (prefers-reduced-motion: reduce) {
       .postcard.sent .pc-postmark { transition: none; }
       .postcard.nudge { animation: none; }
@@ -272,6 +302,7 @@
 <body>
 
   <div class="pc-wrap">
+    <a class="pc-back" id="pc-back" href="/">Fridge</a>
     <form class="postcard" id="postcard" autocomplete="on" novalidate>
       <svg class="pc-defs" aria-hidden="true" focusable="false">
         <filter id="pc-pen" x="-2%" y="-10%" width="104%" height="120%">
@@ -408,12 +439,17 @@
       field.focus();
     }
 
+    // Phones: a way back to the fridge (desktop has the window's close button)
+    $('pc-back').addEventListener('click', e => {
+      if (history.state && history.state.fridgeWindow) { e.preventDefault(); history.back(); }
+      else if (window.closeWindow && document.getElementById('os-window')) { e.preventDefault(); window.closeWindow(); }
+    });
+
     // Phones: let the note grow with its text
     const phone = matchMedia('(max-width: 600px), (pointer: coarse)');
     function grow() {
-      if (!phone.matches) { msg.style.height = ''; return; }
-      msg.style.height = 'auto';
-      msg.style.height = msg.scrollHeight + 'px';
+      msg.style.minHeight = '';
+      if (phone.matches) msg.style.minHeight = msg.scrollHeight + 'px';
     }
 
     // Writing again after sending starts a fresh card

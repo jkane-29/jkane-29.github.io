@@ -27,7 +27,7 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png?v=08c28d1a">
   <link rel="manifest" href="/site.webmanifest">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=36553f6f">
-  <link rel="stylesheet" href="styles.css?v=d7af1d98">
+  <link rel="stylesheet" href="styles.css?v=a12836f4">
   <!-- Handwriting face for the page-views sticky note -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -74,24 +74,20 @@
     </div>
   </div>
 
-  <!-- Firebase realtime DB (tic-tac-toe only) — deferred so it never blocks
-       the fridge's first paint. Preconnect warms the TLS handshake early. -->
-  <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+  <!-- Firebase Realtime DB (page views + tic-tac-toe, over plain REST in js/live.js) -->
   <link rel="preconnect" href="https://fridge-b5a68-default-rtdb.firebaseio.com" crossorigin>
   <!-- Warm the connection for the Amtrak map's live train data -->
   <link rel="preconnect" href="https://api.amtraker.com" crossorigin>
   <!-- Warm the RideWithGPS connection so the Rides maps load quickly on open -->
   <link rel="preconnect" href="https://ridewithgps.com">
-  <script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 
-  <script src="js/core.js?v=b5be4786"></script>
+  <script src="js/core.js?v=4f8f2573"></script>
   <script src="js/layout.js?v=e8647544"></script>
-  <script src="js/window.js?v=18e6f8b2"></script>
+  <script src="js/window.js?v=f3153b51"></script>
   <script src="js/fridge.js?v=d9c946a9"></script>
   <script src="js/door.js?v=8c5b6e0f"></script>
   <script src="js/orb.js?v=91e1e8ef"></script>
   <script src="js/away.js?v=091a498c"></script>
-  <script src="js/live.js?v=1e499bb8"></script>
+  <script src="js/live.js?v=2cbb534c"></script>
 </body>
 </html>

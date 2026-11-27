@@ -235,8 +235,26 @@
     else (win.requestFullscreen || win.webkitRequestFullscreen || (() => {})).call(win);
   }
   const syncFull = () => {
-    win.classList.toggle('is-full', fsEl() === win);
+    const full = fsEl() === win;
+    if (!full && win.classList.contains('is-full')) return collapse();
+    win.classList.toggle('is-full', full);
   };
+  // Leaving full screen (Esc, green, the browser's own controls) jumps straight
+  // back to the window size; animate that like macOS does instead. The window
+  // itself shrinks from filling the screen back into its frame (its real size,
+  // so text re-wraps rather than being squashed by a scale), staying centred,
+  // corners rounding as it lands.
+  function collapse() {
+    const from = win.getBoundingClientRect();
+    win.classList.remove('is-full');
+    const to = win.getBoundingClientRect();
+    if (!to.width || !win.animate || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const timing = { duration: 380, easing: 'cubic-bezier(0.22, 0.9, 0.3, 1)' };
+    win.animate([
+      { width: from.width + 'px', height: from.height + 'px', borderRadius: '0px' },
+      { width: to.width + 'px', height: to.height + 'px', borderRadius: '12px' },
+    ], timing);
+  }
   document.addEventListener('fullscreenchange', syncFull);
   document.addEventListener('webkitfullscreenchange', syncFull);
   function minimiseWindow() {

@@ -1,26 +1,65 @@
 // ── Live bits, shared through Firebase: page views + communal tic-tac-toe ──
-// These values are a public client identifier, not a secret — Firebase is
-// designed to expose them. Access is controlled by database security rules,
-// which restrict writes to the pageViews and letters/tictactoe nodes.
-// The SDK loads via deferred <script> tags, so the fridge renders without
-// waiting on it; startFirebase() runs once it's ready (before DOMContentLoaded),
-// and if it's blocked or offline both features simply don't appear.
+// Talks to the Realtime Database over its plain REST API rather than the
+// ~200KB Firebase SDK: reads and writes are fetch() calls, live updates come
+// over an EventSource stream, and "transactions" are conditional writes that
+// only land if nobody else wrote in between (ETag / if-match), retried if they
+// did. The database URL is public by design; security rules restrict writes to
+// the pageViews and letters/tictactoe nodes. If the database is blocked or
+// offline, neither feature appears.
 (function () {
-let db = null;
-function startFirebase() {
-  if (typeof firebase === 'undefined') return;   // blocked/offline: skip the game
-  firebase.initializeApp({
-    apiKey: "AIzaSyBNcJ4SXzzcTKH8edt1cqt9Rm30aN6CFuo",
-    authDomain: "fridge-b5a68.firebaseapp.com",
-    databaseURL: "https://fridge-b5a68-default-rtdb.firebaseio.com",
-    projectId: "fridge-b5a68",
-    storageBucket: "fridge-b5a68.firebasestorage.app",
-    messagingSenderId: "813069686196",
-    appId: "1:813069686196:web:54550c3883d20850f04ee1"
+const DB = 'https://fridge-b5a68-default-rtdb.firebaseio.com/';
+const url = path => DB + path + '.json';
+
+async function read(path) {
+  const r = await fetch(url(path), { headers: { 'X-Firebase-ETag': 'true' } });
+  if (!r.ok) throw new Error('read ' + r.status);
+  return { val: await r.json(), etag: r.headers.get('ETag') };
+}
+
+// Like the SDK's transaction(): update(current) returns the new value, or
+// undefined to leave it alone. Resolves to { committed, val }.
+async function transaction(path, update) {
+  let cur = await read(path);
+  for (let tries = 0; tries < 10; tries++) {
+    const next = update(cur.val === null ? null : structuredClone(cur.val));
+    if (next === undefined) return { committed: false, val: cur.val };
+    const r = await fetch(url(path), {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'if-match': cur.etag },
+      body: JSON.stringify(next),
+    });
+    if (r.ok) return { committed: true, val: await r.json() };
+    if (r.status !== 412) throw new Error('write ' + r.status);
+    cur = { val: await r.json(), etag: r.headers.get('ETag') };   // someone beat us: retry on theirs
+  }
+  throw new Error('write: too much contention');
+}
+
+// Live value at a path: onValue(value) on every change, onError if refused.
+function watch(path, onValue, onError) {
+  let val = null;
+  const set = (keys, data) => {
+    if (!keys.length) { val = data; return; }
+    if (!val || typeof val !== 'object') val = {};
+    let o = val;
+    for (const k of keys.slice(0, -1)) o = (o[k] && typeof o[k] === 'object') ? o[k] : (o[k] = {});
+    const last = keys[keys.length - 1];
+    if (data === null) delete o[last]; else o[last] = data;
+  };
+  const split = p => p.split('/').filter(Boolean);
+  const es = new EventSource(url(path));
+  es.addEventListener('put', e => {
+    const { path: p, data } = JSON.parse(e.data);
+    set(split(p), data);
+    onValue(val);
   });
-  db = firebase.database();
-  if (!isEditMode) initTicTacToe();
-  initPageViews();
+  es.addEventListener('patch', e => {
+    const { path: p, data } = JSON.parse(e.data);
+    for (const k in data) set(split(p + '/' + k), data[k]);
+    onValue(val);
+  });
+  es.addEventListener('cancel', () => { es.close(); onError && onError(); });   // rules refused us
+  return es;
 }
 
 // ── Page-views sticky note ──
@@ -29,22 +68,21 @@ function startFirebase() {
 function initPageViews() {
   const wrap = $('views-magnet');
   const out  = $('views-count');
-  if (!wrap || !out || !db) return;
-  const ref  = db.ref('pageViews');
+  if (!wrap || !out) return;
   const show = n => { out.textContent = (n || 0).toLocaleString(); wrap.hidden = false; };
   const hide = () => { wrap.hidden = true; };   // denied/offline: no magnet at all
 
   if (isEditMode) {                              // show the total but don't count
-    ref.once('value', s => show(s.val()), hide);
+    read('pageViews').then(r => show(r.val), hide);
     return;
   }
-  // Count this load, then reveal the SERVER-confirmed total (not the optimistic
-  // local value) and keep it live for anyone watching the page.
-  ref.transaction(n => (n || 0) + 1, (err, committed, snap) => {
-    if (err || !committed) return hide();
-    show(snap.val());
-    ref.on('value', s => show(s.val()), hide);
-  });
+  // Count this load, then reveal the server-confirmed total and keep it live
+  // for anyone watching the page.
+  transaction('pageViews', n => (n || 0) + 1).then(r => {
+    if (!r.committed) return hide();
+    show(r.val);
+    watch('pageViews', show, hide);
+  }, hide);
 }
 
 // ── Tic-tac-toe ──
@@ -151,7 +189,7 @@ function initTicTacToe() {
   function move(i) {
     const s = state;
     if (s && (s.winner || (s.board && s.board[i] !== ' ') || s.lastMoveBy === cid)) return;
-    db.ref(PATH).transaction(cur => {
+    transaction(PATH, cur => {
       cur = cur || fresh();
       if (!cur.board || cur.board.length !== 9) cur.board = EMPTY;
       if (cur.winner) return;
@@ -166,22 +204,22 @@ function initTicTacToe() {
       else if (isFull(cur.board)) { cur.winner = 'draw'; }
       else { cur.turn = turn === 'X' ? 'O' : 'X'; }
       return cur;
-    });
+    }).catch(() => {});
   }
 
   function reset() {
-    db.ref(PATH).transaction(cur => {
+    transaction(PATH, cur => {
       if (!cur || !cur.winner) return; // someone else already reset
       const n = fresh(cur.startNext || 'X');
       n.scores = cur.scores || { X: 0, O: 0 };
       return n;
-    });
+    }).catch(() => {});
   }
 
-  db.ref(PATH).on('value', snap => { state = snap.val(); render(); });
-  db.ref(PATH).transaction(cur => cur || fresh()); // seed initial state once
+  watch(PATH, v => { state = v; render(); }, () => el.remove());
+  transaction(PATH, cur => cur ? undefined : fresh()).catch(() => {});   // first ever visit: set up the board
 }
 
-if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', startFirebase);
-else startFirebase();
+if (!isEditMode) initTicTacToe();
+initPageViews();
 })();

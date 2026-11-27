@@ -276,13 +276,22 @@
       return `<iframe class="ride-embed" scrolling="no" src="${src}"></iframe>`;
     }
 
+    // Each photo comes 1000px wide plus a 2000px "@2x" copy; the browser picks
+    // by the frame's real width (kept current below), so the big one only loads
+    // when the photo is shown large, e.g. with the window in full screen.
+    const srcset = p => `${p} 1000w, ${p.replace(/\.webp$/, '@2x.webp')} 2000w`;
+    const fitPhotos = new ResizeObserver(entries => entries.forEach(e => {
+      const img = e.target.querySelector('.ride-photo');
+      if (img) img.sizes = Math.ceil(e.contentRect.width) + 'px';
+    }));
+
     // Photo carousel under the bullet notes — shows one photo at a time.
     function photosHtml(photos) {
       if (!photos || !photos.length) return '';
       const single = photos.length < 2 ? ' single' : '';
       return `<div class="ride-carousel${single}">
         <div class="ride-photo-frame">
-          <img class="ride-photo" src="${photos[0]}" alt="">
+          <img class="ride-photo" src="${photos[0]}" srcset="${srcset(photos[0])}" sizes="600px" alt="">
           <button class="ride-arrow prev" type="button" aria-label="Previous photo">‹</button>
           <button class="ride-arrow next" type="button" aria-label="Next photo">›</button>
           <div class="ride-photo-count">1 / ${photos.length}</div>
@@ -292,6 +301,8 @@
 
     // Wire the prev/next arrows for a ride's photo carousel.
     function wireRidePhotos(row, photos) {
+      const frame = row.querySelector('.ride-photo-frame');
+      if (frame) fitPhotos.observe(frame);
       if (!photos || photos.length < 2) return;
       const img = row.querySelector('.ride-photo');
       const count = row.querySelector('.ride-photo-count');
@@ -301,6 +312,7 @@
       let i = 0;
       const show = (n) => {
         i = (n + photos.length) % photos.length;
+        img.srcset = srcset(photos[i]);
         img.src = photos[i];
         if (count) count.textContent = (i + 1) + ' / ' + photos.length;
       };

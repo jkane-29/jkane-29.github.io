@@ -1,6 +1,6 @@
 // ── Shared basics for the fridge scripts ──────────────────────
 // Loaded first. Everything here is used by more than one file in js/.
-// Load order (index.html): core → layout → window → fridge → live.
+// Load order (index.html): core → layout → window → fridge → door → orb → away → live.
 // js/editor.js loads on its own, only with ?edit.
 
 // Kill native browser drag-ghost on any image (capture phase, all elements)

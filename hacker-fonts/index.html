@@ -130,13 +130,13 @@ details[open] summary { margin-bottom: 10px }
   <section id="changed">
     <h2>What changed</h2>
     <ul class="items">
-      <li>2005–2011: most sites used fonts already on the visitor's computer, like Arial and Verdana. Stripe launched in Verdana, the font of Hacker News.</li>
-      <li>2012–2017: Helvetica Neue was the most common font each year.</li>
-      <li>2019–2021: the most common choice was no font at all, just the operating system's own, which is what Bootstrap and Tailwind use by default.</li>
-      <li>Inter went from 8% of sites in 2020 to 33% in 2025.</li>
-      <li>Geist, the Next.js default since late 2024, went from 0% in 2022 to 12% in 2026, and Inter fell for the first time, to 26%.</li>
-      <li>Google Fonts copied into the site's own files, which Next.js does automatically, went from 10% of sites in 2021 to 43% in 2026.</li>
-      <li>Monospace body text went from 0% of sites in 2023 to 4.6% in 2026.</li>
+      <li>2005–2011: most sites used fonts already on the visitor's computer, like Arial and Verdana. Reddit launched in Verdana, the font of Hacker News, and Airbnb in Arial.</li>
+      <li>2012–2017: Helvetica Neue was the most common font each year. Stripe launched in it in 2011.</li>
+      <li>2019–2022: the most common choice was no font at all, just the operating system's own, which is what Bootstrap and Tailwind use by default.</li>
+      <li>Inter went from 8% of sites in 2020 to 32% in 2025.</li>
+      <li>Geist, the Next.js default since late 2024, went from 0% in 2022 to 12% in 2026, and Inter fell for the first time, to 28%.</li>
+      <li>Google Fonts copied into the site's own files, which Next.js does automatically, went from 11% of sites in 2021 to 43% in 2026.</li>
+      <li>Monospace body text went from 0% of sites in 2023 to 4.7% in 2026.</li>
     </ul>
   </section>
 
@@ -145,6 +145,7 @@ details[open] summary { margin-bottom: 10px }
       <h2>The most common font each year</h2>
     </div>
     <div class="strip" id="strip"></div>
+    <p class="note">Site counts are shown for years with fewer than 100 readable sites.</p>
   </section>
 
   <section>
@@ -174,7 +175,8 @@ details[open] summary { margin-bottom: 10px }
 
   <section class="method" id="method">
     <h2>Method</h2>
-    <p>The companies, batches and websites come from YC's startup directory. For each company, the Internet Archive capture of its homepage closest to its batch's Demo Day was parsed, along with up to four of its stylesheets, for <code>font-family</code> rules.</p>
+    <p>The companies, batches and websites come from YC's startup directory. For each company, the Internet Archive capture of its homepage closest to its batch's Demo Day was parsed, along with up to four of its stylesheets, for <code>font-family</code> rules. If a stylesheet wasn't archived at that address, the nearest archived copy within a year was used.</p>
+    <p>Not counted: batches whose Demo Day hasn't happened yet, captures from two or more years before Demo Day (usually a previous owner of the domain), and captures that never mention the company's name. They still appear in the lookup, marked. Spelling variants of the same font, such as "Ptsans" and "PT Sans", are counted as one.</p>
     <p class="note" id="gen"></p>
   </section>
 </div>
@@ -232,7 +234,8 @@ details[open] summary { margin-bottom: 10px }
   loadFonts(Object.values(T.top_by_year).flatMap(l => l.map(x => x[0])).concat(T.top_fonts));
   $("#strip").innerHTML = T.years.map((y, i) => {
     const t = T.top_by_year[y][0]; if (!t) return "";
-    return `<div class="cell"><div class="yr"><span>${T.labels[i]}</span><span>${Math.round(t[2])}%</span></div>${face(t[0])}</div>`;
+    const thin = T.n[y] < 100 ? ` of ${T.n[y]} sites` : "";
+    return `<div class="cell"><div class="yr"><span>${T.labels[i]}</span><span>${Math.round(t[2])}%${thin}</span></div>${face(t[0])}</div>`;
   }).join("");
 
   const tip = $("#tip");
@@ -279,7 +282,7 @@ details[open] summary { margin-bottom: 10px }
   const fc = {}; rows.forEach(r => r.primary_font && (fc[r.primary_font] = (fc[r.primary_font] || 0) + 1));
   $("#fFont").innerHTML += Object.entries(fc).sort((a, b) => b[1] - a[1]).map(([f, c]) => `<option value="${esc(f)}">${esc(f)} (${c})</option>`).join("");
   let list = [], shown = 0;
-  const ordered = rows.slice().reverse();
+  const ordered = rows.slice().reverse().sort((a, b) => (a.status === "pre_demo_day") - (b.status === "pre_demo_day"));
   function filter() {
     const q = $("#q").value.trim().toLowerCase(), b = $("#fBatch").value, f = $("#fFont").value, st = $("#fStatus").value;
     list = ordered.filter(r => (!b || r.batch === b) && (!f || r.primary_font === f) &&
@@ -287,14 +290,16 @@ details[open] summary { margin-bottom: 10px }
       (!q || (r.name || "").toLowerCase().includes(q) || (r.primary_font || "").toLowerCase().includes(q) || (r.heading_font || "").toLowerCase().includes(q)));
     shown = 0; $("#idx tbody").innerHTML = ""; more();
   }
-  const reason = { no_snapshot: "never archived", snapshot_empty: "archived page was empty", no_fonts_found: "styles weren't archived", no_batch_or_site: "no website listed", cdx_fail: "archive lookup failed", ok_unverified_domain: "domain may be unrelated" };
+  const reason = { no_snapshot: "never archived", snapshot_empty: "archived page was empty", no_fonts_found: "styles weren't archived", no_batch_or_site: "no website listed", cdx_fail: "archive lookup failed", pre_demo_day: "Demo Day hasn't happened yet" };
+  // fonts found, but not counted in the charts
+  const caveat = { ok_unverified_domain: "domain may have had another owner", ok_old_capture: "capture predates the company; likely the domain's previous owner", pre_demo_day: "before Demo Day" };
   function more() {
     const page = list.slice(shown, shown + (shown ? 50 : 15)); shown += page.length;
     loadFonts(page.map(r => r.primary_font));
     $("#idx tbody").insertAdjacentHTML("beforeend", page.map(r => `<tr>
       <td><a class="quiet" href="https://www.ycombinator.com/companies/${esc(r.slug)}" target="_blank" rel="noopener">${esc(r.name)}</a></td>
       <td class="num">${esc((r.batch || "").replace("Winter ", "W").replace("Summer ", "S").replace("Spring ", "X").replace("Fall ", "F"))}</td>
-      <td>${r.primary_font ? face(r.primary_font, "face") : `<span class="dim">${esc(reason[r.status] || r.status || "—")}</span>`}</td>
+      <td>${r.primary_font ? face(r.primary_font, "face") + (caveat[r.status] ? ` <span class="note">${caveat[r.status]}, not counted</span>` : "") : `<span class="dim">${esc(reason[r.status] || r.status || "—")}</span>`}</td>
       <td class="num">${r.snapshot_url ? `<a class="quiet" href="${esc(r.snapshot_url)}" target="_blank" rel="noopener">${esc(r.snapshot_date.slice(0, 4))}</a>` : "—"}</td></tr>`).join(""));
     $("#count").textContent = `${list.length.toLocaleString()} companies`;
     $("#more").hidden = shown >= list.length;
